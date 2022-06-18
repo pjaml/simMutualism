@@ -1,4 +1,4 @@
-function dN = lotka(t, n1, n2, r, s)
+function dN = lotka_pred_prey(t, n1, n2, r, s)
 
     % Prey
     dN1 = r(1) .* n1 - s(1) .* n1 .* n2;
