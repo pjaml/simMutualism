@@ -6,13 +6,13 @@ popRange = 0.0:5.0:200.0;
 % Creates matrices for points in the N1 vs. N2 plot
 [N1, N2] = meshgrid(popRange);
 
-% consumer-resource mutualism parameters
-r = [0.6 0.6]; % intrinsic growth rates
+% consumer-resource model parameters
+r = [0.7 0.5]; % intrinsic growth rates
 c = [1.0 1.0]; % positive effects on species i from species j resources
-a = [0.6 0.6]; % saturation level of functional response
+a = [0.4 0.435]; % saturation level of functional response
 h = [0.3 0.3]; % half-saturation densities
 q = [1.0 1.0]; % negative effects of species i from costs to provide for species j
-b = [0.2 0.2]; % saturation level of resource supply
+b = [0.3 0]; % b(2) = 0 makes this a uni-directional interaction
 e = [0.3 0.3]; % half-saturation constant
 d = [0.01 0.01]; % density-dependent self-limitation
 
