@@ -6,11 +6,11 @@ tspan = [0, 10];
 r_p = 0.3;
 r_f = [0.30 0.30];
 alpha_pf = [0.5 0.5];
-alpha_fp = [0.2 0.5];
+alpha_fp = [0.5 0.5];
 q1 = 1.0;
 q2 = 1.0;
-beta1 = 0.25;
-beta2 = [0.25 0.25];
+beta1 = 0.0;
+beta2 = [0.0 0.0];
 c1 = 1.0;
 c2 = 1.0;
 d_p = 0.1;
@@ -19,8 +19,8 @@ h1 = [0.3 0.3];
 h2 = [0.3 0.3];
 e1 = 0.3;
 e2 = [0.3 0.3];
-dep_p = 0.2;
-dep_f = [0.5 0.5];
+dep_p = 0.0;
+dep_f = [0.8 0.9];
 
 %% Initialize parameters
 lowval = 1e-9;
@@ -178,7 +178,7 @@ nlow(n_P>=ncrit) = NaN;
 n_P(n_P<ncrit) = NaN;
 hold on
 for i = 1:11
-     plot3(xx(i,:),tt(i,:),n_P(i,:),'b');
+     plot3(xx(i,:),tt(i,:),n_P(i,:),'r');
      plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
      grid on
 end
@@ -189,18 +189,15 @@ plot3(xright_P(1:11),0:10,ncrit*ones(1,11),'k');
     zlabel('species P density (n_P)');
     title('Species P');
     view(30,30);
-hold off
 
 %% Figure for species F1
-figure(2);
-clf
 [xx,tt] = meshgrid(x,0:iterations);
 nlow = n_F1;
 nlow(n_F1>=ncrit) = NaN;
 n_F1(n_F1<ncrit) = NaN;
 hold on
 for i = 1:11
-     plot3(xx(i,:),tt(i,:),n_F1(i,:),'b');
+     plot3(xx(i,:),tt(i,:),n_F1(i,:),'g');
      plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
      grid on
 end
@@ -211,11 +208,8 @@ plot3(xright_F1(1:11),0:10,ncrit*ones(1,11),'k');
     zlabel('species F1 density (n_F1)');
     view(30,30);
     title('Species F1');
-hold off
 
 %% Figure for species F2
-figure(3);
-clf
 [xx,tt] = meshgrid(x,0:iterations);
 nlow = n_F2;
 nlow(n_F2>=ncrit) = NaN;
