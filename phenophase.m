@@ -21,12 +21,13 @@ e1 = 0.3;
 e2 = [0.3 0.3];
 dep_p = 0.0;
 dep_f = [0.4 0.9];
-
+comp_12 = 1.0;
+comp_21 = 4.0;
 
 ystart = [P(:).'; F1(:).'; F2(:).'];
 ystart = reshape(ystart, 3*length(ystart), 1);
 
-dy = odephenotypes(0, ystart, r_p, r_f, alpha_pf, alpha_fp, q1, q2, beta1, beta2, c1, c2, d_p, d_f, h1, h2, e1, e2, length(P(:).'), dep_p, dep_f);
+dy = odephenotypes(0, ystart, r_p, r_f, alpha_pf, alpha_fp, q1, q2, beta1, beta2, c1, c2, d_p, d_f, h1, h2, e1, e2, length(P(:).'), dep_p, dep_f, comp_12, comp_21);
 
 dP = reshape(dy((1:3:end),:), length(P), length(P), length(P));
 dF1 = reshape(dy((2:3:end),:), length(P), length(P), length(P));

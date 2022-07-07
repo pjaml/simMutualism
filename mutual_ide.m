@@ -21,6 +21,8 @@ e1 = 0.3;
 e2 = [0.3 0.3];
 dep_p = 0.0;
 dep_f = [0.5 0.9];
+comp_12 = 0.4;
+comp_21 = 2.3;
 
 %% Initialize parameters
 lowval = 1e-9;
@@ -89,7 +91,7 @@ for i = 1:iterations
     %Growth
     y0 = [n_P(i,:);n_F1(i,:);n_F2(i,:)];
     y0 = reshape(y0, 3*length(y0), 1); % reshape happens such that pairs of n_P and n_F values are located in adjacent rows to each other
-    [t,y] = ode45(@(t,y) odephenotypes(t,y,r_p,r_f,alpha_pf,alpha_fp,q1,q2,beta1,beta2,c1,c2,d_p,d_f,h1,h2,e1,e2,nodes,dep_p,dep_f), tspan, y0); %remember to alter where the dep_p and dep_f are being called from
+    [t,y] = ode45(@(t,y) odephenotypes(t,y,r_p,r_f,alpha_pf,alpha_fp,q1,q2,beta1,beta2,c1,c2,d_p,d_f,h1,h2,e1,e2,nodes,dep_p,dep_f, comp_12, comp_21), tspan, y0); %remember to alter where the dep_p and dep_f are being called from
     f_P = y(end,(1:3:end));
     f_F1 = y(end,(2:3:end));
     f_F2 = y(end,(3:3:end));

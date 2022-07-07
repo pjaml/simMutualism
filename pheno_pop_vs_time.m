@@ -25,7 +25,7 @@ dep_f = [0.4 0.9];
 
 nodes = 1;
 
-[t,y] = ode45(@(t,y) odephenotypes(t,y,r_p,r_f,alpha_pf,alpha_fp,q1,q2,beta1,beta2,c1,c2,d_p,d_f,h1,h2,e1,e2,nodes,dep_p,dep_f), tspan, initpop);
+[t,y] = ode45(@(t,y) odephenotypes(t,y,r_p,r_f,alpha_pf,alpha_fp,q1,q2,beta1,beta2,c1,c2,d_p,d_f,h1,h2,e1,e2,nodes,dep_p,dep_f, comp_12, comp_21), tspan, initpop);
 
 P = y(:,1);
 F1 = y(:,2);
