@@ -4,7 +4,7 @@ popRange = 0.0:0.5:maxpop;
 [P, F1, F2] = meshgrid(popRange);
 
 r_p = 0.3;
-r_f = [0.50 0.30];
+r_f = [0.30 0.30];
 alpha_pf = [0.5 0.5];
 alpha_fp = [0.5 0.5];
 q1 = 1.0;

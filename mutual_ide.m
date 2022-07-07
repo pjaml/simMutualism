@@ -20,7 +20,7 @@ h2 = [0.3 0.3];
 e1 = 0.3;
 e2 = [0.3 0.3];
 dep_p = 0.0;
-dep_f = [0.8 0.9];
+dep_f = [0.5 0.9];
 
 %% Initialize parameters
 lowval = 1e-9;
@@ -169,62 +169,17 @@ for i = 1:iterations
 
 end
 
-%% Figure for species P
-figure(1);
+save(strcat(['simple_pheno_model/simple_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '.mat']));
+
 clf
-[xx,tt] = meshgrid(x,0:iterations);
-nlow = n_P;
-nlow(n_P>=ncrit) = NaN;
-n_P(n_P<ncrit) = NaN;
 hold on
-for i = 1:11
-     plot3(xx(i,:),tt(i,:),n_P(i,:),'r');
-     plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
-     grid on
-end
-plot3(xright_P(1:11),0:10,ncrit*ones(1,11),'k');
-    axis([-15 15 0 10 0 5]);
-    xlabel('space (x)');
-    ylabel('time (t)');
-    zlabel('species P density (n_P)');
-    title('Species P');
-    view(30,30);
-
-%% Figure for species F1
-[xx,tt] = meshgrid(x,0:iterations);
-nlow = n_F1;
-nlow(n_F1>=ncrit) = NaN;
-n_F1(n_F1<ncrit) = NaN;
-hold on
-for i = 1:11
-     plot3(xx(i,:),tt(i,:),n_F1(i,:),'g');
-     plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
-     grid on
-end
-plot3(xright_F1(1:11),0:10,ncrit*ones(1,11),'k');
-    axis([-15 15 0 10 0 5]);
-    xlabel('space (x)');
-    ylabel('time (t)');
-    zlabel('species F1 density (n_F1)');
-    view(30,30);
-    title('Species F1');
-
-%% Figure for species F2
-[xx,tt] = meshgrid(x,0:iterations);
-nlow = n_F2;
-nlow(n_F2>=ncrit) = NaN;
-n_F2(n_F2<ncrit) = NaN;
-hold on
-for i = 1:11
-     plot3(xx(i,:),tt(i,:),n_F2(i,:),'b');
-     plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
-     grid on
-end
-plot3(xright_F2(1:11),0:10,ncrit*ones(1,11),'k');
-    axis([-15 15 0 10 0 5]);
-    xlabel('space (x)');
-    ylabel('time (t)');
-    zlabel('species F2 density (n_F2)');
-    view(30,30);
-    title('Species F2');
+plot(n_P(end,:));
+plot(n_F1(end,:));
+plot(n_F2(end,:));
+legend('P', 'F1', 'F2');
 hold off
+
+savefig(strcat(['simple_pheno_model/simple_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '.fig']));
+
+
+saveas(gcf, strcat(['simple_pheno_model/simple_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '.png']));

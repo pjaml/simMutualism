@@ -28,7 +28,7 @@ h2 = [0.3 0.3];
 e1 = 0.3;
 e2 = [0.3 0.3];
 dep_p = 0.0;
-dep_f = [0.8 0.9];
+dep_f = [0.5 0.9];
 
 #+end_src
 
@@ -196,7 +196,10 @@ end
 
 ** 3D density vs. space vs. time plots
 
-#+begin_src matlab :tangle mutual_ide.m
+
+#+begin_src matlab :tangle no
+% #+begin_src matlab :tangle mutual_ide.m
+
 
 %% Figure for species P
 figure(1);
@@ -215,8 +218,8 @@ plot3(xright_P(1:11),0:10,ncrit*ones(1,11),'k');
     axis([-15 15 0 10 0 5]);
     xlabel('space (x)');
     ylabel('time (t)');
-    zlabel('species P density (n_P)');
-    title('Species P');
+    zlabel('density');
+    % title('Species P');
     view(30,30);
 
 %% Figure for species F1
@@ -231,12 +234,12 @@ for i = 1:11
      grid on
 end
 plot3(xright_F1(1:11),0:10,ncrit*ones(1,11),'k');
-    axis([-15 15 0 10 0 5]);
-    xlabel('space (x)');
-    ylabel('time (t)');
-    zlabel('species F1 density (n_F1)');
-    view(30,30);
-    title('Species F1');
+    % axis([-15 15 0 10 0 5]);
+    % xlabel('space (x)');
+    % ylabel('time (t)');
+    % zlabel('species F1 density (n_F1)');
+    % view(30,30);
+    % title('Species F1');
 
 %% Figure for species F2
 [xx,tt] = meshgrid(x,0:iterations);
@@ -250,13 +253,100 @@ for i = 1:11
      grid on
 end
 plot3(xright_F2(1:11),0:10,ncrit*ones(1,11),'k');
-    axis([-15 15 0 10 0 5]);
-    xlabel('space (x)');
-    ylabel('time (t)');
-    zlabel('species F2 density (n_F2)');
-    view(30,30);
-    title('Species F2');
+    % axis([-15 15 0 10 0 5]);
+    % xlabel('space (x)');
+    % ylabel('time (t)');
+    % zlabel('species F2 density (n_F2)');
+    % view(30,30);
+    % title('Species F2');
 hold off
+
+#+end_src
+
+** Speed vs. time
+
+#+begin_src matlab :tangle no
+
+plot(1:iterations, speed_inst_P, 1:iterations, speed_inst_F1, 1:iterations, speed_inst_F2);
+xlabel('iterations');
+ylabel('speed');
+
+#+end_src
+
+** N spatial distribution
+
+Three save functions are called:
+- =save()= saves the current parameter values in a =.mat= file (with relevant parameter values in the filename)
+- =savefig()= saves the matlab figure so we can easily view and manipulate it in matlab
+- =saveas()= saves the figure as a PNG
+
+All files are saved into the =simple_pheno_model= subdirectory.
+
+#+begin_src matlab :tangle mutual_ide.m
+
+save(strcat(['simple_pheno_model/simple_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '.mat']));
+
+clf
+hold on
+plot(n_P(end,:));
+plot(n_F1(end,:));
+plot(n_F2(end,:));
+legend('P', 'F1', 'F2');
+hold off
+
+savefig(strcat(['simple_pheno_model/simple_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '.fig']));
+
+
+saveas(gcf, strcat(['simple_pheno_model/simple_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '.png']));
+
+
+
+#+end_src
+
+** Populations vs. time plot (=pheno_pop_vs_time.m=)
+
+#+begin_src matlab :tangle pheno_pop_vs_time.m
+
+% time span
+tspan = 0.0:0.1:100.0;
+
+% initial populations
+initpop = [2.0; 2.0; 2.0];
+
+r_p = 0.3;
+r_f = [0.30 0.30];
+alpha_pf = [0.5 0.5];
+alpha_fp = [0.5 0.5];
+q1 = 1.0;
+q2 = 1.0;
+beta1 = 0.0;
+beta2 = [0.0 0.0];
+c1 = 1.0;
+c2 = 1.0;
+d_p = 0.1;
+d_f = [0.1 0.1];
+h1 = [0.3 0.3];
+h2 = [0.3 0.3];
+e1 = 0.3;
+e2 = [0.3 0.3];
+dep_p = 0.0;
+dep_f = [0.4 0.9];
+
+nodes = 1;
+
+[t,y] = ode45(@(t,y) odephenotypes(t,y,r_p,r_f,alpha_pf,alpha_fp,q1,q2,beta1,beta2,c1,c2,d_p,d_f,h1,h2,e1,e2,nodes,dep_p,dep_f), tspan, initpop);
+
+P = y(:,1);
+F1 = y(:,2);
+F2 = y(:,3);
+
+% generate plot
+figure;
+plot(t, [P, F1, F2]);
+legend('P', 'F1', 'F2');
+xlabel('time');
+ylabel('population')
+
 
 #+end_src
 
@@ -269,7 +359,7 @@ plot(t, n_P, t, n_F1, t, n_F2)
 
 #+end_src
 
-** Phase space plot
+** Phase space plot - P vs. F1 vs. F2 (=phenophase.m=)
 
 In the two-species mutualism model, we took a range of possible starting population values (this is what we passed to the =meshgrid()= function to generate a matrix for each species). We then sent these matrices to our ODE function, which returned the growth rates for each combination of starting population values—this is how we got our vector field arrows.
 
@@ -285,7 +375,7 @@ popRange = 0.0:0.5:maxpop;
 [P, F1, F2] = meshgrid(popRange);
 
 r_p = 0.3;
-r_f = [0.50 0.30];
+r_f = [0.30 0.30];
 alpha_pf = [0.5 0.5];
 alpha_fp = [0.5 0.5];
 q1 = 1.0;
