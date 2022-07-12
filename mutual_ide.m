@@ -1,7 +1,8 @@
+clearvars
 clc
 %% original function parameters
 
-iterations = 30;
+iterations = 60;
 tspan = [0, 10];
 r_p = 0.3;
 r_f = [0.30 0.30];
@@ -20,9 +21,9 @@ h2 = [0.3 0.3];
 e1 = 0.3;
 e2 = [0.3 0.3];
 dep_p = 0.0;
-dep_f = [0.5 0.9];
-comp_12 = 0.4;
-comp_21 = 2.3;
+dep_f = [0.9 0.1];
+comp_12 = 0.03;
+comp_21 = 0.01;
 
 %% Initialize parameters
 lowval = 1e-9;
@@ -87,7 +88,7 @@ end
 % end
 
 %% Looping for growth and dispersal
-for i = 1:iterations
+for i = 1:500
     %Growth
     y0 = [n_P(i,:);n_F1(i,:);n_F2(i,:)];
     y0 = reshape(y0, 3*length(y0), 1); % reshape happens such that pairs of n_P and n_F values are located in adjacent rows to each other
@@ -147,7 +148,7 @@ for i = 1:iterations
 
 %6 Lines below are for studying spatial spread with census after growth
 %     if f_jj_P
-%          xright_P(i+1) = interp1(f_P_all(i+1,f_jj_P:f_jj_P+1),x(f_jj_P:f_jj_P+1),ncrit);
+%        ;  xright_P(i+1) = interp1(f_P_all(i+1,f_jj_P:f_jj_P+1),x(f_jj_P:f_jj_P+1),ncrit);
 %     end
 %
 %     if f_jj_F
@@ -169,9 +170,43 @@ for i = 1:iterations
     %save(strcat(['mandm_yescost_depP=' num2str(dep_p) '_depF=' num2str(dep_f) '.mat']))
     %save mandm_nocost_yesdep.mat
 
+    %% Adds further iterations if steady states are not reached
+    if (i == iterations)
+        tol = 1e-04;
+        if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
+
+            if iterations > 400
+                iterations = 500;
+            else
+                iterations = iterations + 20;
+            end
+
+            % extend the sizes of the relevant vectors & matrices
+            [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
+            [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
+
+            [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
+        else
+            break
+        end
+    end
+
+
 end
 
+%% Save a mat file with the current parameter values
 save(strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.mat']));
+
+clf
+plot(1:iterations, speed_inst_P, 1:iterations, speed_inst_F1, 1:iterations, speed_inst_F2);
+legend('P', 'F1', 'F2');
+title(strcat(['Spread speed vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+xlabel('iterations');
+ylabel('speed');
+
+savefig(strcat(['comp_pheno_model/speed_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));
+
+% #+begin_src matlab :tangle no
 
 clf
 hold on
@@ -179,9 +214,26 @@ plot(n_P(end,:));
 plot(n_F1(end,:));
 plot(n_F2(end,:));
 legend('P', 'F1', 'F2');
+title(strcat(['N vs. x (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
 hold off
 
-savefig(strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));
+savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));
 
+% Save a PNG file
+% saveas(gcf, strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.png']));
 
-saveas(gcf, strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.png']));
+for i = 1:iterations+1
+
+    rangeP(i) = length(find(n_P(i,:) >= ncrit));
+    rangeF1(i) = length(find(n_F1(i,:) >= ncrit));
+    rangeF2(i) = length(find(n_F2(i,:) >= ncrit));
+end
+
+clf
+plot(1:iterations+1, [rangeP; rangeF1; rangeF2]);
+xlabel('iterations');
+ylabel('range size');
+title(strcat(['Range size vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+legend('P', 'F1', 'F2');
+
+savefig(strcat(['comp_pheno_model/range_size_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));

@@ -36,4 +36,4 @@ figure;
 plot(t, [P, F1, F2]);
 legend('P', 'F1', 'F2');
 xlabel('time');
-ylabel('population')
+ylabel('population');
