@@ -2,7 +2,7 @@ clearvars
 clc
 %% original function parameters
 
-iterations = 60;
+iterations = 450;
 tspan = [0, 10];
 r_p = 0.3;
 r_f = [0.30 0.30];
@@ -22,8 +22,11 @@ e1 = 0.3;
 e2 = [0.3 0.3];
 dep_p = 0.0;
 dep_f = [0.9 0.1];
-comp_12 = 0.03;
-comp_21 = 0.01;
+comp_12 = 0.19;
+comp_21 = 0.06;
+
+% format spec for floating point values in filenames
+fspec = '%.2f';
 
 %% Initialize parameters
 lowval = 1e-9;
@@ -195,16 +198,7 @@ for i = 1:500
 end
 
 %% Save a mat file with the current parameter values
-save(strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.mat']));
-
-clf
-plot(1:iterations, speed_inst_P, 1:iterations, speed_inst_F1, 1:iterations, speed_inst_F2);
-legend('P', 'F1', 'F2');
-title(strcat(['Spread speed vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
-xlabel('iterations');
-ylabel('speed');
-
-savefig(strcat(['comp_pheno_model/speed_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));
+save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.mat']));
 
 % #+begin_src matlab :tangle no
 
@@ -217,23 +211,7 @@ legend('P', 'F1', 'F2');
 title(strcat(['N vs. x (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
 hold off
 
-savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));
+savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
 
 % Save a PNG file
-% saveas(gcf, strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.png']));
-
-for i = 1:iterations+1
-
-    rangeP(i) = length(find(n_P(i,:) >= ncrit));
-    rangeF1(i) = length(find(n_F1(i,:) >= ncrit));
-    rangeF2(i) = length(find(n_F2(i,:) >= ncrit));
-end
-
-clf
-plot(1:iterations+1, [rangeP; rangeF1; rangeF2]);
-xlabel('iterations');
-ylabel('range size');
-title(strcat(['Range size vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
-legend('P', 'F1', 'F2');
-
-savefig(strcat(['comp_pheno_model/range_size_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));
+% saveas(gcf, strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.png']));

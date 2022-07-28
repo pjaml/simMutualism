@@ -3,7 +3,7 @@ close all;
 clc;
 %% original function parameters
 
-iterations = 60;
+iterations = 120;
 tspan = [0, 10];
 r_p = 0.30;
 r_f = [0.30 0.30];
@@ -25,6 +25,9 @@ dep_p = 0.0;
 dep_f = [0.9 0.1];
 comp_12 = 0.03;
 comp_21 = 0.01;
+
+% format spec for floating point values in filenames
+fSpec = '%.2f';
 
 %% Initialize parameters
 lowval = 1e-9;
@@ -204,7 +207,7 @@ for i = 1:iterations+1
 end
 
 %% Save a mat file with the current parameter values
-save(strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.mat']));
+save(strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fSpec) '_comp_21=' num2str(comp_21, fSpec) '.mat']));
 
 
 %% Plot N vs. x (space) at steady state
@@ -217,7 +220,10 @@ legend('P', 'F1', 'F2');
 title(strcat(['N vs. x (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
 hold off;
 
-savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));
+savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fSpec) '_comp_21=' num2str(comp_21, fSpec) '.fig']));
+
+% Save a PNG file
+saveas(gcf, strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fSpec) '_comp_21=' num2str(comp_21, fSpec) '.png']));
 
 
 
@@ -229,8 +235,10 @@ title(strcat(['Spread speed vs. time (tau21=' num2str(comp_21) ', tau12=' num2st
 xlabel('iterations');
 ylabel('speed');
 
-savefig(strcat(['comp_pheno_model/speed_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));
+savefig(strcat(['comp_pheno_model/speed_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fSpec) '_comp_21=' num2str(comp_21, fSpec) '.fig']));
 
+% Save a PNG file
+saveas(gcf, strcat(['comp_pheno_model/speed_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fSpec) '_comp_21=' num2str(comp_21, fSpec) '.png']));
 
 %% Plot the range sizes for each species over iterations
 
@@ -241,4 +249,7 @@ ylabel('range size');
 title(strcat(['Range size vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
 legend('P', 'F1', 'F2');
 
-savefig(strcat(['comp_pheno_model/range_size_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12) '_comp_21=' num2str(comp_21) '.fig']));
+savefig(strcat(['comp_pheno_model/range_size_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fSpec) '_comp_21=' num2str(comp_21, fSpec) '.fig']));
+
+% Save a PNG file
+saveas(gcf, strcat(['comp_pheno_model/range_size_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fSpec) '_comp_21=' num2str(comp_21, fSpec) '.png']));
