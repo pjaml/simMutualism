@@ -6,7 +6,7 @@
 #SBATCH --mail-type=NONE
 #SBATCH --mail-user=lutzx119@umn.edu
 
-BASEDIR=~
+BASEDIR=~/sweep
 module load matlab
 matlab -nodisplay -nodesktop -nosplash -r "maxNumCompThreads(1)"<$BASEDIR/m_files/mcm_comp21=0.40_comp12=0.40.m
 

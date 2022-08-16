@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASEDIR=~
+BASEDIR=~/sweep
 
 ORIGFILE=$BASEDIR/mutual_comp_model.m
 JOBSCRIPT=$BASEDIR/tau_jobscript.sh

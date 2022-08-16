@@ -359,8 +359,7 @@ hold off
 
 ** Speed vs. time
 
-#+begin_src matlab :tangle no
-%#+begin_src matlab :tangle mutual_ide.m
+#+begin_src matlab :tangle mutual_ide.m
 
 
 clf
@@ -381,8 +380,7 @@ Three save functions are called:
 - =savefig()= saves the matlab figure so we can easily view and manipulate it in matlab
 - =saveas()= saves the figure as a PNG
 
-#+begin_src matlab :tangle no
-% #+begin_src matlab :tangle mutual_ide.m
+ #+begin_src matlab :tangle mutual_ide.m
 
 clf
 hold on
@@ -408,8 +406,7 @@ In order to obtain the range of a species at a given time, you could find all th
 
 Does range size need to be contiguous? In other words, if F1 is only present at the edges, could you total its ranges at each edge and call that its "range size"?
 
-#+begin_src matlab :tangle no
-%#+begin_src matlab :tangle mutual_ide.m
+#+begin_src matlab :tangle mutual_ide.m
 
 for i = 1:iterations+1
 
@@ -473,15 +470,6 @@ legend('P', 'F1', 'F2');
 xlabel('time');
 ylabel('population');
 
-
-#+end_src
-
-** Density vs. time plots
-
-#+begin_src matlab :tangle no
-
-t= 0:iterations;
-plot(t, n_P, t, n_F1, t, n_F2)
 
 #+end_src
 
@@ -595,11 +583,11 @@ ylabel('tau_{21}');
 
 ** Sweep script
 
-#+begin_src shell :tangle tau_sweep.sh
+#+begin_src shell :tangle sweep/tau_sweep.sh
 
 #!/bin/bash
 
-BASEDIR=~
+BASEDIR=~/sweep
 
 ORIGFILE=$BASEDIR/mutual_comp_model.m
 JOBSCRIPT=$BASEDIR/tau_jobscript.sh
@@ -659,7 +647,7 @@ done
 
 Note that the $SBATCH lines *must* be at the top of the script. Anything before that will break Slurm.
 
-#+begin_src shell :tangle tau_jobscript.sh
+#+begin_src shell :tangle sweep/tau_jobscript.sh
 
 #!/bin/bash -l
 #SBATCH --time=24:00:00
@@ -669,7 +657,7 @@ Note that the $SBATCH lines *must* be at the top of the script. Anything before 
 #SBATCH --mail-type=NONE
 #SBATCH --mail-user=lutzx119@umn.edu
 
-BASEDIR=~
+BASEDIR=~/sweep
 module load matlab
 matlab -nodisplay -nodesktop -nosplash -r "maxNumCompThreads(1)"<$BASEDIR/m_files/mcm_comp21=0.40_comp12=0.40.m
 

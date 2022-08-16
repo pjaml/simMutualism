@@ -3,7 +3,7 @@ close all;
 clc;
 %% original function parameters
 
-iterations = 1000;
+iterations = 300;
 tspan = [0, 10];
 r_p = 0.30;
 r_f = [0.30 0.30];

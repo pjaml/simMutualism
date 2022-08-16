@@ -11,7 +11,13 @@ dydt(1,:) = P.*((1-dep_p)*r1 + dep_p * (c1*((alpha12(1).*F1)./(h2(1)+F1) + (alph
 
 dydt(2,:) = F1.*((1-dep_f(1))*r2(1) + c2 *(dep_f(1)*(alpha21(1).*P)./(h1(1)+P))-q2*(dep_p*((beta2(1).*P)./(e2(1)+F1))) -(comp_12.*F2) -(d2(1).*F1));
 
+% Testing no negative effect of dependence on intrinsic growth rate
+%dydt(2,:) = F1.*(r2(1) + c2 *(dep_f(1)*(alpha21(1).*P)./(h1(1)+P))-q2*(dep_p*((beta2(1).*P)./(e2(1)+F1))) -(comp_12.*F2) -(d2(1).*F1));
+
 dydt(3,:) = F2.*((1-dep_f(2))*r2(2) + c2 *(dep_f(2)*(alpha21(2).*P)./(h1(2)+P))-q2*(dep_p*((beta2(2).*P)./(e2(2)+F2))) - (comp_21.*F1) -(d2(2).*F2));
+
+% Testing no negative effect of dependence on intrinsic growth rate
+%dydt(3,:) = F2.*(r2(2) + c2 *(dep_f(2)*(alpha21(2).*P)./(h1(2)+P))-q2*(dep_p*((beta2(2).*P)./(e2(2)+F2))) - (comp_21.*F1) -(d2(2).*F2));
 
 dydt = reshape(dydt,3*nodes,1);
 end
