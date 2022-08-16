@@ -1,6 +1,16 @@
-# Competition parameter sweep
+# Mutualism Project Summer 2022
 
-These scripts simulate different values for the competition parameter for species $F_1$ and $F_2$. Plots are generated for population density across space when populations reach a steady state, change in a species' range over generations, and change in spread speed over generations. 
+## Overview
+
+The `sweep` directory contains the necessary files to run a parameter sweep for competition between species F1 and F2.
+
+The `old` directory contains basic models and plots created in MATLAB; it's just for reference.
+
+The other files are used to generate various plots.
+
+## Competition parameter sweep
+
+These scripts simulate different values for the competition parameter for species F1 and F2. Plots are generated for population density across space when populations reach a steady state, change in a species' range over generations, and change in spread speed over generations. 
 
 Four new directories are created when the script is run:
 
@@ -14,7 +24,7 @@ Four new directories are created when the script is run:
 
 **Note:** To remotely transfer one of these shortcuts directories to a local computer, use `rsync -L` to convert symlinks into actual file locations.
 
-## Run competition parameter sweep
+### Run competition parameter sweep
 
 Copy the `sweep/` directory to the supercomputer where you will run the parameter sweep. 
 
@@ -25,3 +35,7 @@ Be sure to configure the Slurm parameters in the `tau_jobscript.sh` file (the `#
 The scripts assume that `sweep/` is located in the user's home directory. Change `BASEDIR=` in `tau_sweep.sh` and `tau_jobscript.sh` to run from a different location. All generated files will be stored in this directory.
 
 Running the `tau_sweep.sh` script will start the sweep.
+
+## Plotting outcomes of parameter sweep
+
+The `sweep_outcomes.m` file generates a heatmap plot for the parameter sweep, classifying the outcome of each simulation. It assumes the .mat files generated from the sweep are stored in `~/sweep/mat_files/`; change this if the files are stored elsewhere. It also requires the `det_outcome.m` file to run.

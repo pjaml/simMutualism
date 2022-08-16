@@ -19,7 +19,7 @@ mkdir -p $BASEDIR/tau_sweep
 # Loop through all the tau values you want to simulate
 for comp21 in $(seq 0.0 0.01 0.4);
 do
-    for comp12 in $(seq 0.0 0.01 0.4);
+    for comp12 in $(seq 0.13 0.01 0.29);
     do
 
 	# Format the comp12 and comp21 floating point values with the same format spec as the MATLAB files
