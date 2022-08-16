@@ -3,7 +3,7 @@
 #SBATCH --ntasks=16
 #SBATCH --mem=20g
 #SBATCH --tmp=20g
-#SBATCH --mail-type=ALL
+#SBATCH --mail-type=NONE
 #SBATCH --mail-user=lutzx119@umn.edu
 
 BASEDIR=~

@@ -2,7 +2,7 @@ clearvars
 clc
 %% original function parameters
 
-iterations = 450;
+iterations = 60;
 tspan = [0, 10];
 r_p = 0.3;
 r_f = [0.30 0.30];
@@ -22,8 +22,8 @@ e1 = 0.3;
 e2 = [0.3 0.3];
 dep_p = 0.0;
 dep_f = [0.9 0.1];
-comp_12 = 0.19;
-comp_21 = 0.06;
+comp_12 = 0.0;
+comp_21 = 0.0;
 
 % format spec for floating point values in filenames
 fspec = '%.2f';
@@ -91,7 +91,7 @@ end
 % end
 
 %% Looping for growth and dispersal
-for i = 1:500
+for i = 1:iterations
     %Growth
     y0 = [n_P(i,:);n_F1(i,:);n_F2(i,:)];
     y0 = reshape(y0, 3*length(y0), 1); % reshape happens such that pairs of n_P and n_F values are located in adjacent rows to each other
@@ -174,25 +174,25 @@ for i = 1:500
     %save mandm_nocost_yesdep.mat
 
     %% Adds further iterations if steady states are not reached
-    if (i == iterations)
-        tol = 1e-04;
-        if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
+    % if (i == iterations)
+    %     tol = 1e-04;
+    %     if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
 
-            if iterations > 400
-                iterations = 500;
-            else
-                iterations = iterations + 20;
-            end
+    %         if iterations > 400
+    %             iterations = 500;
+    %         else
+    %             iterations = iterations + 20;
+    %         end
 
-            % extend the sizes of the relevant vectors & matrices
-            [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
-            [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
+    %         % extend the sizes of the relevant vectors & matrices
+    %         [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
+    %         [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
 
-            [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
-        else
-            break
-        end
-    end
+    %         [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
+    %     else
+    %         break
+    %     end
+    % end
 
 
 end
@@ -200,18 +200,64 @@ end
 %% Save a mat file with the current parameter values
 save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.mat']));
 
-% #+begin_src matlab :tangle no
-
+%% Figure for species P
+figure(1);
 clf
+[xx,tt] = meshgrid(x,0:iterations);
+nlow = n_P;
+nlow(n_P>=ncrit) = NaN;
+n_P(n_P<ncrit) = NaN;
 hold on
-plot(n_P(end,:));
-plot(n_F1(end,:));
-plot(n_F2(end,:));
-legend('P', 'F1', 'F2');
-title(strcat(['N vs. x (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+for i = 1:5:60
+     plot3(xx(i,:),tt(i,:),n_P(i,:),'b', 'LineWidth', 3.0);
+     plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
+     grid on
+end
+% plot3(xright_P(1:11),0:10,ncrit*ones(1,11),'k');
+    axis([-120 120 0 iterations 0 6.25]);
+    xlabel('space (x)');
+    ylabel('time (t)');
+    zlabel('density');
+    % title('Species P');
+    view(30,30);
+
+%% Figure for species F1
+[xx,tt] = meshgrid(x,0:iterations);
+nlow = n_F1;
+nlow(n_F1>=ncrit) = NaN;
+n_F1(n_F1<ncrit) = NaN;
+hold on
+for i = 1:5:60
+     plot3(xx(i,:),tt(i,:),n_F1(i,:),'r','LineWidth', 3.0);
+     plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
+     grid on
+end
+
+% plot3(xright_F1(1:11),0:10,ncrit*ones(1,11),'k');
+    % axis([-15 15 0 10 0 5]);
+    % xlabel('space (x)');
+    % ylabel('time (t)');
+    % zlabel('species F1 density (n_F1)');
+    % view(30,30);
+    % title('Species F1');
+
+%% Figure for species F2
+[xx,tt] = meshgrid(x,0:iterations);
+nlow = n_F2;
+nlow(n_F2>=ncrit) = NaN;
+n_F2(n_F2<ncrit) = NaN;
+hold on
+for i = 1:5:60
+     plot3(xx(i,:),tt(i,:),n_F2(i,:),'g', 'LineWidth', 3.0);
+     plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
+     grid on
+end
+
+% plot3(xright_F2(1:11),0:100,ncrit*ones(1,11),'k');
+    % axis([-15 15 0 10 0 5]);
+    % xlabel('space (x)');
+    % ylabel('time (t)');
+    % zlabel('species F2 density (n_F2)');
+    % view(30,30);
+    % title('Species F2');
 hold off
-
-savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
-
-% Save a PNG file
-% saveas(gcf, strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.png']));

@@ -10,7 +10,7 @@ clearvars
 clc
 %% original function parameters
 
-iterations = 450;
+iterations = 60;
 tspan = [0, 10];
 r_p = 0.3;
 r_f = [0.30 0.30];
@@ -30,8 +30,8 @@ e1 = 0.3;
 e2 = [0.3 0.3];
 dep_p = 0.0;
 dep_f = [0.9 0.1];
-comp_12 = 0.19;
-comp_21 = 0.06;
+comp_12 = 0.0;
+comp_21 = 0.0;
 
 % format spec for floating point values in filenames
 fspec = '%.2f';
@@ -110,7 +110,7 @@ end
 #+begin_src matlab :tangle mutual_ide.m
 
 %% Looping for growth and dispersal
-for i = 1:500
+for i = 1:iterations
     %Growth
     y0 = [n_P(i,:);n_F1(i,:);n_F2(i,:)];
     y0 = reshape(y0, 3*length(y0), 1); % reshape happens such that pairs of n_P and n_F values are located in adjacent rows to each other
@@ -193,25 +193,25 @@ for i = 1:500
     %save mandm_nocost_yesdep.mat
 
     %% Adds further iterations if steady states are not reached
-    if (i == iterations)
-        tol = 1e-04;
-        if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
+    % if (i == iterations)
+    %     tol = 1e-04;
+    %     if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
 
-            if iterations > 400
-                iterations = 500;
-            else
-                iterations = iterations + 20;
-            end
+    %         if iterations > 400
+    %             iterations = 500;
+    %         else
+    %             iterations = iterations + 20;
+    %         end
 
-            % extend the sizes of the relevant vectors & matrices
-            [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
-            [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
+    %         % extend the sizes of the relevant vectors & matrices
+    %         [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
+    %         [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
 
-            [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
-        else
-            break
-        end
-    end
+    %         [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
+    %     else
+    %         break
+    %     end
+    % end
 
 
 end
@@ -226,17 +226,20 @@ save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' 
 #+begin_src matlab :tangle det_outcome.m
 
 %% Function to classify outcome of a given simulation
-function outcome = det_outcome(n_F1, n_F2, ncrit)
+function outcome = det_outcome(n_P, n_F1, n_F2, ncrit)
 
     % get the final population densities of P, F1, and F2
+    fin_P = n_P(end,:);
     fin_F1 = n_F1(end,:);
     fin_F2 = n_F2(end,:);
 
     % get the ranges where F1 and F2 populations are above the threshold
+    rangeP = find(fin_P >= ncrit);
     rangeF1 = find(fin_F1 >= ncrit);
     rangeF2 = find(fin_F2 >= ncrit);
 
-    max_range = max(size(rangeF1), size(rangeF2));
+    max_range = max(length(rangeF1), length(rangeF2));
+    % max_range = size(rangeP);
 
     % if F2 is below the threshold across the total range, then classify as
     % F1 dominance
@@ -248,19 +251,36 @@ function outcome = det_outcome(n_F1, n_F2, ncrit)
     elseif isempty(rangeF1)
         outcome = 2; % F2 dominance
 
-    elseif abs(size(rangeF1)/max_range - (size(rangeF2)/max_range)) >= 0.95
+    % elseif length(rangeF1)/max_range >= 0.95 & length(rangeF2)/max_range >= 0.95
+
+    % find the range of values in rangeF1 or rangeF2 but not both
+    % if the proportion of this range over the total range is less than
+    % the arbitrary value 0.05, we call it local coexistence
+    elseif length(setxor(rangeF1, rangeF2))/max_range < 0.05
         outcome = 3; % Local coexistence
 
     % if F1 is above threshold and F2 is below threshold or F2 is above
     % threshold and F1 is below threshold
-    elseif isempty(find(fin_F2(setxor(rangeF1, rangeF2)) >= ncrit))
-        outcome = 4; % Local coexistence + F1 dominance
 
-    elseif isempty(find(fin_F1(setxor(rangeF1, rangeF2)) >= ncrit))
+    % elseif isempty(find(fin_F2(setxor(rangeF1, rangeF2)) >= ncrit))
+
+    % we find at least some F1 dominance
+    elseif not(isempty(intersect(rangeF1, setxor(rangeF1, rangeF2))))
+
+        % we find at least some F2 dominance
+        if not(isempty(intersect(rangeF2, setxor(rangeF1, rangeF2))))
+            outcome = 6; % regional coexistence
+
+        % no F2 dominance
+        else
+            outcome = 4; % Local coexistence + F1 dominance
+        end
+
+    elseif not(isempty(intersect(rangeF2, setxor(rangeF1, rangeF2))))
         outcome = 5; % Local coexistence + F2 dominance
 
     else
-        outcome = 6; % regional coexistence
+        outcome = 7; % unknown
     end
 end
 #+end_src
@@ -270,8 +290,7 @@ end
 ** 3D density vs. space vs. time plots
 
 
-#+begin_src matlab :tangle no
-% #+begin_src matlab :tangle mutual_ide.m
+#+begin_src matlab :tangle mutual_ide.m
 
 
 %% Figure for species P
@@ -282,8 +301,8 @@ nlow = n_P;
 nlow(n_P>=ncrit) = NaN;
 n_P(n_P<ncrit) = NaN;
 hold on
-for i = 1:2:20
-     plot3(xx(i,:),tt(i,:),n_P(i,:),'r');
+for i = 1:5:60
+     plot3(xx(i,:),tt(i,:),n_P(i,:),'b', 'LineWidth', 3.0);
      plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
      grid on
 end
@@ -301,8 +320,8 @@ nlow = n_F1;
 nlow(n_F1>=ncrit) = NaN;
 n_F1(n_F1<ncrit) = NaN;
 hold on
-for i = 1:2:20
-     plot3(xx(i,:),tt(i,:),n_F1(i,:),'g');
+for i = 1:5:60
+     plot3(xx(i,:),tt(i,:),n_F1(i,:),'r','LineWidth', 3.0);
      plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
      grid on
 end
@@ -321,11 +340,12 @@ nlow = n_F2;
 nlow(n_F2>=ncrit) = NaN;
 n_F2(n_F2<ncrit) = NaN;
 hold on
-for i = 1:2:20
-     plot3(xx(i,:),tt(i,:),n_F2(i,:),'b');
+for i = 1:5:60
+     plot3(xx(i,:),tt(i,:),n_F2(i,:),'g', 'LineWidth', 3.0);
      plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
      grid on
 end
+
 % plot3(xright_F2(1:11),0:100,ncrit*ones(1,11),'k');
     % axis([-15 15 0 10 0 5]);
     % xlabel('space (x)');
@@ -361,8 +381,8 @@ Three save functions are called:
 - =savefig()= saves the matlab figure so we can easily view and manipulate it in matlab
 - =saveas()= saves the figure as a PNG
 
-#+begin_src matlab :tangle mutual_ide.m
-% #+begin_src matlab :tangle no
+#+begin_src matlab :tangle no
+% #+begin_src matlab :tangle mutual_ide.m
 
 clf
 hold on
@@ -557,9 +577,9 @@ outcomes = zeros(length(tau_12_list), length(tau_21_list));
 for ii = 1:length(tau_12_list)
     for jj = 1:length(tau_21_list)
 
-        load(strcat(['~/sweep2/mat_files/comp_pheno_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=' num2str(tau_12_list(ii), fspec) '_comp_21=' num2str(tau_21_list(jj), fspec) '.mat']));
+        load(strcat(['~/sweep2/new_mat/comp_pheno_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=' num2str(tau_12_list(ii), fspec) '_comp_21=' num2str(tau_21_list(jj), fspec) '.mat']));
 
-        outcomes(ii,jj) = det_outcome(n_F1, n_F2, 0.05);
+        outcomes(ii,jj) = det_outcome(n_P, n_F1, n_F2, 0.05);
 
     end
 end
@@ -598,7 +618,7 @@ mkdir -p $BASEDIR/tau_sweep
 # Loop through all the tau values you want to simulate
 for comp21 in $(seq 0.0 0.01 0.4);
 do
-    for comp12 in $(seq 0.0 0.01 0.4);
+    for comp12 in $(seq 0.13 0.01 0.29);
     do
 
 	# Format the comp12 and comp21 floating point values with the same format spec as the MATLAB files
@@ -646,7 +666,7 @@ Note that the $SBATCH lines *must* be at the top of the script. Anything before 
 #SBATCH --ntasks=16
 #SBATCH --mem=20g
 #SBATCH --tmp=20g
-#SBATCH --mail-type=ALL
+#SBATCH --mail-type=NONE
 #SBATCH --mail-user=lutzx119@umn.edu
 
 BASEDIR=~
@@ -710,7 +730,7 @@ dydt(1,:) = P.*((1-dep_p)*r1 + dep_p * (c1*((alpha12(1).*F1)./(h2(1)+F1) + (alph
 ** Species /F/, Phenotype 1
 
 $$
-\frac{dF_1}{dt} = F_1[(1 - \delta_{F_1})r_{F_1} + \delta_{F_1} \left( c_2 \left[\frac{\alpha_{F_1P}P}{h_{F_1} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_1P}P}{e_{F_1} + F_1} \right] \right) - \tau_{21}F_2 - d_{F_1}F_1]
+\frac{dF_1}{dt} = F_1[(1 - \delta_{F_1})r_{F_1} + \delta_{F_1} \left( c_2 \left[\frac{\alpha_{F_1P}P}{h_{F_1} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_1P}P}{e_{F_1} + F_1} \right] \right) - \tau_{12}F_2 - d_{F_1}F_1]
 $$
 
 #+begin_src matlab :tangle odephenotypes.m
@@ -724,7 +744,7 @@ dydt(2,:) = F1.*((1-dep_f(1))*r2(1) + c2 *(dep_f(1)*(alpha21(1).*P)./(h1(1)+P))-
 ** Species /F/, Phenotype 2
 
 $$
-\frac{dF_2}{dt} = F_2[(1 - \delta_{F_2})r_{F_2} + \delta_{F_2} \left(c_2 \left[\frac{\alpha_{F_2P}P}{h_{F_2} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_2P}P}{e_{F_2} + F_2} \right] \right) - \tau_{12}F_1 - d_{F_2}F_2]
+\frac{dF_2}{dt} = F_2[(1 - \delta_{F_2})r_{F_2} + \delta_{F_2} \left(c_2 \left[\frac{\alpha_{F_2P}P}{h_{F_2} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_2P}P}{e_{F_2} + F_2} \right] \right) - \tau_{21}F_1 - d_{F_2}F_2]
 $$
 
 #+begin_src matlab :tangle odephenotypes.m
@@ -828,3 +848,10 @@ If we plot the two competition factors F1 and F2, we can determine where we find
 [[~/sweep2/figures/range/png/range_size_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.28_comp_21=0.40.png]]
 
 [[~/sweep2/figures/speed/png/speed_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.28_comp_21=0.40.png]]
+
+
+** Iterations issue
+
+In order to see what happens in areas of regional coexistence over the long-term, we're attempting to run these simulations with 1000 iterations. Using the m file as-is, we get the error: ~Index in position 2 exceeds array bounds (must not exceed 65537)~
+
+Clearly this is an issue with the number of nodes or the diameter.
