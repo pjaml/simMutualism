@@ -177,6 +177,11 @@ for i = 1:iterations
 
 Use =sqrt(var(speed_inst_F1(end-9:end)))= to get the variation in range expansion speed for the last 10 iterations, and determine if this is less than some tolerance.
 
+#+begin_comment
+What needs to be updated when adding more iterations? A few of the arrays are initialized depending on the number of iterations at the beginning of the for-loop, these need to be expanded. Would it be best to initialize them with larger arrays from the beginning, since resizing an array may be a costly operation?
+#+end_comment
+
+
 #+begin_src matlab :tangle mutual_ide.m
     %% Adds further iterations if steady states are not reached
     % if (i == iterations)
