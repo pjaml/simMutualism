@@ -137,25 +137,25 @@ for i = 1:iterations
     %save mandm_nocost_yesdep.mat
 
     %% Adds further iterations if steady states are not reached
-    % if (i == iterations)
-    %     tol = 1e-04;
-    %     if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
+    if (i == iterations)
+        tol = 1e-04;
+        if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
 
-    %         if iterations > 400
-    %             iterations = 500;
-    %         else
-    %             iterations = iterations + 20;
-    %         end
+            if iterations > 400
+                iterations = 500;
+            else
+                iterations = iterations + 20;
+            end
 
-    %         % extend the sizes of the relevant vectors & matrices
-    %         [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
-    %         [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
+            % extend the sizes of the relevant vectors & matrices
+            [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
+            [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
 
-    %         [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
-    %     else
-    %         break
-    %     end
-    % end
+            [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
+        else
+            break
+        end
+    end
 
 
 end

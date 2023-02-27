@@ -184,29 +184,49 @@ What needs to be updated when adding more iterations? A few of the arrays are in
 
 #+begin_src matlab :tangle mutual_ide.m
     %% Adds further iterations if steady states are not reached
-    % if (i == iterations)
-    %     tol = 1e-04;
-    %     if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
+    if (i == iterations)
+        tol = 1e-04;
+        if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
 
-    %         if iterations > 400
-    %             iterations = 500;
-    %         else
-    %             iterations = iterations + 20;
-    %         end
+            if iterations > 400
+                iterations = 500;
+            else
+                iterations = iterations + 20;
+            end
 
-    %         % extend the sizes of the relevant vectors & matrices
-    %         [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
-    %         [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
+            % extend the sizes of the relevant vectors & matrices
+            [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
+            [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
 
-    %         [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
-    %     else
-    %         break
-    %     end
-    % end
+            [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
+        else
+            break
+        end
+    end
 
 
 end
+#+end_src
 
+*** Check Steady state function
+
+#+begin_src matlab :tangle check_steady_state.m
+function steadystate = check_steady_state(speed, tolerance)
+% takes a matrix of speed values and checks whether the variance in the last 10 values is within a tolerance threshold
+
+    variance = sqrt(var(speed(end-9:end)));
+    if variance <= tolerance
+        steadystate = true;
+    else
+        steadstate = false;
+    end
+
+end
+#+end_src
+
+*** Generate a mat file for the simulation
+
+#+begin_src matlab :tangle mutual_ide.m
 %% Save a mat file with the current parameter values
 save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.mat']));
 
