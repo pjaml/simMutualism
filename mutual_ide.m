@@ -136,10 +136,13 @@ for i = 1:iterations
     %save(strcat(['mandm_yescost_depP=' num2str(dep_p) '_depF=' num2str(dep_f) '.mat']))
     %save mandm_nocost_yesdep.mat
 
-    %% Adds further iterations if steady states are not reached
+    % Adds further iterations if steady states are not reached. If
     if (i == iterations)
         tol = 1e-04;
-        if ~(abs(speed_inst_P(i) - speed_inst_P(i-1)) < tol) || ~(abs(speed_inst_F1(i) - speed_inst_F1(i-1)) < tol) || ~(abs(speed_inst_F2(i) - speed_inst_F2(i-1)) < tol)
+
+        if check_steady_state(speed_inst_P, tol) || check_steady_state(speed_inst_F1, tol) || check_steady_state(speed_inst_F2, tol)
+
+        end
 
             if iterations > 400
                 iterations = 500;
