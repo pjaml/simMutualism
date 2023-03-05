@@ -28,6 +28,7 @@ iterations = 60; % cycles of growth and dispersal
 steady_state_threshold = 1e-04; % threshold for speed variance at steady state
 max_iterations = 500;
 add_iterations = 100;
+
 #+end_src
 
 We set this =fspec= variable so that automatically generated filenames use a standardized format for values. This is necessary for the parameter sweep script to work properly.
@@ -35,32 +36,6 @@ We set this =fspec= variable so that automatically generated filenames use a sta
 #+begin_src matlab :tangle mutual_ide.m
 % format spec for floating point values in filenames
 fspec = '%.2f';
-#+end_src
-
-*** Growth model parameters
-
-#+begin_src matlab :tangle mutual_ide.m
-tspan = [0, 10];
-r_p = 0.3;
-r_f = [0.30 0.30]; %F1 and F2, respectively
-alpha_pf = [0.5 0.5];
-alpha_fp = [0.5 0.5];
-q1 = 1.0;
-q2 = 1.0;
-beta1 = 0.0;
-beta2 = [0.0 0.0];
-c1 = 1.0;
-c2 = 1.0;
-d_p = 0.1;
-d_f = [0.1 0.1];
-h1 = [0.3 0.3];
-h2 = [0.3 0.3];
-e1 = 0.3;
-e2 = [0.3 0.3];
-dep_p = 0.0;
-dep_f = [0.9 0.1];
-comp_12 = 0.0;
-comp_21 = 0.0;
 #+end_src
 
 *** Space parameters
@@ -87,8 +62,6 @@ dx = diameter/(nodes-1);
 #+end_src
 
 ** Initialization
-
-
 
 #+begin_src matlab :tangle mutual_ide.m
 
@@ -151,71 +124,79 @@ end
 ** Simulating growth and dispersal over many generations
 
 #+begin_src matlab :tangle mutual_ide.m
-i = 1;
+generation = 1;
 %% Looping for growth and dispersal
-while i < iterations
+while generation < iterations
+
+    tspan = [0, 10];
 
     %Growth
-    y0 = [n_P(i,:);n_F1(i,:);n_F2(i,:)];
-    y0 = reshape(y0, 3*length(y0), 1); % reshape happens such that 3 consecutive rows for n_P, n_F1, and n_F2 values are stacked
-    [t,y] = ode45(@(t,y) odephenotypes(t,y,r_p,r_f,alpha_pf,alpha_fp,q1,q2,beta1,beta2,c1,c2,d_p,d_f,h1,h2,e1,e2,nodes,dep_p,dep_f, comp_12, comp_21), tspan, y0); %remember to alter where the dep_p and dep_f are being called from
+    y0 = [n_P(generation,:);n_F1(generation,:);n_F2(generation,:)];
+
+    % reshape happens such that 3 consecutive rows for n_P, n_F1, and n_F2 values are stacked
+    y0 = reshape(y0, 3*length(y0), 1);
+
+    [t,y] = ode45(@(t,y) growthODEs(t,y), tspan, y0); %remember to alter where the dep_p and dep_f are being called from
+
 
     % We just want the results of the growth phase (end)
     f_P = y(end,(1:3:end)); % final row; element 1, +3, elem. 4, etc. until end
     f_F1 = y(end,(2:3:end));
     f_F2 = y(end,(3:3:end));
 
-    dispersal_phase(nodes, f_P, f_F1, f_F2, n_P, n_F1, n_F2);
 %   DISPERSAL
     n1_P = fft_conv(k_P,f_P);   % dispersing individuals
     n1_F1 = fft_conv(k_F1,f_F1);
     n1_F2 = fft_conv(k_F2,f_F2);
 
-    n_P(i+1,:) = dx*n1_P(nodes:length(x2)); %the convolution apparently doubles the length of the array?
-    n_F1(i+1,:) = dx*n1_F1(nodes:length(x2));
-    n_F2(i+1,:) = dx*n1_F2(nodes:length(x2));
+    n_P(generation + 1,:) = dx*n1_P(nodes:length(x2)); %the convolution apparently doubles the length of the array?
+    n_F1(generation + 1,:) = dx*n1_F1(nodes:length(x2));
+    n_F2(generation + 1,:) = dx*n1_F2(nodes:length(x2));
 
-    n_P(i+1,1) = n_P(i+1,1)/2; n_P(i+1,nodes) = n_P(i+1,nodes)/2; %The population density at the edges is halved
-    n_F1(i+1,1) = n_F1(i+1,1)/2; n_F1(i+1,nodes) = n_F1(i+1,nodes)/2;
-    n_F2(i+1,1) = n_F2(i+1,1)/2; n_F2(i+1,nodes) = n_F2(i+1,nodes)/2;
+    n_P(generation + 1,1) = n_P(generation + 1,1)/2; n_P(generation + 1,nodes) = n_P(generation + 1,nodes)/2; %The population density at the edges is halved
+    n_F1(generation + 1,1) = n_F1(generation + 1,1)/2; n_F1(generation + 1,nodes) = n_F1(generation + 1,nodes)/2;
+    n_F2(generation + 1,1) = n_F2(generation + 1,1)/2; n_F2(generation + 1,nodes) = n_F2(generation + 1,nodes)/2;
 
-    temp_P = find(n_P(i+1,:) < lowval); %gives location of random places where numbers are above zero due to some numerical errors
-    temp_F1 = find(n_F1(i+1,:) < lowval);
-    temp_F2 = find(n_F2(i+1,:) < lowval);
+    temp_P = find(n_P(generation + 1,:) < lowval); %gives location of random places where numbers are above zero due to some numerical errors
+    temp_F1 = find(n_F1(generation + 1,:) < lowval);
+    temp_F2 = find(n_F2(generation + 1,:) < lowval);
 
-    n_P(i+1,temp_P) = zeros(size(n_P(i+1,temp_P))); %set the places with those numerical errors to zero
-    n_F1(i+1,temp_F1) = zeros(size(n_F1(i+1,temp_F1)));%delete this for STE
-    n_F2(i+1,temp_F2) = zeros(size(n_F2(i+1,temp_F2)));%delete this for STE
+    n_P(generation + 1,temp_P) = zeros(size(n_P(generation + 1,temp_P))); %set the places with those numerical errors to zero
+    n_F1(generation + 1,temp_F1) = zeros(size(n_F1(generation + 1,temp_F1)));%delete this for STE
+    n_F2(generation + 1,temp_F2) = zeros(size(n_F2(generation + 1,temp_F2)));%delete this for STE
 
-    jj_P = find(n_P(i+1,:) >= ncrit,1,'last');
-    jj_F1 = find(n_F1(i+1,:) >= ncrit,1,'last');
-    jj_F2 = find(n_F2(i+1,:) >= ncrit,1,'last');
+    jj_P = find(n_P(generation + 1,:) >= ncrit,1,'last');
+    jj_F1 = find(n_F1(generation + 1,:) >= ncrit,1,'last');
+    jj_F2 = find(n_F2(generation + 1,:) >= ncrit,1,'last');
 
     if jj_P
-         xright_P(i+1) = interp1(n_P(i+1,jj_P:jj_P+1),x(jj_P:jj_P+1),ncrit);
+         xright_P(generation + 1) = interp1(n_P(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1),ncrit);
     end
 
     if jj_F1
-         xright_F1(i+1) = interp1(n_F1(i+1,jj_F1:jj_F1+1),x(jj_F1:jj_F1+1),ncrit);
+         xright_F1(generation + 1) = interp1(n_F1(generation + 1,jj_F1:jj_F1 + 1),x(jj_F1:jj_F1 + 1),ncrit);
     end
 
     if jj_F2
-         xright_F2(i+1) = interp1(n_F2(i+1,jj_F2:jj_F2+1),x(jj_F2:jj_F2+1),ncrit);
+         xright_F2(generation + 1) = interp1(n_F2(generation + 1,jj_F2:jj_F2 + 1),x(jj_F2:jj_F2 + 1),ncrit);
     end
 
-    speed_av_P(i) = (xright_P(i+1)-xright_P(1))/i; %latest position of wave edge - initial position of wave edge divided by time
-    speed_inst_P(i) = xright_P(i+1)-xright_P(i);
+    speed_av_P(generation) = (xright_P(generation + 1) - xright_P(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
+    speed_inst_P(generation) = xright_P(generation + 1) - xright_P(generation);
 
-    speed_inst_F1(i) = xright_F1(i+1)-xright_F1(i);
-    speed_av_F1(i) = (xright_F1(i+1)-xright_F1(1))/i; %latest position of wave edge - initial position of wave edge divided by time
+    speed_inst_F1(generation) = xright_F1(generation + 1) - xright_F1(generation);
+    speed_av_F1(generation) = (xright_F1(generation + 1) - xright_F1(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
 
-    speed_inst_F2(i) = xright_F2(i+1)-xright_F2(i);
-    speed_av_F2(i) = (xright_F2(i+1)-xright_F2(1))/i; %latest position of wave edge - initial position of wave edge divided by time
+    speed_inst_F2(generation) = xright_F2(generation + 1) - xright_F2(generation);
+    speed_av_F2(generation) = (xright_F2(generation + 1) - xright_F2(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
 
     % increment the while loop current iteration
-    i = i + 1;
+    generation = generation + 1;
+
     %save(strcat(['mandm_yescost_depP=' num2str(dep_p) '_depF=' num2str(dep_f) '.mat']))
     %save mandm_nocost_yesdep.mat
+% while loop end
+end
 #+end_src
 
 ** Dispersal phase function
@@ -232,12 +213,13 @@ What needs to be updated when adding more iterations? A few of the arrays are in
 
 Logic needs to be if any species /is not/ at a steady state.
 
-#+begin_src matlab :tangle mutual_ide.m
+#+begin_src matlab :tangle no
     % Adds further iterations if steady states are not reached.
     if (i == iterations)
 
+
         % determine if all species at steady state
-        if issteadystate(speed_inst_P, steady_state_threshold) || issteadystate(speed_inst_F1, steady_state_threshold) || issteadystate(speed_inst_F2, steady_state_threshold)
+        if isSpeciesSteadyState(speed_inst_P, steady_state_threshold) || isSpeciesSteadyState(speed_inst_F1, steady_state_threshold) || isSpeciesSteadyState(speed_inst_F2, steady_state_threshold)
 
         end
 
@@ -257,25 +239,28 @@ Logic needs to be if any species /is not/ at a steady state.
         end
     end
 
-% while loop end
-end
 #+end_src
 
-*** Check steady state function
+*** Steady state functions
 
-This function checks to see if the variance in the last 10 values of spread speed are at or below a threshold to determine whether the given species is at a steady state.
+#+begin_src matlab :tangle checkSteadyStates.m
 
-#+begin_src matlab :tangle issteadystate.m
-function steadystate = issteadystate(speed, tolerance)
+function steadyStates = checkSteadyStates()
+
+#+end_src
+
+This function takes the spread speed values for a given species and checks to see if the variance in the last 10 values is at or below a threshold to determine whether a steady state has been reached.
+
+#+begin_src matlab :tangle isSpeciesSteadyState.m
+function isSteadyState = isSpeciesSteadyState(speed, tolerance)
 % takes a matrix of speed values and checks whether the variance in the last 10 values is at or below a threshold
 
     variance = sqrt(var(speed(end-9:end)));
     if variance <= tolerance
-        steadystate = true;
+        isSteadyState = true;
     else
-        steadstate = false;
+        isSteadState = false;
     end
-
 end
 #+end_src
 
@@ -285,6 +270,9 @@ We save our results to a mat file, which can then be used to generate figures, i
 
 #+begin_src matlab :tangle mutual_ide.m
 %% Save a mat file with the current parameter values
+%save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.mat']));
+filename = ''
+
 save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.mat']));
 
 #+end_src
@@ -293,37 +281,36 @@ save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' 
 
 Here we define the growth of each species using a system of ODEs.
 
-** System of Equations (=odephenotypes.m=)
+** System of Equations (=growthODEs.m=)
 
 *** Function definition
 
 +Note that now =r2=, =alpha12=, =alpha21=, =beta2=, =d2=, =h1=, =h2=, =e2=, and =dep_f= are /1x2/ vectors. The first value is for $F_1$, the second is for $F_2$ (e.g. =r2(1)= is $F_2$'s growth rate)+
 
-With =varargin=, we can optionally use parameter values other than the defaults, e.g. =odephenotypes(t, y, default_r_p = 0.4)=. We need to use an [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] to manage the function's parameters.
+With =varargin=, we can optionally use parameter values other than the defaults, e.g. =growthODEs(t, y, 'default_r_p', 0.4)=. We need to use an [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] to manage the function's parameters.
 
-#+begin_src matlab :tangle odephenotypes.m
+#+begin_src matlab :tangle growthODEs.m
 
-% function dydt = odephenotypes(t, y, r1, r2, alpha12, alpha21, q1, q2, beta1, beta2, c1, c2, d1, d2, h1, h2,e1, e2, nodes, dep_p, dep_f, comp_12, comp_21)
-function dydt = odephenotypes(t, y, varargin)
+% function dydt = growthODEs(t, y, r1, r2, alpha12, alpha21, q1, q2, beta1, beta2, c1, c2, d1, d2, h1, h2,e1, e2, nodes, dep_p, dep_f, comp_12, comp_21)
+function dydt = growthODEs(t, y, varargin)
 
-    y = reshape(y,3,nodes);
-    dydt  = zeros(size(y));
-
+    checkParameters(varargin);
 #+end_src
 
 *** Default parameter values
 
 We set our default parameter values here. If the parameter is not explicitly defined in the function call, then these default values are used.
 
-#+begin_src matlab :tangle odephenotypes.m
+#+begin_src matlab :tangle growthODEs.m
 
     %% Default ODE parameter values
-    default_tspan      = [0, 10];
+
+    default_nodes = (2^16) + 1;
 
     % intrinsic growth
-    default_r_p        = 0.3;
-    default_r_f1       = 0.3;
-    default_r_f2       = 0.3;
+    default_r_p = 0.3;
+    default_r_f1 = 0.3;
+    default_r_f2 = 0.3;
 
     % mutualism benefits
     default_alpha_p_f1 = 0.5;
@@ -331,114 +318,121 @@ We set our default parameter values here. If the parameter is not explicitly def
     default_alpha_f1_p = 0.5;
     default_alpha_f2_p = 0.5;
 
-    default_q_p        = 1.0;
-    default_q_f1       = 1.0;
-    default_q_f2       = 1.0;
+    default_q_p = 1.0;
+    default_q_f1 = 1.0;
+    default_q_f2 = 1.0;
 
     % mutualism costs
-    default_beta_p     = 0.0;
-    default_beta_f1    = 0.0;
-    default_beta_f2    = 0.0;
+    default_beta_p = 0.0;
+    default_beta_f1 = 0.0;
+    default_beta_f2 = 0.0;
 
-    default_c_p        = 1.0;
-    default_c_f1       = 1.0;
-    default_c_f2       = 1.0;
+    default_c_p = 1.0;
+    default_c_f1 = 1.0;
+    default_c_f2 = 1.0;
 
     % death rate
-    default_d_p        = 0.1;
-    default_d_f1       = 0.1;
-    default_d_f2       = 0.1;
+    default_d_p = 0.1;
+    default_d_f1 = 0.1;
+    default_d_f2 = 0.1;
 
     % saturation
-    default_h_p_f1     = 0.3;
-    default_h_p_f2     = 0.3;
-    default_h_f1_p     = 0.3;
-    default_h_f2_p     = 0.3;
+    default_h_p_f1 = 0.3;
+    default_h_p_f2 = 0.3;
+    default_h_f1_p = 0.3;
+    default_h_f2_p = 0.3;
 
-    default_e_p        = 0.3;
-    default_e_f1       = 0.3;
-    default_e_f2       = 0.3;
+    default_e_p = 0.3;
+    default_e_f1 = 0.3;
+    default_e_f2 = 0.3;
 
-    % mutualism dependence
-    default_delta_p    = 0.0;
-    default_delta_f1   = 0.9;
-    default_delta_f2   = 0.1;
+    % = 0.0;
+    default_delta_p = 0.0;
+    default_delta_f1 = 0.9;
+    default_delta_f2 = 0.1;
 
     % competition: tau_12 is the effect F2 has on F1; tau_21 is effect of F1 on F2
-    default_tau_12     = 0.0;
-    default_tau_21     = 0.0;
+    default_tau_12 = 0.0;
+    default_tau_21 = 0.0;
 
 #+end_src
 
 *** Adding parameters with =inputParser=
 
-See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] and [[https://www.mathworks.com/help/matlab/ref/inputparser.addparameter.html][addParameter]] documentation.
+See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] and [[https://www.mathworks.com/help/matlab/ref/inputparser.addparameter.html][addParameter]] documentation. By setting =p.KeepUnmatched = true=, we can pass along all the parameters given in the simMutualism function call and just ignore the ones that are not relevant to the ODE parameters.
 
-#+begin_src matlab :tangle odephenotypes.m
+#+begin_src matlab :tangle growthODEs.m
 
     p = inputParser;
+    p.KeepUnmatched = true;
+
+    addRequired(p, 't');
+    addRequired(p, 'y');
 
     %% Optional ODE parameters
 
-    addParameter(p, 'tspan', default_tspan, @isvector);
+    addParameter(p, 'nodes', default_nodes);
 
     % intrinsic growth rates
-    addParameter(p, 'r_p', default_r_p, @isnumeric);
-    addParameter(p, 'r_f1', default_r_f1, @isnumeric);
-    addParameter(p, 'r_f2', default_r_f2, @isnumeric);
+    addParameter(p, 'r_p', default_r_p);
+    addParameter(p, 'r_f1', default_r_f1);
+    addParameter(p, 'r_f2', default_r_f2);
 
     % mutualism benefits
-    addParameter(p, 'alpha_p_f1', default_alpha_p_f1, @isnumeric);
-    addParameter(p, 'alpha_p_f2', default_alpha_p_f2, @isnumeric);
-    addParameter(p, 'alpha_f1_p', default_alpha_f1_p, @isnumeric);
-    addParameter(p, 'alpha_f2_p', default_alpha_f2_p, @isnumeric);
+    addParameter(p, 'alpha_p_f1', default_alpha_p_f1);
+    addParameter(p, 'alpha_p_f2', default_alpha_p_f2);
+    addParameter(p, 'alpha_f1_p', default_alpha_f1_p);
+    addParameter(p, 'alpha_f2_p', default_alpha_f2_p);
 
-    addParameter(p, 'q_p', default_q_p , @isnumeric);
-    addParameter(p, 'q_f1', default_q_f1, @isnumeric);
-    addParameter(p, 'q_f2', default_q_f2, @isnumeric);
+    addParameter(p, 'q_p', default_q_p );
+    addParameter(p, 'q_f1', default_q_f1);
+    addParameter(p, 'q_f2', default_q_f2);
 
     % mutualism costs
-    addParameter(p, 'beta_p', default_beta_p, @isnumeric);
-    addParameter(p, 'beta_f1', default_beta_f1, @isnumeric);
-    addParameter(p, 'beta_f2', default_beta_f2, @isnumeric);
+    addParameter(p, 'beta_p', default_beta_p);
+    addParameter(p, 'beta_f1', default_beta_f1);
+    addParameter(p, 'beta_f2', default_beta_f2);
 
-    addParameter(p, 'c_p', default_c_p, @isnumeric);
-    addParameter(p, 'c_f1', default_c_f1, @isnumeric);
-    addParameter(p, 'c_f2', default_c_f2, @isnumeric);
-;
+    addParameter(p, 'c_p', default_c_p);
+    addParameter(p, 'c_f1', default_c_f1);
+    addParameter(p, 'c_f2', default_c_f2);
+
     % death rate
-    addParameter(p, 'd_p', default_d_p, @isnumeric);
-    addParameter(p, 'd_f1', default_d_f1, @isnumeric);
-    addParameter(p, 'd_f2', default_d_f2, @isnumeric);
+    addParameter(p, 'd_p', default_d_p);
+    addParameter(p, 'd_f1', default_d_f1);
+    addParameter(p, 'd_f2', default_d_f2);
 
     % saturation
-    addParameter(p, 'h_p_f1', default_h_p_f1, @isnumeric);
-    addParameter(p, 'h_p_f2', default_h_p_f2, @isnumeric);
-    addParameter(p, 'h_f1_p', default_h_f1_p, @isnumeric);
-    addParameter(p, 'h_f2_p', default_h_f2_p, @isnumeric);
+    addParameter(p, 'h_p_f1', default_h_p_f1);
+    addParameter(p, 'h_p_f2', default_h_p_f2);
+    addParameter(p, 'h_f1_p', default_h_f1_p);
+    addParameter(p, 'h_f2_p', default_h_f2_p);
 
-    addParameter(p, 'e_p', default_e_p, @isnumeric);
-    addParameter(p, 'e_f1', default_e_f1, @isnumeric);
-    addParameter(p, 'e_f2', default_e_f2, @isnumeric);
+    addParameter(p, 'e_p', default_e_p);
+    addParameter(p, 'e_f1', default_e_f1);
+    addParameter(p, 'e_f2', default_e_f2);
 
     % mutualism dependence
-    addParameter(p, 'delta_p', default_delta_p, @isnumeric);
-    addParameter(p, 'delta_f1', default_delta_f1, @isnumeric);
-    addParameter(p, 'delta_f2', default_delta_f2, @isnumeric);
+    addParameter(p, 'delta_p', default_delta_p);
+    addParameter(p, 'delta_f1', default_delta_f1);
+    addParameter(p, 'delta_f2', default_delta_f2);
 
     % competition
-    addParameter(p, 'tau_12', default_tau_12, @isnumeric);
-    addParameter(p, 'tau_21', default_tau_21, @isnumeric);
+    addParameter(p, 'tau_12', default_tau_12);
+    addParameter(p, 'tau_21', default_tau_21);
 
     parse(p, t, y, varargin{:});
 
     % relabel variables so they're easier to read in the equation
-    tspan      = p.Results.tspan;
+
+    t = p.Results.t;
+    y = p.Results.y;
+    nodes = p.Results.nodes;
 
     % intrinsic growth
-    r_p        = p.Results.r_p;
-    r_f1       = p.Results.r_f1;
-    r_f2       = p.Results.r_f2;
+    r_p = p.Results.r_p;
+    r_f1 = p.Results.r_f1;
+    r_f2 = p.Results.r_f2;
 
     % mutualism benefits
     alpha_p_f1 = p.Results.alpha_p_f1;
@@ -446,43 +440,47 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     alpha_f1_p = p.Results.alpha_f1_p;
     alpha_f2_p = p.Results.alpha_f2_p;
 
-    q_p        = p.Results.q_p;
-    q_f1       = p.Results.q_f1;
-    q_f2       = p.Results.q_f2;
+    q_p = p.Results.q_p;
+    q_f1 = p.Results.q_f1;
+    q_f2 = p.Results.q_f2;
 
     % mutualism costs
-    beta_p     = p.Results.beta_p;
-    beta_f1    = p.Results.beta_f1;
-    beta_f2    = p.Results.beta_f2;
+    beta_p = p.Results.beta_p;
+    beta_f1 = p.Results.beta_f1;
+    beta_f2 = p.Results.beta_f2;
 
-    c_p        = p.Results.c_p;
-    c_f1       = p.Results.c_f1;
-    c_f2       = p.Results.c_f2;
+    c_p = p.Results.c_p;
+    c_f1 = p.Results.c_f1;
+    c_f2 = p.Results.c_f2;
 
     % death rate
-    d_p        = p.Results.d_p;
-    d_f1       = p.Results.d_f1;
-    d_f2       = p.Results.d_f2;
+    d_p = p.Results.d_p;
+    d_f1 = p.Results.d_f1;
+    d_f2 = p.Results.d_f2;
 
     % saturation
-    h_p_f1     = p.Results.h_p_f1;
-    h_p_f2     = p.Results.h_p_f2;
-    h_f1_p     = p.Results.h_f1_p;
-    h_f2_p     = p.Results.h_f2_p;
+    h_p_f1 = p.Results.h_p_f1;
+    h_p_f2 = p.Results.h_p_f2;
+    h_f1_p = p.Results.h_f1_p;
+    h_f2_p = p.Results.h_f2_p;
 
-    e_p        = p.Results.e_p;
-    e_f1       = p.Results.e_f1;
-    e_f2       = p.Results.e_f2;
+    e_p = p.Results.e_p;
+    e_f1 = p.Results.e_f1;
+    e_f2 = p.Results.e_f2;
 
     % mutualism dependence
-    delta_p    = p.Results.delta_p;
-    delta_f1   = p.Results.delta_f1;
-    delta_f2   = p.Results.delta_f2;
+    delta_p = p.Results.delta_p;
+    delta_f1 = p.Results.delta_f1;
+    delta_f2 = p.Results.delta_f2;
 
     % competition: tau_12 is the effect F2 has on F1; tau_21 is effect of F1 on F2
-    tau_12     = p.Results.tau_12;
-    tau_21     = p.Results.tau_21;
-end
+    tau_12 = p.Results.tau_12;
+    tau_21 = p.Results.tau_21;
+
+    y = reshape(y,3,nodes);
+    dydt  = zeros(size(y));
+
+
 #+end_src
 
 *** Species /P/
@@ -495,14 +493,14 @@ $$
 
 The $(\delta_{F1} + \delta_{F2} / 2)$ term should be changed. It's currently irrelevant since we've only used $\beta$ values of zero.
 
-#+begin_src matlab :tangle odephenotypes.m
+#+begin_src matlab :tangle growthODEs.m
 
-% rename variables so equations are easier to read
-P = y(1,:);
-F1 = y(2,:);
-F2 = y(3,:);
+    % rename variables so equations are easier to read
+    P = y(1,:);
+    F1 = y(2,:);
+    F2 = y(3,:);
 
-dydt(1,:) = P .* ((1 - delta_p) * r_p + delta_p * (c_p * ((alpha_p_f1 .* F1) ./ (h_p_f1 + F1) + (alpha_p_f2 .* F2) ./ (h_p_f2 + F2))) - ((delta_f1 + delta_f2)/2) * (q_p * (beta_p .* (F1 + F2) ./ (e_p + P))) - (d_p .* P));
+    dydt(1,:) = P .* ((1 - delta_p) * r_p + delta_p * (c_p * ((alpha_p_f1 .* F1) ./ (h_p_f1 + F1) + (alpha_p_f2 .* F2) ./ (h_p_f2 + F2))) - ((delta_f1 + delta_f2)/2) * (q_p * (beta_p .* (F1 + F2) ./ (e_p + P))) - (d_p .* P));
 
 #+end_src
 
@@ -512,9 +510,9 @@ $$
 \frac{dF_1}{dt} = F_1[(1 - \delta_{F_1})r_{F_1} + \delta_{F_1} \left( c_2 \left[\frac{\alpha_{F_1P}P}{h_{F_1} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_1P}P}{e_{F_1} + F_1} \right] \right) - \tau_{12}F_2 - d_{F_1}F_1]
 $$
 
-#+begin_src matlab :tangle odephenotypes.m
+#+begin_src matlab :tangle growthODEs.m
 
-dydt(2,:) = F1 .* ((1 - delta_f1) * r_f1 + c_f1 * (delta_f1 * (alpha_f1_p .* P) ./ (h_f1_p + P)) - q_f1 * (delta_p * ((beta_f1 .* P) ./ (e_f1 + F1))) - (tau_12 .* F2) - (d_f1 .* F1));
+    dydt(2,:) = F1 .* ((1 - delta_f1) * r_f1 + c_f1 * (delta_f1 * (alpha_f1_p .* P) ./ (h_f1_p + P)) - q_f1 * (delta_p * ((beta_f1 .* P) ./ (e_f1 + F1))) - (tau_12 .* F2) - (d_f1 .* F1));
 #+end_src
 
 *** Species /F/, Phenotype 2
@@ -523,17 +521,17 @@ $$
 \frac{dF_2}{dt} = F_2[(1 - \delta_{F_2})r_{F_2} + \delta_{F_2} \left(c_2 \left[\frac{\alpha_{F_2P}P}{h_{F_2} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_2P}P}{e_{F_2} + F_2} \right] \right) - \tau_{21}F_1 - d_{F_2}F_2]
 $$
 
-#+begin_src matlab :tangle odephenotypes.m
+#+begin_src matlab :tangle growthODEs.m
 
-dydt(3,:) = F2 .* ((1 - delta_f2) * r_f2 + c_f2 * (delta_f2 * (alpha_f2_p .* P) ./ (h_f2_p + P)) - q_f2 * (delta_p * ((beta_f2 .* P) ./ (e_f2 + F2))) - (tau_21 .* F1) - (d_f2 .* F2));
+    dydt(3,:) = F2 .* ((1 - delta_f2) * r_f2 + c_f2 * (delta_f2 * (alpha_f2_p .* P) ./ (h_f2_p + P)) - q_f2 * (delta_p * ((beta_f2 .* P) ./ (e_f2 + F2))) - (tau_21 .* F1) - (d_f2 .* F2));
 
 #+end_src
 
 *** Reshape
 
-#+begin_src matlab :tangle odephenotypes.m
+#+begin_src matlab :tangle growthODEs.m
 
-dydt = reshape(dydt,3*nodes,1);
+    dydt = reshape(dydt,3*nodes,1);
 end
 
 #+end_src
@@ -712,23 +710,26 @@ These plots are helpful to see how the population densities change over time, bu
 
 We generate a plot for each species, and they're superimposed in a single figure.
 
-#+begin_src matlab :tangle mutual_ide.m
+#+begin_src matlab :tangle plotPopSpaceTime.m
 
+function plotPopSpaceTime(simMatFile)
 
-%% Figure for species P
-figure(1);
-clf
-[xx,tt] = meshgrid(x,0:iterations);
-nlow = n_P;
-nlow(n_P>=ncrit) = NaN;
-n_P(n_P<ncrit) = NaN;
-hold on
-for i = 1:5:60
-     plot3(xx(i,:),tt(i,:),n_P(i,:),'b', 'LineWidth', 3.0);
-     plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
-     grid on
-end
-% plot3(xright_P(1:11),0:10,ncrit*ones(1,11),'k');
+    load(simMatFile);
+
+    %% Figure for species P
+    figure(1);
+    clf
+    [xx,tt] = meshgrid(x,0:iterations);
+    nlow = n_P;
+    nlow(n_P>=ncrit) = NaN;
+    n_P(n_P<ncrit) = NaN;
+    hold on
+    for i = 1:5:60
+        plot3(xx(i,:),tt(i,:),n_P(i,:),'b', 'LineWidth', 3.0);
+        plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
+        grid on
+    end
+    % plot3(xright_P(1:11),0:10,ncrit*ones(1,11),'k');
     axis([-120 120 0 iterations 0 6.25]);
     xlabel('space (x)');
     ylabel('time (t)');
@@ -736,19 +737,19 @@ end
     % title('Species P');
     view(30,30);
 
-%% Figure for species F1
-[xx,tt] = meshgrid(x,0:iterations);
-nlow = n_F1;
-nlow(n_F1>=ncrit) = NaN;
-n_F1(n_F1<ncrit) = NaN;
-hold on
-for i = 1:5:60
-     plot3(xx(i,:),tt(i,:),n_F1(i,:),'r','LineWidth', 3.0);
-     plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
-     grid on
-end
+    %% Figure for species F1
+    [xx,tt] = meshgrid(x,0:iterations);
+    nlow = n_F1;
+    nlow(n_F1>=ncrit) = NaN;
+    n_F1(n_F1<ncrit) = NaN;
+    hold on
+    for i = 1:5:60
+        plot3(xx(i,:),tt(i,:),n_F1(i,:),'r','LineWidth', 3.0);
+        plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
+        grid on
+    end
 
-% plot3(xright_F1(1:11),0:10,ncrit*ones(1,11),'k');
+    % plot3(xright_F1(1:11),0:10,ncrit*ones(1,11),'k');
     % axis([-15 15 0 10 0 5]);
     % xlabel('space (x)');
     % ylabel('time (t)');
@@ -756,42 +757,49 @@ end
     % view(30,30);
     % title('Species F1');
 
-%% Figure for species F2
-[xx,tt] = meshgrid(x,0:iterations);
-nlow = n_F2;
-nlow(n_F2>=ncrit) = NaN;
-n_F2(n_F2<ncrit) = NaN;
-hold on
-for i = 1:5:60
-     plot3(xx(i,:),tt(i,:),n_F2(i,:),'g', 'LineWidth', 3.0);
-     plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
-     grid on
-end
+    %% Figure for species F2
+    [xx,tt] = meshgrid(x,0:iterations);
+    nlow = n_F2;
+    nlow(n_F2>=ncrit) = NaN;
+    n_F2(n_F2<ncrit) = NaN;
+    hold on
+    for i = 1:5:60
+        plot3(xx(i,:),tt(i,:),n_F2(i,:),'g', 'LineWidth', 3.0);
+        plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
+        grid on
+    end
 
-% plot3(xright_F2(1:11),0:100,ncrit*ones(1,11),'k');
+    % plot3(xright_F2(1:11),0:100,ncrit*ones(1,11),'k');
     % axis([-15 15 0 10 0 5]);
     % xlabel('space (x)');
     % ylabel('time (t)');
     % zlabel('species F2 density (n_F2)');
     % view(30,30);
     % title('Species F2');
-hold off
+    hold off
 
+end
 #+end_src
 
 ** Speed vs. time
 
-#+begin_src matlab :tangle mutual_ide.m
+#+begin_src matlab :tangle plotSpeedTime.m
 
+function plotSpeedTime(simMatFile)
 
-clf
-plot(1:iterations, speed_inst_P, 1:iterations, speed_inst_F1, 1:iterations, speed_inst_F2);
-legend('P', 'F1', 'F2');
-title(strcat(['Spread speed vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
-xlabel('iterations');
-ylabel('speed');
+    load(simMatFile);
 
-savefig(strcat(['comp_pheno_model/speed_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
+    clf
+
+    plot(1:iterations, speed_inst_P, 1:iterations, speed_inst_F1, 1:iterations, speed_inst_F2);
+    legend('P', 'F1', 'F2');
+    title(strcat(['Spread speed vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+    xlabel('iterations');
+    ylabel('speed');
+
+    savefig(strcat(['comp_pheno_model/speed_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
+
+end
 
 #+end_src
 
@@ -802,22 +810,26 @@ Three save functions are called:
 - =savefig()= saves the matlab figure so we can easily view and manipulate it in matlab
 - =saveas()= saves the figure as a PNG
 
- #+begin_src matlab :tangle mutual_ide.m
+ #+begin_src matlab :tangle plotFinalPopSpace.m
 
-clf
-hold on
-plot(n_P(end,:));
-plot(n_F1(end,:));
-plot(n_F2(end,:));
-legend('P', 'F1', 'F2');
-title(strcat(['N vs. x (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
-hold off
+function plotFinalPopSpace(simMatFile)
 
-savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
+    load(simMatFile);
 
-% Save a PNG file
-% saveas(gcf, strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.png']));
+    clf
+    hold on
+    plot(n_P(end,:));
+    plot(n_F1(end,:));
+    plot(n_F2(end,:));
+    legend('P', 'F1', 'F2');
+    title(strcat(['N vs. x (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+    hold off
 
+    savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
+
+    % Save a PNG file
+    % saveas(gcf, strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.png']));
+end
 #+end_src
 
 ** Range vs. time
@@ -828,23 +840,28 @@ In order to obtain the range of a species at a given time, you could find all th
 
 Does range size need to be contiguous? In other words, if F1 is only present at the edges, could you total its ranges at each edge and call that its "range size"?
 
-#+begin_src matlab :tangle mutual_ide.m
+#+begin_src matlab :tangle plotRangeTime.m
 
-for i = 1:iterations+1
+function plotRangeTime(simMatFile)
 
-    rangeP(i) = length(find(n_P(i,:) >= ncrit));
-    rangeF1(i) = length(find(n_F1(i,:) >= ncrit));
-    rangeF2(i) = length(find(n_F2(i,:) >= ncrit));
+    load(simMatFile);
+    for i = 1:iterations+1
+
+        rangeP(i) = length(find(n_P(i,:) >= ncrit));
+        rangeF1(i) = length(find(n_F1(i,:) >= ncrit));
+        rangeF2(i) = length(find(n_F2(i,:) >= ncrit));
+    end
+
+    clf
+    plot(1:iterations+1, [rangeP; rangeF1; rangeF2]);
+    xlabel('iterations');
+    ylabel('range size');
+    title(strcat(['Range size vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+    legend('P', 'F1', 'F2');
+
+    savefig(strcat(['comp_pheno_model/range_size_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
+
 end
-
-clf
-plot(1:iterations+1, [rangeP; rangeF1; rangeF2]);
-xlabel('iterations');
-ylabel('range size');
-title(strcat(['Range size vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
-legend('P', 'F1', 'F2');
-
-savefig(strcat(['comp_pheno_model/range_size_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
 
 #+end_src
 
@@ -879,7 +896,7 @@ dep_f = [0.4 0.9];
 
 nodes = 1;
 
-[t,y] = ode45(@(t,y) odephenotypes(t,y,r_p,r_f,alpha_pf,alpha_fp,q1,q2,beta1,beta2,c1,c2,d_p,d_f,h1,h2,e1,e2,nodes,dep_p,dep_f, comp_12, comp_21), tspan, initpop);
+[t,y] = ode45(@(t,y) growthODEs(t,y,r_p,r_f,alpha_pf,alpha_fp,q1,q2,beta1,beta2,c1,c2,d_p,d_f,h1,h2,e1,e2,nodes,dep_p,dep_f, comp_12, comp_21), tspan, initpop);
 
 P = y(:,1);
 F1 = y(:,2);
@@ -934,7 +951,7 @@ comp_21 = 4.0;
 ystart = [P(:).'; F1(:).'; F2(:).'];
 ystart = reshape(ystart, 3*length(ystart), 1);
 
-dy = odephenotypes(0, ystart, r_p, r_f, alpha_pf, alpha_fp, q1, q2, beta1, beta2, c1, c2, d_p, d_f, h1, h2, e1, e2, length(P(:).'), dep_p, dep_f, comp_12, comp_21);
+dy = growthODEs(0, ystart, r_p, r_f, alpha_pf, alpha_fp, q1, q2, beta1, beta2, c1, c2, d_p, d_f, h1, h2, e1, e2, length(P(:).'), dep_p, dep_f, comp_12, comp_21);
 
 dP = reshape(dy((1:3:end),:), length(P), length(P), length(P));
 dF1 = reshape(dy((2:3:end),:), length(P), length(P), length(P));

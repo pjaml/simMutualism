@@ -27,7 +27,7 @@ comp_21 = 4.0;
 ystart = [P(:).'; F1(:).'; F2(:).'];
 ystart = reshape(ystart, 3*length(ystart), 1);
 
-dy = odephenotypes(0, ystart, r_p, r_f, alpha_pf, alpha_fp, q1, q2, beta1, beta2, c1, c2, d_p, d_f, h1, h2, e1, e2, length(P(:).'), dep_p, dep_f, comp_12, comp_21);
+dy = growthODEs(0, ystart, r_p, r_f, alpha_pf, alpha_fp, q1, q2, beta1, beta2, c1, c2, d_p, d_f, h1, h2, e1, e2, length(P(:).'), dep_p, dep_f, comp_12, comp_21);
 
 dP = reshape(dy((1:3:end),:), length(P), length(P), length(P));
 dF1 = reshape(dy((2:3:end),:), length(P), length(P), length(P));
