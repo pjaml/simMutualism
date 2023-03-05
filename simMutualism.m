@@ -1,6 +1,8 @@
 clearvars
 clc
 
+function simMutualism(varargin)
+
 %% for simulation
 
 iterations = 60; % cycles of growth and dispersal
@@ -138,3 +140,6 @@ end
 filename = ''
 
 save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.mat']));
+
+% end of simMutualism function
+end
