@@ -562,7 +562,7 @@ end
 
 #+end_src
 
-#+begin_src shell :tangle sweep/tau_sweep.sh
+#+begin_src shell :tangle no
 
 #!/bin/bash
 
@@ -626,7 +626,7 @@ done
 
 Note that the $SBATCH lines *must* be at the top of the script. Anything before that will break Slurm.
 
-#+begin_src shell :tangle sweep/tau_jobscript.sh
+#+begin_src shell :tangle jobscript.sh
 
 #!/bin/bash -l
 #SBATCH --time=24:00:00
