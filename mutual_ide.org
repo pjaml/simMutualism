@@ -781,7 +781,9 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
+    load(p.Results.simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
+
+    timeStep = round(iterations / 10);
 
     %% Figure for species P
     figure(1);
@@ -790,64 +792,55 @@ function plotPopSpaceTime(simMatFile, varargin)
     nlow = nP;
     nlow(nP >= nThreshold) = NaN;
     nP(nP < nThreshold) = NaN;
+
+    rangeP = x(find(nP(end,:) >= nThreshold));
+
+    rangeMin = min(rangeP);
+    rangeMax = max(rangeP);
+
     hold on
-    for i = 1:5:60
-        plot3(xx(i,:),tt(i,:),nP(i,:),'b', 'LineWidth', 3.0);
+    for i = 1:timeStep:iterations
+        lineP = plot3(xx(i,:),tt(i,:),nP(i,:),'b', 'LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
     % plot3(rangeEdgeP(1:11),0:10,nThreshold*ones(1,11),'k');
-    axis([-120 120 0 iterations 0 6.25]);
-    xlabel('space (x)');
-    ylabel('time (t)');
-    zlabel('density');
+    axis([(rangeMin - 5) (rangeMax + 5) 0 iterations 0 6.25]);
+    xlabel('Spatial range');
+    ylabel('Generations');
+    zlabel('Population density');
     % title('Species P');
     view(30,30);
 
     %% Figure for species F1
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nF1;
-    nlow(nF1>=nThreshold) = NaN;
-    nF1(nF1<nThreshold) = NaN;
+    nlow(nF1 >= nThreshold) = NaN;
+    nF1(nF1 < nThreshold) = NaN;
     hold on
-    for i = 1:5:60
-        plot3(xx(i,:),tt(i,:),nF1(i,:),'r','LineWidth', 3.0);
+    for i = 3:timeStep:iterations
+        lineF1 = plot3(xx(i,:),tt(i,:),nF1(i,:),'r','LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
-
-    % plot3(rangeEdgeF1(1:11),0:10,nThreshold*ones(1,11),'k');
-    % axis([-15 15 0 10 0 5]);
-    % xlabel('space (x)');
-    % ylabel('time (t)');
-    % zlabel('species F1 density (nF1)');
-    % view(30,30);
-    % title('Species F1');
 
     %% Figure for species F2
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nF2;
-    nlow(nF2>=nThreshold) = NaN;
-    nF2(nF2<nThreshold) = NaN;
+    nlow(nF2 >= nThreshold) = NaN;
+    nF2(nF2 < nThreshold) = NaN;
     hold on
-    for i = 1:5:60
-        plot3(xx(i,:),tt(i,:),nF2(i,:),'g', 'LineWidth', 3.0);
+    for i = 5:timeStep:iterations
+        lineF2 = plot3(xx(i,:),tt(i,:),nF2(i,:),'g', 'LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
-
-    % plot3(rangeEdgeF2(1:11),0:100,nThreshold*ones(1,11),'k');
-    % axis([-15 15 0 10 0 5]);
-    % xlabel('space (x)');
-    % ylabel('time (t)');
-    % zlabel('species F2 density (nF2)');
-    % view(30,30);
-    % title('Species F2');
     hold off
 
+    legend([lineP lineF1 lineF2], {'P', 'F_1', 'F_2'});
     if p.Results.createFile
         filename = strcat('pop_space_time_', filename, '.fig');
-        savefig(strcat(imgDir, filename));
+        savefig(strcat(p.Results.imgDir, filename));
     end
 
 end
