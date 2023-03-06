@@ -554,10 +554,14 @@ end
 
 ** Sweep script
 
+This is the main file to be edited when running parameter sweeps. The =simMutualism()= function requires an output directory as an argument. It can take any ODE parameter as an optional argument. to override a default value, use the parameter variable name then a value, i.e. =simMutualism(outputDir, 'tau12', 0.3, 'tau21', 0.14)=. These variables will get added to the filename of the exported mat file at the end of the simulation.
+
+We can adjust values of =maxIterations= in the for loop to allow for longer simulations of $\tau$ values that we know will take longer to reach a steady state. By allow for more iterations for only these values, we limit the number of very large mat files.
+
 #+begin_src matlab :tangle tauSweep.m
 
 iterations = 100;
-maxIterations = 400;
+maxIterations = 1000;
 [tau12Range, tau21Range] = deal(0:0.01:0.4);
 outputDir = './tauSweep/';
 
@@ -565,11 +569,14 @@ for tau12 = tau12Range
 
     for tau21 = tau21Range
 
+        % more iterations for tau values that result in regional coexistence
         if tau12 > 0.13 && tau12 < 0.3 && tau21 < 0.15 || tau21 > 0.3
+            maxIterations = 2000;
+        else
             maxIterations = 1000;
         end
 
-        simMutualism('tau12', tau12, 'tau21', tau21, 'outputDir', outputDir, 'iterations', iterations, 'maxIterations', maxIterations);
+        simMutualism(outputDir, 'tau12', tau12, 'tau21', tau21, 'iterations', iterations, 'maxIterations', maxIterations);
 
     end
 end
