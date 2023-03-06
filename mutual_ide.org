@@ -1,10 +1,11 @@
 #+title: Mutualism Project Code
+#+auto_tangle: t
 
 * Simulation
 
 Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species. The =simMutualism()= function can take a number of optional arguments.
 
-#+begin_src matlab :tangle simMutualism.m :comments link
+#+begin_src matlab :tangle simMutualism.m
 function simMutualism(outputDir, varargin)
 
 % we save the given parameters to a variable so we can use them to
@@ -663,12 +664,12 @@ matlab -nodisplay <$BASEDIR/tauSweep.m
 
 #+end_src
 
-** Function to classify outcome (=det_outcome.m=)
+** Function to classify outcome (=classifyOutcome.m=)
 
-#+begin_src matlab :tangle det_outcome.m
+#+begin_src matlab :tangle classifyOutcome.m
 
 %% Function to classify outcome of a given simulation
-function outcome = det_outcome(nP, nF1, nF2, nThreshold)
+function outcome = classifyOutcome(nP, nF1, nF2, nThreshold)
 
     % get the final population densities of P, F1, and F2
     finP = nP(end,:);
@@ -1045,33 +1046,33 @@ hold off;
 
 
 
-** "Meta" graph (=sweep_outcomes.m=)
+** Sweep outcomes plot
 
-#+begin_src matlab :tangle sweep_outcomes.m
+#+begin_src matlab :tangle plotOutcomes.m
 
-clear all
+function plotOutcomes(sweepDir)
 
-fspec = '%.2f';
-tau12_list = [0.00:0.01:0.40];
-tau21_list = [0.00:0.01:0.40];
+    tau12_list = [0.00:0.01:0.40];
+    tau21_list = [0.00:0.01:0.40];
 
-outcomes = zeros(length(tau12_list), length(tau21_list));
+    outcomes = zeros(length(tau12_list), length(tau21_list));
 
-for ii = 1:length(tau12_list)
-    for jj = 1:length(tau21_list)
+    for ii = 1:length(tau12_list)
+        for jj = 1:length(tau21_list)
 
-        load(strcat(['~/sweep/mat_files/comp_pheno_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=' num2str(tau12_list(ii), fspec) '_comp_21=' num2str(tau21_list(jj), fspec) '.mat']));
+            load(strcat(['~/sweep/mat_files/comp_pheno_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=' num2str(tau12_list(ii), fspec) '_comp_21=' num2str(tau21_list(jj), fspec) '.mat']));
 
-        outcomes(ii,jj) = det_outcome(nP, nF1, nF2, 0.05);
+            outcomes(ii,jj) = classifyOutcome(nP, nF1, nF2, 0.05);
 
+        end
     end
+
+    figure(1)
+    heatmap(tau12_list, fliplr(tau21_list), rot90(outcomes));
+    xlabel('tau_{12}');
+    ylabel('tau_{21}');
+
 end
-
-figure(1)
-heatmap(tau12_list, fliplr(tau21_list), rot90(outcomes));
-xlabel('tau_{12}');
-ylabel('tau_{21}');
-
 #+end_src
 
 * Results

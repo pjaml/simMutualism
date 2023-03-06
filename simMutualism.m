@@ -170,6 +170,14 @@ end
 
 %% Save a mat file with the current parameter values
 
+nP = nP(1:(iterations + 1), :);
+nF1 = nF1(1:(iterations + 1), :);
+nF2 = nF2(1:(iterations + 1), :);
+
+instantSpeedP(1, 1:(iterations + 1));
+instantSpeedF1(1, 1:(iterations + 1));
+instantSpeedF2(1, 1:(iterations + 1));
+
 filename = strcat('results_', strjoin(string(parameters), '_'));
 
 save(strcat(outputDir, filename, '.mat'), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
