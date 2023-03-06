@@ -1,10 +1,11 @@
-function isSteadyState = isSpeciesSteadyState(speed, tolerance, interation)
+function isSteadyState = isSpeciesSteadyState(speed, tolerance, generation)
 % takes a matrix of speed values and checks whether the variance in the last 10 values is at or below a threshold
 
-    variance = sqrt(var(speed(iteration-9:iteration)));
+    variance = sqrt(var(speed((generation - 9):generation)));
+
     if variance <= tolerance
         isSteadyState = true;
     else
-        isSteadState = false;
+        isSteadyState = false;
     end
 end

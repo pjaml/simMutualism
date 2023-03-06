@@ -6,10 +6,25 @@ parameters = varargin;
 
 %% for simulation
 
-iterations = 60; % minimum number of cycles of growth and dispersal
-steadyStateThreshold = 1e-04; % threshold for speed variance at steady state
-maxIterations = 500;
-iterationStep = 100;
+p = inputParser;
+p.KeepUnmatched = true;
+
+% minimum number of cycles of growth and dispersal
+addParameter(p, 'iterations', 60);
+addParameter(p, 'maxIterations', 500);
+addParameter(p, 'iterationStep', 100);
+addParameter(p, 'outputDir', './', @isfolder);
+
+parse(p, varargin{:});
+
+% I wish I knew a better way to get rid of all the p.Results that get attached inputParser parameters
+iterations = p.Results.iterations;
+maxIterations = p.Results.maxIterations;
+iterationStep = p.Results.iterationStep;
+outputDir = p.Results.outputDir;
+
+% threshold for speed variance at steady state
+steadyStateThreshold = 1e-04;
 
 % format spec for floating point values in filenames
 fspec = '%.2f';
@@ -23,11 +38,11 @@ x = linspace(-radius, radius, nodes);
 x2 = linspace(-diameter, diameter, 2 * nodes - 1);
 dx = diameter / (nodes - 1);
 
-[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = zeros(1, maxIterations); % preallocate arrays for max possible iterations
+[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations)); % preallocate arrays for max possible iterations
 
-[rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = zeros(1, maxIterations);
+[rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = deal(zeros(1, maxIterations));
 
-[nP, nF1, nF2] = zeros(maxIterations, length(x));
+[nP, nF1, nF2] = deal(zeros(maxIterations, length(x)));
 
 sigma_sq = 0.25; % Dispersal variance
 
@@ -137,17 +152,18 @@ while generation <= iterations
     if (generation == iterations)
 
         % if not all species at steady state
-        if ~(isSpeciesSteadyState(speedP, steadyStateThreshold, generation) && isSpeciesSteadyState(speedF1, steadyStateThreshold, generation) && isSpeciesSteadyState(speedF2, steadyStateThreshold, generation))
+        if ~(isSpeciesSteadyState(instantSpeedP, steadyStateThreshold, generation) && isSpeciesSteadyState(instantSpeedF1, steadyStateThreshold, generation) && isSpeciesSteadyState(instantSpeedF2, steadyStateThreshold, generation))
 
             % iterations close to the max
             if iterations >= (maxIterations - iterationStep)
-                newIterations = maxIterations;
+                iterations = maxIterations;
             else
                 iterations = iterations + iterationStep;
             end
-    else
-        generation = generation + 1;
+        end
     end
+
+    generation = generation + 1;
 
 % while loop end
 end
@@ -156,7 +172,7 @@ end
 
 filename = strcat('results_', strjoin(string(parameters), '_'));
 
-save(strcat(filename, '.mat'), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
+save(strcat(outputDir, filename, '.mat'), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
 
 % end of simMutualism function
 end

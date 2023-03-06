@@ -25,10 +25,25 @@ We also define the number of additional iterations (=iterationStep=) to add to t
 #+begin_src matlab :tangle simMutualism.m
 %% for simulation
 
-iterations = 60; % minimum number of cycles of growth and dispersal
-steadyStateThreshold = 1e-04; % threshold for speed variance at steady state
-maxIterations = 500;
-iterationStep = 100;
+p = inputParser;
+p.KeepUnmatched = true;
+
+% minimum number of cycles of growth and dispersal
+addParameter(p, 'iterations', 60);
+addParameter(p, 'maxIterations', 500);
+addParameter(p, 'iterationStep', 100);
+addParameter(p, 'outputDir', './', @isfolder);
+
+parse(p, varargin{:});
+
+% I wish I knew a better way to get rid of all the p.Results that get attached inputParser parameters
+iterations = p.Results.iterations;
+maxIterations = p.Results.maxIterations;
+iterationStep = p.Results.iterationStep;
+outputDir = p.Results.outputDir;
+
+% threshold for speed variance at steady state
+steadyStateThreshold = 1e-04;
 
 #+end_src
 
@@ -69,11 +84,11 @@ Here we initialize the arrays we'll use throughout the simulation. The speed arr
 
 #+begin_src matlab :tangle simMutualism.m
 
-[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = zeros(1, maxIterations); % preallocate arrays for max possible iterations
+[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations)); % preallocate arrays for max possible iterations
 
-[rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = zeros(1, maxIterations);
+[rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = deal(zeros(1, maxIterations));
 
-[nP, nF1, nF2] = zeros(maxIterations, length(x));
+[nP, nF1, nF2] = deal(zeros(maxIterations, length(x)));
 
 #+end_src
 
@@ -221,17 +236,18 @@ while generation <= iterations
     if (generation == iterations)
 
         % if not all species at steady state
-        if ~(isSpeciesSteadyState(speedP, steadyStateThreshold, generation) && isSpeciesSteadyState(speedF1, steadyStateThreshold, generation) && isSpeciesSteadyState(speedF2, steadyStateThreshold, generation))
+        if ~(isSpeciesSteadyState(instantSpeedP, steadyStateThreshold, generation) && isSpeciesSteadyState(instantSpeedF1, steadyStateThreshold, generation) && isSpeciesSteadyState(instantSpeedF2, steadyStateThreshold, generation))
 
             % iterations close to the max
             if iterations >= (maxIterations - iterationStep)
-                newIterations = maxIterations;
+                iterations = maxIterations;
             else
                 iterations = iterations + iterationStep;
             end
-    else
-        generation = generation + 1;
+        end
     end
+
+    generation = generation + 1;
 
 % while loop end
 end
@@ -242,14 +258,15 @@ end
 This function takes the spread speed values for a given species and checks to see if the variance in the last 10 values is at or below a threshold to determine whether a steady state has been reached.
 
 #+begin_src matlab :tangle isSpeciesSteadyState.m
-function isSteadyState = isSpeciesSteadyState(speed, tolerance, interation)
+function isSteadyState = isSpeciesSteadyState(speed, tolerance, generation)
 % takes a matrix of speed values and checks whether the variance in the last 10 values is at or below a threshold
 
-    variance = sqrt(var(speed(iteration-9:iteration)));
+    variance = sqrt(var(speed((generation - 9):generation)));
+
     if variance <= tolerance
         isSteadyState = true;
     else
-        isSteadState = false;
+        isSteadyState = false;
     end
 end
 #+end_src
@@ -263,7 +280,7 @@ We save our results to a mat file, which can then be used to generate figures, i
 
 filename = strcat('results_', strjoin(string(parameters), '_'));
 
-save(strcat(filename, '.mat'), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
+save(strcat(outputDir, filename, '.mat'), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
 
 % end of simMutualism function
 end
@@ -527,6 +544,24 @@ end
 
 ** Sweep script
 
+#+begin_src matlab :tangle tauSweep.m
+
+iterations = 100;
+maxIterations = 1000;
+tau12Range, tau21Range = 0:0.01:0.4;
+outputDir = './tauSweep/';
+
+for tau12 = tau12Range
+
+    for tau21 = tau21Range
+
+        simMutualism('tau12', tau12, 'tau21', tau21, 'outputDir', outputDir, 'iterations', iterations, 'maxIterations', maxIterations);
+
+    end
+end
+
+#+end_src
+
 #+begin_src shell :tangle sweep/tau_sweep.sh
 
 #!/bin/bash
@@ -598,30 +633,12 @@ Note that the $SBATCH lines *must* be at the top of the script. Anything before 
 #SBATCH --ntasks=16
 #SBATCH --mem=20g
 #SBATCH --tmp=20g
-#SBATCH --mail-type=NONE
+#SBATCH --mail-type=ALL
 #SBATCH --mail-user=lutzx119@umn.edu
 
-BASEDIR=~/sweep
+BASEDIR=~/mutualism
 module load matlab
-matlab -nodisplay -nodesktop -nosplash -r "maxNumCompThreads(1)"<$BASEDIR/m_files/mcm_comp21=0.40_comp12=0.40.m
-
-# create a link to this sim's mat file in the mat_files directory
-ln -s $BASEDIR/tau_sweep/mcm_comp21=0.40_comp12=0.40/comp_pheno_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.40_comp_21=0.40.mat mat_files/.
-
-# create a link to this sim's range plot in the figures/range directory
-ln -s $BASEDIR/tau_sweep/mcm_comp21=0.40_comp12=0.40/range_size_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.40_comp_21=0.40.fig figures/range/.
-# put the png file in the png subdirectory
-ln -s $BASEDIR/tau_sweep/mcm_comp21=0.40_comp12=0.40/range_size_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.40_comp_21=0.40.png figures/range/png/.
-
-# create a link to this sim's N vs x plot in the figures/n_v_x directory
-ln -s $BASEDIR/tau_sweep/mcm_comp21=0.40_comp12=0.40/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.40_comp_21=0.40.fig figures/n_v_x/.
-# put the png file in the png subdirectory
-ln -s $BASEDIR/tau_sweep/mcm_comp21=0.40_comp12=0.40/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.40_comp_21=0.40.png figures/n_v_x/png/.
-
-# create a link to this sim's speed plot in the figures/speed directory
-ln -s $BASEDIR/tau_sweep/mcm_comp21=0.40_comp12=0.40/speed_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.40_comp_21=0.40.fig figures/speed/.
-# put the png file in the png subdirectory
-ln -s $BASEDIR/tau_sweep/mcm_comp21=0.40_comp12=0.40/speed_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.40_comp_21=0.40.png figures/speed/png/.
+matlab -nodisplay <$BASEDIR/tauSweep.m
 
 #+end_src
 
