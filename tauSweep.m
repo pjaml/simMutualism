@@ -1,7 +1,7 @@
 iterations = 100;
 maxIterations = 400;
 [tau12Range, tau21Range] = deal(0:0.01:0.4);
-outputDir = './tauSweep/';
+outputDir = '~/tauSweep/';
 
 for tau12 = tau12Range
 
