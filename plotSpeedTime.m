@@ -7,9 +7,7 @@ function plotSpeedTime(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile);
-
-    clf
+    load(simMatFile, 'filename', 'iterations', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
 
     plot(1:iterations, instantSpeedP, 1:iterations, instantSpeedF1, 1:iterations, instantSpeedF2);
     legend('P', 'F1', 'F2');

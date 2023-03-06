@@ -44,9 +44,9 @@ temp_P = find(abs(x) <= irad); %locate all values in the array x that lie b/w +i
 temp_F1 = find(abs(x) <= irad);
 temp_F2 = find(abs(x) <= irad);
 
-nP(1,temp_P) = initDensities(1)*normpdf(x(temp_P),0,1); %Computes pdf values evaluated at the values in x i.e. all x(temp) values for the normal distribution with mean 0 and standard deviation 1.
-nF1(1,temp_F1) = initDensities(2)*normpdf(x(temp_F1),0,1);
-nF2(1,temp_F2) = initDensities(3)*normpdf(x(temp_F2),0,1);
+nP(1,temp_P) = initDensities(1) * normpdf(x(temp_P),0,1); %Computes pdf values evaluated at the values in x i.e. all x(temp) values for the normal distribution with mean 0 and standard deviation 1.
+nF1(1,temp_F1) = initDensities(2) * normpdf(x(temp_F1),0,1);
+nF2(1,temp_F2) = initDensities(3) * normpdf(x(temp_F2),0,1);
 
 % FIND THE INITIAL FRONT LOCATION
 jj_P = find(nP(1,:) >= nThreshold,1,'last'); %find the farthest distance travelled by the population above a certain threshold density and assign it to jj
@@ -95,7 +95,9 @@ while generation <= iterations
     nF2(generation + 1,:) = dx*n1F2(nodes:length(x2));
 
     nP(generation + 1,1) = nP(generation + 1,1)/2; nP(generation + 1,nodes) = nP(generation + 1,nodes)/2; %The population density at the edges is halved
+
     nF1(generation + 1,1) = nF1(generation + 1,1)/2; nF1(generation + 1,nodes) = nF1(generation + 1,nodes)/2;
+
     nF2(generation + 1,1) = nF2(generation + 1,1)/2; nF2(generation + 1,nodes) = nF2(generation + 1,nodes)/2;
 
     temp_P = find(nP(generation + 1,:) < lowval); %gives location of random places where numbers are above zero due to some numerical errors

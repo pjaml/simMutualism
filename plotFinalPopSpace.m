@@ -7,13 +7,12 @@ function plotFinalPopSpace(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'nP', 'nF1', 'nF2');
+    load(simMatFile, 'nP', 'nF1', 'nF2', 'iterations', 'filename');
 
-    clf
     hold on
-    plot(nP(end,:));
-    plot(nF1(end,:));
-    plot(nF2(end,:));
+    plot(nP(iterations + 1,:));
+    plot(nF1(iterations + 1,:));
+    plot(nF2(iterations + 1,:));
     legend('P', 'F1', 'F2');
     title(strcat(['N vs. x']));
     hold off

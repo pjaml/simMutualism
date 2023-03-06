@@ -7,7 +7,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile);
+    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold');
 
     %% Figure for species P
     figure(1);

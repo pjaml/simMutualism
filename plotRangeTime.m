@@ -8,17 +8,16 @@ function plotRangeTime(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile);
+    load(simMatFile, 'filename', 'nThreshold', 'nP', 'nF1', 'nF2', 'iterations');
 
-    for i = 1:iterations+1
+    for i = 1:(iterations + 1)
 
         rangeP(i) = length(find(nP(i,:) >= nThreshold));
         rangeF1(i) = length(find(nF1(i,:) >= nThreshold));
         rangeF2(i) = length(find(nF2(i,:) >= nThreshold));
     end
 
-    clf
-    plot(1:iterations+1, [rangeP; rangeF1; rangeF2]);
+    plot(1:(iterations + 1), [rangeP; rangeF1; rangeF2]);
     xlabel('iterations');
     ylabel('range size');
     title(strcat(['Range size vs. time']));
