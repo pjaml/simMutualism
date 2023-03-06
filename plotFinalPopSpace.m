@@ -1,18 +1,25 @@
-function plotFinalPopSpace(simMatFile)
+function plotFinalPopSpace(simMatFile, varargin)
 
-    load(simMatFile);
+    p = inputParser;
+    addRequired(p, 'simMatFile', @isfile);
+    addOptional(p,'createFile', false, @islogical);
+    addOptional(p, 'imgDir', './', @isfolder);
+
+    parse(p, simMatFile, varargin{:});
+
+    load(simMatFile, 'nP', 'nF1', 'nF2');
 
     clf
     hold on
-    plot(n_P(end,:));
-    plot(n_F1(end,:));
-    plot(n_F2(end,:));
+    plot(nP(end,:));
+    plot(nF1(end,:));
+    plot(nF2(end,:));
     legend('P', 'F1', 'F2');
-    title(strcat(['N vs. x (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+    title(strcat(['N vs. x']));
     hold off
 
-    savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
-
-    % Save a PNG file
-    % saveas(gcf, strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.png']));
+    if p.Results.createFile
+        filename = strcat('final_pop_space_', filename, '.fig');
+        savefig(strcat(imgDir, filename));
+    end
 end

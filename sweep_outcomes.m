@@ -11,7 +11,7 @@ for ii = 1:length(tau_12_list)
 
         load(strcat(['~/sweep/mat_files/comp_pheno_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=' num2str(tau_12_list(ii), fspec) '_comp_21=' num2str(tau_21_list(jj), fspec) '.mat']));
 
-        outcomes(ii,jj) = det_outcome(n_P, n_F1, n_F2, 0.05);
+        outcomes(ii,jj) = det_outcome(nP, nF1, nF2, 0.05);
 
     end
 end

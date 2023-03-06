@@ -2,15 +2,14 @@
 
 * Simulation
 
-Here we simulate the outcome of many iterations of growth-dispersal cycles in three mutualist species.
-
-Make sure to clear everything before running a new simulation.
+Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species. The =simMutualism()= function can take a number of optional arguments.
 
 #+begin_src matlab :tangle simMutualism.m
-clearvars
-clc
-
 function simMutualism(varargin)
+
+% we save the given parameters to a variable so we can use them to
+% name files and label plots
+parameters = varargin;
 #+end_src
 
 ** Parameters
@@ -19,17 +18,17 @@ function simMutualism(varargin)
 
 The number of growth-dispersal cycles (i.e. iterations) will change based on whether a steady state is reached for all three species. A species reaches a steady state when the variance between the last 10 spread speed values is at or below some threshold.
 
-So the number of iterations defined here is just the /minimum/ number of iterations that a simulation will run. We also set the maximum number of iterations, so even if a steady state isn't reached, the simulation will end after this many cycles.
+So the number of iterations defined here is just the /minimum/ number of iterations that a simulation will run. We also set the maximum number of iterations, so even if a steady state isn't reached, the simulation will end after this many cycles. This value is also used to allocate space in a number of arrays used in the simulation. It's faster (although more costly in memory) to preallocate the maximum number of rows we may need to use, rather than to try and increase the size of several large arrays.
 
-We also define the number of additional iterations (=add_iterations=) to try before checking for steady state again.
+We also define the number of additional iterations (=iterationStep=) to add to the simulation before checking for steady states again.
 
 #+begin_src matlab :tangle simMutualism.m
 %% for simulation
 
-iterations = 60; % cycles of growth and dispersal
-steady_state_threshold = 1e-04; % threshold for speed variance at steady state
-max_iterations = 500;
-add_iterations = 100;
+iterations = 60; % minimum number of cycles of growth and dispersal
+steadyStateThreshold = 1e-04; % threshold for speed variance at steady state
+maxIterations = 500;
+iterationStep = 100;
 
 #+end_src
 
@@ -56,32 +55,39 @@ Why these specific values?
 %% Initialize space parameters
 lowval = 1e-9;
 diameter = 1200;  %total size of landscape along positive x-axis (so technically half the size of the total landscape)
-nodes = (2^16)+1; %total points in space -- 65537
-radius = diameter/2;
-x = linspace(-radius,radius,nodes);
-x2 = linspace(-diameter,diameter,2*nodes-1);
-dx = diameter/(nodes-1);
+nodes = (2^16) + 1; %total points in space -- 65537
+radius = diameter / 2;
+x = linspace(-radius, radius, nodes);
+x2 = linspace(-diameter, diameter, 2 * nodes - 1);
+dx = diameter / (nodes - 1);
+
 #+end_src
 
 ** Initialization
 
+Here we initialize the arrays we'll use throughout the simulation. The speed arrays save the instantaneous or average spread speed of a species for each iteration. The range edge arrays keep track of the furthest spatial location on one side of a species' range. The /n/ population arrays keep track of each species' population density across the entire spatial range.
+
 #+begin_src matlab :tangle simMutualism.m
 
-[speed_inst_P,speed_av_P, speed_inst_F1,speed_av_F1, speed_inst_F2, speed_av_F2] = deal(zeros(1,iterations)); %assign initializing values to each of the arrays
-[xright_P,xright_F1, xright_F2] = deal(zeros(1,iterations+1)); %array with 1 row and 201 columns. tells us the farthest a population has reached
-[n_P,n_F1, n_F2] = deal(zeros(iterations+1,length(x))); %array with 201 rows and 65537 columns. tells us population density at each node along column and each time step/iteration is one row. define ,f_P_all,f_F_all if you wish to do post census calculations
+[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = zeros(1, maxIterations); % preallocate arrays for max possible iterations
+
+[rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = zeros(1, maxIterations);
+
+[nP, nF1, nF2] = zeros(maxIterations, length(x));
 
 #+end_src
 
 *** Dispersal kernels
 
+We use a Gaussian dispersal kernel for each species. At some point we'll rewrite this to allow for other dispersal kernel functions.
+
 #+begin_src matlab :tangle simMutualism.m
 sigma_sq = 0.25; % Dispersal variance
 
 % gaussian dispersal kernels
-k_P = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
-k_F1 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
-k_F2 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
+kP = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
+kF1 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
+kF2 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
 
 #+end_src
 
@@ -90,15 +96,15 @@ k_F2 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
 #+begin_src matlab :tangle simMutualism.m
 % SET THE INITIAL CONDITIONS
 irad = 2; % Initial condition range
-idens = [0.1,0.1,0.1];
-ncrit = 0.05; % critical threshold for edge of wave
+initDensities = [0.1,0.1,0.1];
+nThreshold = 0.05; % critical threshold for edge of wave
 temp_P = find(abs(x) <= irad); %locate all values in the array x that lie b/w +irad and -irad units of space
 temp_F1 = find(abs(x) <= irad);
 temp_F2 = find(abs(x) <= irad);
 
-n_P(1,temp_P) = idens(1)*normpdf(x(temp_P),0,1); %Computes pdf values evaluated at the values in x i.e. all x(temp) values for the normal distribution with mean 0 and standard deviation 1.
-n_F1(1,temp_F1) = idens(2)*normpdf(x(temp_F1),0,1);
-n_F2(1,temp_F2) = idens(3)*normpdf(x(temp_F2),0,1);
+nP(1,temp_P) = initDensities(1)*normpdf(x(temp_P),0,1); %Computes pdf values evaluated at the values in x i.e. all x(temp) values for the normal distribution with mean 0 and standard deviation 1.
+nF1(1,temp_F1) = initDensities(2)*normpdf(x(temp_F1),0,1);
+nF2(1,temp_F2) = initDensities(3)*normpdf(x(temp_F2),0,1);
 
 #+end_src
 
@@ -106,19 +112,19 @@ n_F2(1,temp_F2) = idens(3)*normpdf(x(temp_F2),0,1);
 
 #+begin_src matlab :tangle simMutualism.m
 % FIND THE INITIAL FRONT LOCATION
-jj_P = find(n_P(1,:) >= ncrit,1,'last'); %find the farthest distance travelled by the population above a certain threshold density and assign it to jj
-jj_F1 = find(n_F1(1,:) >= ncrit,1,'last');
-jj_F2 = find(n_F2(1,:) >= ncrit,1,'last');
+jj_P = find(nP(1,:) >= nThreshold,1,'last'); %find the farthest distance travelled by the population above a certain threshold density and assign it to jj
+jj_F1 = find(nF1(1,:) >= nThreshold,1,'last');
+jj_F2 = find(nF2(1,:) >= nThreshold,1,'last');
 
 if jj_P %the initial front is obtained from initialization which will be in the first row of 'n'
-  xright_P(1) = interp1(n_P(1,jj_P:jj_P+1),x(jj_P:jj_P+1),ncrit);
+  rangeEdgeP(1) = interp1(nP(1,jj_P:jj_P+1),x(jj_P:jj_P+1),nThreshold);
 end
 if jj_F1
-  xright_F1(1) = interp1(n_F1(1,jj_F1:jj_F1+1),x(jj_F1:jj_F1+1),ncrit);
+  rangeEdgeF1(1) = interp1(nF1(1,jj_F1:jj_F1+1),x(jj_F1:jj_F1+1),nThreshold);
 end
 
 if jj_F2
-  xright_F2(1) = interp1(n_F2(1,jj_F2:jj_F2+1),x(jj_F2:jj_F2+1),ncrit);
+  rangeEdgeF2(1) = interp1(nF2(1,jj_F2:jj_F2+1),x(jj_F2:jj_F2+1),nThreshold);
 end
 
 #+end_src
@@ -128,83 +134,89 @@ end
 #+begin_src matlab :tangle simMutualism.m
 generation = 1;
 %% Looping for growth and dispersal
-while generation < iterations
+while generation <= iterations
 
+    % for ode45
     tspan = [0, 10];
 
     %Growth
-    y0 = [n_P(generation,:);n_F1(generation,:);n_F2(generation,:)];
+    y0 = [nP(generation,:);nF1(generation,:);nF2(generation,:)];
 
-    % reshape happens such that 3 consecutive rows for n_P, n_F1, and n_F2 values are stacked
+    % reshape happens such that 3 consecutive rows for nP, nF1, and nF2 values are stacked
     y0 = reshape(y0, 3*length(y0), 1);
 
     [t,y] = ode45(@(t,y) growthODEs(t,y), tspan, y0); %remember to alter where the dep_p and dep_f are being called from
 
 
     % We just want the results of the growth phase (end)
-    f_P = y(end,(1:3:end)); % final row; element 1, +3, elem. 4, etc. until end
-    f_F1 = y(end,(2:3:end));
-    f_F2 = y(end,(3:3:end));
+    fP = y(end,(1:3:end)); % final row; element 1, +3, elem. 4, etc. until end
+    fF1 = y(end,(2:3:end));
+    fF2 = y(end,(3:3:end));
 
 %   DISPERSAL
-    n1_P = fft_conv(k_P,f_P);   % dispersing individuals
-    n1_F1 = fft_conv(k_F1,f_F1);
-    n1_F2 = fft_conv(k_F2,f_F2);
+    n1P = fft_conv(kP,fP);   % dispersing individuals
+    n1F1 = fft_conv(kF1,fF1);
+    n1F2 = fft_conv(kF2,fF2);
 
-    n_P(generation + 1,:) = dx*n1_P(nodes:length(x2)); %the convolution apparently doubles the length of the array?
-    n_F1(generation + 1,:) = dx*n1_F1(nodes:length(x2));
-    n_F2(generation + 1,:) = dx*n1_F2(nodes:length(x2));
+    nP(generation + 1,:) = dx*n1P(nodes:length(x2)); %the convolution apparently doubles the length of the array?
+    nF1(generation + 1,:) = dx*n1F1(nodes:length(x2));
+    nF2(generation + 1,:) = dx*n1F2(nodes:length(x2));
 
-    n_P(generation + 1,1) = n_P(generation + 1,1)/2; n_P(generation + 1,nodes) = n_P(generation + 1,nodes)/2; %The population density at the edges is halved
-    n_F1(generation + 1,1) = n_F1(generation + 1,1)/2; n_F1(generation + 1,nodes) = n_F1(generation + 1,nodes)/2;
-    n_F2(generation + 1,1) = n_F2(generation + 1,1)/2; n_F2(generation + 1,nodes) = n_F2(generation + 1,nodes)/2;
+    nP(generation + 1,1) = nP(generation + 1,1)/2; nP(generation + 1,nodes) = nP(generation + 1,nodes)/2; %The population density at the edges is halved
+    nF1(generation + 1,1) = nF1(generation + 1,1)/2; nF1(generation + 1,nodes) = nF1(generation + 1,nodes)/2;
+    nF2(generation + 1,1) = nF2(generation + 1,1)/2; nF2(generation + 1,nodes) = nF2(generation + 1,nodes)/2;
 
-    temp_P = find(n_P(generation + 1,:) < lowval); %gives location of random places where numbers are above zero due to some numerical errors
-    temp_F1 = find(n_F1(generation + 1,:) < lowval);
-    temp_F2 = find(n_F2(generation + 1,:) < lowval);
+    temp_P = find(nP(generation + 1,:) < lowval); %gives location of random places where numbers are above zero due to some numerical errors
+    temp_F1 = find(nF1(generation + 1,:) < lowval);
+    temp_F2 = find(nF2(generation + 1,:) < lowval);
 
-    n_P(generation + 1,temp_P) = zeros(size(n_P(generation + 1,temp_P))); %set the places with those numerical errors to zero
-    n_F1(generation + 1,temp_F1) = zeros(size(n_F1(generation + 1,temp_F1)));%delete this for STE
-    n_F2(generation + 1,temp_F2) = zeros(size(n_F2(generation + 1,temp_F2)));%delete this for STE
+    nP(generation + 1,temp_P) = zeros(size(nP(generation + 1,temp_P))); %set the places with those numerical errors to zero
+    nF1(generation + 1,temp_F1) = zeros(size(nF1(generation + 1,temp_F1)));%delete this for STE
+    nF2(generation + 1,temp_F2) = zeros(size(nF2(generation + 1,temp_F2)));%delete this for STE
 
-    jj_P = find(n_P(generation + 1,:) >= ncrit,1,'last');
-    jj_F1 = find(n_F1(generation + 1,:) >= ncrit,1,'last');
-    jj_F2 = find(n_F2(generation + 1,:) >= ncrit,1,'last');
+    jj_P = find(nP(generation + 1,:) >= nThreshold,1,'last');
+    jj_F1 = find(nF1(generation + 1,:) >= nThreshold,1,'last');
+    jj_F2 = find(nF2(generation + 1,:) >= nThreshold,1,'last');
 
     if jj_P
-         xright_P(generation + 1) = interp1(n_P(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1),ncrit);
+         rangeEdgeP(generation + 1) = interp1(nP(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1),nThreshold);
     end
 
     if jj_F1
-         xright_F1(generation + 1) = interp1(n_F1(generation + 1,jj_F1:jj_F1 + 1),x(jj_F1:jj_F1 + 1),ncrit);
+         rangeEdgeF1(generation + 1) = interp1(nF1(generation + 1,jj_F1:jj_F1 + 1),x(jj_F1:jj_F1 + 1),nThreshold);
     end
 
     if jj_F2
-         xright_F2(generation + 1) = interp1(n_F2(generation + 1,jj_F2:jj_F2 + 1),x(jj_F2:jj_F2 + 1),ncrit);
+         rangeEdgeF2(generation + 1) = interp1(nF2(generation + 1,jj_F2:jj_F2 + 1),x(jj_F2:jj_F2 + 1),nThreshold);
     end
 
-    speed_av_P(generation) = (xright_P(generation + 1) - xright_P(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
-    speed_inst_P(generation) = xright_P(generation + 1) - xright_P(generation);
+    avgSpeedP(generation) = (rangeEdgeP(generation + 1) - rangeEdgeP(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
+    instantSpeedP(generation) = rangeEdgeP(generation + 1) - rangeEdgeP(generation);
 
-    speed_inst_F1(generation) = xright_F1(generation + 1) - xright_F1(generation);
-    speed_av_F1(generation) = (xright_F1(generation + 1) - xright_F1(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
+    instantSpeedF1(generation) = rangeEdgeF1(generation + 1) - rangeEdgeF1(generation);
+    avgSpeedF1(generation) = (rangeEdgeF1(generation + 1) - rangeEdgeF1(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
 
-    speed_inst_F2(generation) = xright_F2(generation + 1) - xright_F2(generation);
-    speed_av_F2(generation) = (xright_F2(generation + 1) - xright_F2(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
+    instantSpeedF2(generation) = rangeEdgeF2(generation + 1) - rangeEdgeF2(generation);
+    avgSpeedF2(generation) = (rangeEdgeF2(generation + 1) - rangeEdgeF2(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
 
-    % increment the while loop current iteration
-    generation = generation + 1;
+    % check for steady state, and determine whether to run for more generations
+    if (generation == iterations)
 
-    %save(strcat(['mandm_yescost_depP=' num2str(dep_p) '_depF=' num2str(dep_f) '.mat']))
-    %save mandm_nocost_yesdep.mat
+        % if not all species at steady state
+        if ~(isSpeciesSteadyState(speedP, steadyStateThreshold, generation) && isSpeciesSteadyState(speedF1, steadyStateThreshold, generation) && isSpeciesSteadyState(speedF2, steadyStateThreshold, generation))
+
+            % iterations close to the max
+            if iterations >= (maxIterations - iterationStep)
+                newIterations = maxIterations;
+            else
+                iterations = iterations + iterationStep;
+            end
+    else
+        generation = generation + 1;
+    end
+
 % while loop end
 end
-#+end_src
-
-** Dispersal phase function
-
-#+begin_src matlab :tangle dispersal_phase.m
-
 #+end_src
 
 ** Determining whether to continue running simulation based on steady states
@@ -221,21 +233,21 @@ Logic needs to be if any species /is not/ at a steady state.
 
 
         % determine if all species at steady state
-        if isSpeciesSteadyState(speed_inst_P, steady_state_threshold) || isSpeciesSteadyState(speed_inst_F1, steady_state_threshold) || isSpeciesSteadyState(speed_inst_F2, steady_state_threshold)
+        if isSpeciesSteadyState(instantSpeedP, steadyStateThreshold) || isSpeciesSteadyState(instantSpeedF1, steadyStateThreshold) || isSpeciesSteadyState(instantSpeedF2, steadyStateThreshold)
 
         end
 
-            if iterations == (max_iterations - add_iterations)
-                iterations = max_iterations;
+            if iterations == (maxIterations - iterationStep)
+                iterations = maxIterations;
             else
                 iterations = iterations + 20;
             end
 
             % extend the sizes of the relevant vectors & matrices
-            [speed_inst_P(length(speed_inst_P)+1:iterations), speed_av_P(length(speed_av_P)+1:iterations), speed_inst_F1(length(speed_inst_F1)+1:iterations), speed_av_F1(length(speed_av_F1)+1:iterations), speed_inst_F2(length(speed_inst_F2)+1:iterations), speed_av_F2(length(speed_av_F2)+1:iterations)] = deal(0);
-            [xright_P(length(xright_P)+1:iterations+1),xright_F1(length(xright_F1)+1:iterations+1), xright_F2(length(xright_F2)+1:iterations+1)] = deal(0);
+            [instantSpeedP(length(instantSpeedP)+1:iterations), avgSpeedP(length(avgSpeedP)+1:iterations), instantSpeedF1(length(instantSpeedF1)+1:iterations), avgSpeedF1(length(avgSpeedF1)+1:iterations), instantSpeedF2(length(instantSpeedF2)+1:iterations), avgSpeedF2(length(avgSpeedF2)+1:iterations)] = deal(0);
+            [rangeEdgeP(length(rangeEdgeP)+1:iterations+1),rangeEdgeF1(length(rangeEdgeF1)+1:iterations+1), rangeEdgeF2(length(rangeEdgeF2)+1:iterations+1)] = deal(0);
 
-            [n_P(height(n_P)+1:iterations+1,:), n_F1(height(n_F1)+1:iterations+1,:), n_F2(height(n_F2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(n_P), length(n_P)));
+            [nP(height(nP)+1:iterations+1,:), nF1(height(nF1)+1:iterations+1,:), nF2(height(nF2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(nP), length(nP)));
         else
             break
         end
@@ -243,21 +255,32 @@ Logic needs to be if any species /is not/ at a steady state.
 
 #+end_src
 
-*** Steady state functions
+*** Determine if we need to run more generations
 
-#+begin_src matlab :tangle checkSteadyStates.m
+#+begin_src matlab :tangle moreIterations.m
 
-function steadyStates = checkSteadyStates()
+function newIterations = moreIterations(speedP, speedF1, speedF2, generation, iterations, iterationStep, maxIterations, steadyStateThreshold)
 
+
+            % extend the sizes of the relevant vectors & matrices
+            [instantSpeedP(length(instantSpeedP)+1:iterations), avgSpeedP(length(avgSpeedP)+1:iterations), instantSpeedF1(length(instantSpeedF1)+1:iterations), avgSpeedF1(length(avgSpeedF1)+1:iterations), instantSpeedF2(length(instantSpeedF2)+1:iterations), avgSpeedF2(length(avgSpeedF2)+1:iterations)] = deal(0);
+            [rangeEdgeP(length(rangeEdgeP)+1:iterations+1),rangeEdgeF1(length(rangeEdgeF1)+1:iterations+1), rangeEdgeF2(length(rangeEdgeF2)+1:iterations+1)] = deal(0);
+
+            [nP(height(nP)+1:iterations+1,:), nF1(height(nF1)+1:iterations+1,:), nF2(height(nF2)+1:iterations+1,:)] = deal(zeros((iterations+1)-height(nP), length(nP)));
+        else
+            break
+        end
+    end
+end
 #+end_src
 
 This function takes the spread speed values for a given species and checks to see if the variance in the last 10 values is at or below a threshold to determine whether a steady state has been reached.
 
 #+begin_src matlab :tangle isSpeciesSteadyState.m
-function isSteadyState = isSpeciesSteadyState(speed, tolerance)
+function isSteadyState = isSpeciesSteadyState(speed, tolerance, interation)
 % takes a matrix of speed values and checks whether the variance in the last 10 values is at or below a threshold
 
-    variance = sqrt(var(speed(end-9:end)));
+    variance = sqrt(var(speed(iteration-9:iteration)));
     if variance <= tolerance
         isSteadyState = true;
     else
@@ -268,14 +291,14 @@ end
 
 ** Generate and save a mat file for the simulation
 
-We save our results to a mat file, which can then be used to generate figures, identify outcomes, etc.
+We save our results to a mat file, which can then be used to generate figures, identify outcomes, etc. The =filename= string can be reused for saving figures as well. It takes any explicitly defined parameters from the call to =simMutualism()= and appends the names and values to =filename=.
 
 #+begin_src matlab :tangle simMutualism.m
 %% Save a mat file with the current parameter values
-%save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.mat']));
-filename = ''
 
-save(strcat(['~/sweep2/mat_files/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.mat']));
+filename = strcat('results_', strjoin(string(parameters), '_'));
+
+save(strcat(filename, '.mat'), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
 
 % end of simMutualism function
 end
@@ -289,8 +312,6 @@ Here we define the growth of each species using a system of ODEs.
 
 *** Function definition
 
-+Note that now =r2=, =alpha12=, =alpha21=, =beta2=, =d2=, =h1=, =h2=, =e2=, and =dep_f= are /1x2/ vectors. The first value is for $F_1$, the second is for $F_2$ (e.g. =r2(1)= is $F_2$'s growth rate)+
-
 With =varargin=, we can optionally use parameter values other than the defaults, e.g. =growthODEs(t, y, 'default_r_p', 0.4)=. We need to use an [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] to manage the function's parameters.
 
 #+begin_src matlab :tangle growthODEs.m
@@ -298,7 +319,6 @@ With =varargin=, we can optionally use parameter values other than the defaults,
 % function dydt = growthODEs(t, y, r1, r2, alpha12, alpha21, q1, q2, beta1, beta2, c1, c2, d1, d2, h1, h2,e1, e2, nodes, dep_p, dep_f, comp_12, comp_21)
 function dydt = growthODEs(t, y, varargin)
 
-    checkParameters(varargin);
 #+end_src
 
 *** Default parameter values
@@ -489,13 +509,11 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 
 *** Species /P/
 
-# Equation broken in HTML export
 
-$$
-\frac{dP}{dt} = P\left[ (1 - \delta_P) r_P + \delta_P \left( c_1 \left[\frac{\alpha_{PF_1} F_1}{h_P_1 + F_1}  + \frac{\alpha_{PF_2} F_2}{h_P_2 + F_2} \right] \right) - \left(\frac{\delta_{F1} + \delta_{F2}}{2} \right) \left( q_1 \left[ \frac{\beta_{PF} (F_1 + F_2)}{e_P + P} \right] \right) - d_P P \right]
-$$
-
-The $(\delta_{F1} + \delta_{F2} / 2)$ term should be changed. It's currently irrelevant since we've only used $\beta$ values of zero.
+\begin{align*}
+\frac{dP}{dt} = P\left[ (1 - \delta_P) r_P &+ \delta_P \left( c_1 \left[\frac{\alpha_{PF_1} F_1}{h_P_1 + F_1}  + \frac{\alpha_{PF_2} F_2}{h_P_2 + F_2} \right] \right) \\
+&- \delta_{F1} \left( q_1 \left[ \frac{\beta_{P} F_1}{e_P + P} \right] \right) - \delta_{F2} \left( q_1 \left[ \frac{\beta_{P} F_2}{e_P + P} \right] \right) - d_{P} P \right]
+\end{align*}
 
 #+begin_src matlab :tangle growthODEs.m
 
@@ -504,14 +522,14 @@ The $(\delta_{F1} + \delta_{F2} / 2)$ term should be changed. It's currently irr
     F1 = y(2,:);
     F2 = y(3,:);
 
-    dydt(1,:) = P .* ((1 - delta_p) * r_p + delta_p * (c_p * ((alpha_p_f1 .* F1) ./ (h_p_f1 + F1) + (alpha_p_f2 .* F2) ./ (h_p_f2 + F2))) - ((delta_f1 + delta_f2)/2) * (q_p * (beta_p .* (F1 + F2) ./ (e_p + P))) - (d_p .* P));
+    dydt(1,:) = P .* ((1 - delta_p) * r_p + delta_p * (c_p * ((alpha_p_f1 .* F1) ./ (h_p_f1 + F1) + (alpha_p_f2 .* F2) ./ (h_p_f2 + F2))) - delta_f1 * (q_p * (beta_p .* F1 ./ (e_p + P))) - delta_f2 * (q_p * (beta_p .* F2 ./ (e_p + P))) - (d_p .* P));
 
 #+end_src
 
 *** Species /F/, Phenotype 1
 
 $$
-\frac{dF_1}{dt} = F_1[(1 - \delta_{F_1})r_{F_1} + \delta_{F_1} \left( c_2 \left[\frac{\alpha_{F_1P}P}{h_{F_1} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_1P}P}{e_{F_1} + F_1} \right] \right) - \tau_{12}F_2 - d_{F_1}F_1]
+\frac{dF_1}{dt} = F_1[(1 - \delta_{F_1})r_{F_1} + \delta_{F_1} \left( c_2 \left[\frac{\alpha_{F_1P}P}{h_{F_1} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_1}P}{e_{F_1} + F_1} \right] \right) - \tau_{12}F_2 - d_{F_1}F_1]
 $$
 
 #+begin_src matlab :tangle growthODEs.m
@@ -522,7 +540,7 @@ $$
 *** Species /F/, Phenotype 2
 
 $$
-\frac{dF_2}{dt} = F_2[(1 - \delta_{F_2})r_{F_2} + \delta_{F_2} \left(c_2 \left[\frac{\alpha_{F_2P}P}{h_{F_2} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_2P}P}{e_{F_2} + F_2} \right] \right) - \tau_{21}F_1 - d_{F_2}F_2]
+\frac{dF_2}{dt} = F_2[(1 - \delta_{F_2})r_{F_2} + \delta_{F_2} \left(c_2 \left[\frac{\alpha_{F_2P}P}{h_{F_2} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_2}P}{e_{F_2} + F_2} \right] \right) - \tau_{21}F_1 - d_{F_2}F_2]
 $$
 
 #+begin_src matlab :tangle growthODEs.m
@@ -647,17 +665,17 @@ ln -s $BASEDIR/tau_sweep/mcm_comp21=0.40_comp12=0.40/speed_depF1=0.9_depF2=0.1_a
 #+begin_src matlab :tangle det_outcome.m
 
 %% Function to classify outcome of a given simulation
-function outcome = det_outcome(n_P, n_F1, n_F2, ncrit)
+function outcome = det_outcome(nP, nF1, nF2, nThreshold)
 
     % get the final population densities of P, F1, and F2
-    fin_P = n_P(end,:);
-    fin_F1 = n_F1(end,:);
-    fin_F2 = n_F2(end,:);
+    finP = nP(end,:);
+    finF1 = nF1(end,:);
+    finF2 = nF2(end,:);
 
     % get the ranges where F1 and F2 populations are above the threshold
-    rangeP = find(fin_P >= ncrit);
-    rangeF1 = find(fin_F1 >= ncrit);
-    rangeF2 = find(fin_F2 >= ncrit);
+    rangeP = find(finP >= nThreshold);
+    rangeF1 = find(finF1 >= nThreshold);
+    rangeF2 = find(finF2 >= nThreshold);
 
     max_range = max(length(rangeF1), length(rangeF2));
     % max_range = size(rangeP);
@@ -683,7 +701,7 @@ function outcome = det_outcome(n_P, n_F1, n_F2, ncrit)
     % if F1 is above threshold and F2 is below threshold or F2 is above
     % threshold and F1 is below threshold
 
-    % elseif isempty(find(fin_F2(setxor(rangeF1, rangeF2)) >= ncrit))
+    % elseif isempty(find(finF2(setxor(rangeF1, rangeF2)) >= nThreshold))
 
     % we find at least some F1 dominance
     elseif not(isempty(intersect(rangeF1, setxor(rangeF1, rangeF2))))
@@ -716,7 +734,14 @@ We generate a plot for each species, and they're superimposed in a single figure
 
 #+begin_src matlab :tangle plotPopSpaceTime.m
 
-function plotPopSpaceTime(simMatFile)
+function plotPopSpaceTime(simMatFile, varargin)
+
+    p = inputParser;
+    addRequired(p, 'simMatFile', @isfile);
+    addOptional(p,'createFile', false, @islogical);
+    addOptional(p, 'imgDir', './', @isfolder);
+
+    parse(p, simMatFile, varargin{:});
 
     load(simMatFile);
 
@@ -724,16 +749,16 @@ function plotPopSpaceTime(simMatFile)
     figure(1);
     clf
     [xx,tt] = meshgrid(x,0:iterations);
-    nlow = n_P;
-    nlow(n_P>=ncrit) = NaN;
-    n_P(n_P<ncrit) = NaN;
+    nlow = nP;
+    nlow(nP>=nThreshold) = NaN;
+    nP(nP<nThreshold) = NaN;
     hold on
     for i = 1:5:60
-        plot3(xx(i,:),tt(i,:),n_P(i,:),'b', 'LineWidth', 3.0);
+        plot3(xx(i,:),tt(i,:),nP(i,:),'b', 'LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
-    % plot3(xright_P(1:11),0:10,ncrit*ones(1,11),'k');
+    % plot3(rangeEdgeP(1:11),0:10,nThreshold*ones(1,11),'k');
     axis([-120 120 0 iterations 0 6.25]);
     xlabel('space (x)');
     ylabel('time (t)');
@@ -743,44 +768,49 @@ function plotPopSpaceTime(simMatFile)
 
     %% Figure for species F1
     [xx,tt] = meshgrid(x,0:iterations);
-    nlow = n_F1;
-    nlow(n_F1>=ncrit) = NaN;
-    n_F1(n_F1<ncrit) = NaN;
+    nlow = nF1;
+    nlow(nF1>=nThreshold) = NaN;
+    nF1(nF1<nThreshold) = NaN;
     hold on
     for i = 1:5:60
-        plot3(xx(i,:),tt(i,:),n_F1(i,:),'r','LineWidth', 3.0);
+        plot3(xx(i,:),tt(i,:),nF1(i,:),'r','LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
 
-    % plot3(xright_F1(1:11),0:10,ncrit*ones(1,11),'k');
+    % plot3(rangeEdgeF1(1:11),0:10,nThreshold*ones(1,11),'k');
     % axis([-15 15 0 10 0 5]);
     % xlabel('space (x)');
     % ylabel('time (t)');
-    % zlabel('species F1 density (n_F1)');
+    % zlabel('species F1 density (nF1)');
     % view(30,30);
     % title('Species F1');
 
     %% Figure for species F2
     [xx,tt] = meshgrid(x,0:iterations);
-    nlow = n_F2;
-    nlow(n_F2>=ncrit) = NaN;
-    n_F2(n_F2<ncrit) = NaN;
+    nlow = nF2;
+    nlow(nF2>=nThreshold) = NaN;
+    nF2(nF2<nThreshold) = NaN;
     hold on
     for i = 1:5:60
-        plot3(xx(i,:),tt(i,:),n_F2(i,:),'g', 'LineWidth', 3.0);
+        plot3(xx(i,:),tt(i,:),nF2(i,:),'g', 'LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
 
-    % plot3(xright_F2(1:11),0:100,ncrit*ones(1,11),'k');
+    % plot3(rangeEdgeF2(1:11),0:100,nThreshold*ones(1,11),'k');
     % axis([-15 15 0 10 0 5]);
     % xlabel('space (x)');
     % ylabel('time (t)');
-    % zlabel('species F2 density (n_F2)');
+    % zlabel('species F2 density (nF2)');
     % view(30,30);
     % title('Species F2');
     hold off
+
+    if p.Results.createFile
+        filename = strcat('pop_space_time_', filename, '.fig');
+        savefig(strcat(imgDir, filename));
+    end
 
 end
 #+end_src
@@ -789,50 +819,61 @@ end
 
 #+begin_src matlab :tangle plotSpeedTime.m
 
-function plotSpeedTime(simMatFile)
+function plotSpeedTime(simMatFile, varargin)
+
+    p = inputParser;
+    addRequired(p, 'simMatFile', @isfile);
+    addOptional(p,'createFile', false, @islogical);
+    addOptional(p, 'imgDir', './', @isfolder);
+
+    parse(p, simMatFile, varargin{:});
 
     load(simMatFile);
 
     clf
 
-    plot(1:iterations, speed_inst_P, 1:iterations, speed_inst_F1, 1:iterations, speed_inst_F2);
+    plot(1:iterations, instantSpeedP, 1:iterations, instantSpeedF1, 1:iterations, instantSpeedF2);
     legend('P', 'F1', 'F2');
-    title(strcat(['Spread speed vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+    title(strcat(['Spread speed vs. time']));
     xlabel('iterations');
     ylabel('speed');
 
-    savefig(strcat(['comp_pheno_model/speed_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
-
+    if p.Results.createFile
+        filename = strcat('speed_time_', filename, '.fig');
+        savefig(strcat(imgDir, filename));
+    end
 end
 
 #+end_src
 
-** N spatial distribution
-
-Three save functions are called:
-- =save()= saves the current parameter values in a =.mat= file (with relevant parameter values in the filename)
-- =savefig()= saves the matlab figure so we can easily view and manipulate it in matlab
-- =saveas()= saves the figure as a PNG
+** Final population densities across space
 
  #+begin_src matlab :tangle plotFinalPopSpace.m
 
-function plotFinalPopSpace(simMatFile)
+function plotFinalPopSpace(simMatFile, varargin)
 
-    load(simMatFile);
+    p = inputParser;
+    addRequired(p, 'simMatFile', @isfile);
+    addOptional(p,'createFile', false, @islogical);
+    addOptional(p, 'imgDir', './', @isfolder);
+
+    parse(p, simMatFile, varargin{:});
+
+    load(simMatFile, 'nP', 'nF1', 'nF2');
 
     clf
     hold on
-    plot(n_P(end,:));
-    plot(n_F1(end,:));
-    plot(n_F2(end,:));
+    plot(nP(end,:));
+    plot(nF1(end,:));
+    plot(nF2(end,:));
     legend('P', 'F1', 'F2');
-    title(strcat(['N vs. x (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+    title(strcat(['N vs. x']));
     hold off
 
-    savefig(strcat(['comp_pheno_model/N_v_x_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
-
-    % Save a PNG file
-    % saveas(gcf, strcat(['comp_pheno_model/comp_pheno_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.png']));
+    if p.Results.createFile
+        filename = strcat('final_pop_space_', filename, '.fig');
+        savefig(strcat(imgDir, filename));
+    end
 end
 #+end_src
 
@@ -840,36 +881,48 @@ end
 
 This plot shows how the overall range of each species changes over time.
 
-In order to obtain the range of a species at a given time, you could find all the spatial points in the /n/ matrices (columns) where the value is greater than some minimum population. =n_P= is a matrix with rows for each iteration and columns for each spatial point.
+In order to obtain the range of a species at a given time, you could find all the spatial points in the /n/ matrices (columns) where the value is greater than some minimum population. =nP= is a matrix with rows for each iteration and columns for each spatial point.
 
 Does range size need to be contiguous? In other words, if F1 is only present at the edges, could you total its ranges at each edge and call that its "range size"?
 
 #+begin_src matlab :tangle plotRangeTime.m
 
-function plotRangeTime(simMatFile)
+function plotRangeTime(simMatFile, varargin)
+
+    p = inputParser;
+    addRequired(p, 'simMatFile', @isfile);
+    addOptional(p,'createFile', false, @islogical);
+    addOptional(p, 'imgDir', './', @isfolder);
+
+
+    parse(p, simMatFile, varargin{:});
 
     load(simMatFile);
+
     for i = 1:iterations+1
 
-        rangeP(i) = length(find(n_P(i,:) >= ncrit));
-        rangeF1(i) = length(find(n_F1(i,:) >= ncrit));
-        rangeF2(i) = length(find(n_F2(i,:) >= ncrit));
+        rangeP(i) = length(find(nP(i,:) >= nThreshold));
+        rangeF1(i) = length(find(nF1(i,:) >= nThreshold));
+        rangeF2(i) = length(find(nF2(i,:) >= nThreshold));
     end
 
     clf
     plot(1:iterations+1, [rangeP; rangeF1; rangeF2]);
     xlabel('iterations');
     ylabel('range size');
-    title(strcat(['Range size vs. time (tau21=' num2str(comp_21) ', tau12=' num2str(comp_12) ')']));
+    title(strcat(['Range size vs. time']));
     legend('P', 'F1', 'F2');
 
-    savefig(strcat(['comp_pheno_model/range_size_depF1=' num2str(dep_f(1)) '_depF2=' num2str(dep_f(2)) '_alphaF1=' num2str(alpha_fp(1)) '_alphaF2=' num2str(alpha_fp(2)) '_comp_12=' num2str(comp_12, fspec) '_comp_21=' num2str(comp_21, fspec) '.fig']));
-
+    if p.Results.createFile
+        filename = strcat('range_time_', filename, '.fig');
+        savefig(strcat(imgDir, filename));
+    end
 end
 
 #+end_src
 
-** Populations vs. time plot (=pheno_pop_vs_time.m=)
+** Populations vs. time plot
+
 
 #+begin_src matlab :tangle pheno_pop_vs_time.m
 
@@ -1010,7 +1063,7 @@ for ii = 1:length(tau_12_list)
 
         load(strcat(['~/sweep/mat_files/comp_pheno_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=' num2str(tau_12_list(ii), fspec) '_comp_21=' num2str(tau_21_list(jj), fspec) '.mat']));
 
-        outcomes(ii,jj) = det_outcome(n_P, n_F1, n_F2, 0.05);
+        outcomes(ii,jj) = det_outcome(nP, nF1, nF2, 0.05);
 
     end
 end

@@ -1,15 +1,15 @@
 %% Function to classify outcome of a given simulation
-function outcome = det_outcome(n_P, n_F1, n_F2, ncrit)
+function outcome = det_outcome(nP, nF1, nF2, nThreshold)
 
     % get the final population densities of P, F1, and F2
-    fin_P = n_P(end,:);
-    fin_F1 = n_F1(end,:);
-    fin_F2 = n_F2(end,:);
+    finP = nP(end,:);
+    finF1 = nF1(end,:);
+    finF2 = nF2(end,:);
 
     % get the ranges where F1 and F2 populations are above the threshold
-    rangeP = find(fin_P >= ncrit);
-    rangeF1 = find(fin_F1 >= ncrit);
-    rangeF2 = find(fin_F2 >= ncrit);
+    rangeP = find(finP >= nThreshold);
+    rangeF1 = find(finF1 >= nThreshold);
+    rangeF2 = find(finF2 >= nThreshold);
 
     max_range = max(length(rangeF1), length(rangeF2));
     % max_range = size(rangeP);
@@ -35,7 +35,7 @@ function outcome = det_outcome(n_P, n_F1, n_F2, ncrit)
     % if F1 is above threshold and F2 is below threshold or F2 is above
     % threshold and F1 is below threshold
 
-    % elseif isempty(find(fin_F2(setxor(rangeF1, rangeF2)) >= ncrit))
+    % elseif isempty(find(finF2(setxor(rangeF1, rangeF2)) >= nThreshold))
 
     % we find at least some F1 dominance
     elseif not(isempty(intersect(rangeF1, setxor(rangeF1, rangeF2))))

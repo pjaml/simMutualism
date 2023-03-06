@@ -1,8 +1,6 @@
 % function dydt = growthODEs(t, y, r1, r2, alpha12, alpha21, q1, q2, beta1, beta2, c1, c2, d1, d2, h1, h2,e1, e2, nodes, dep_p, dep_f, comp_12, comp_21)
 function dydt = growthODEs(t, y, varargin)
 
-    checkParameters(varargin);
-
     %% Default ODE parameter values
 
     default_nodes = (2^16) + 1;
@@ -177,7 +175,7 @@ function dydt = growthODEs(t, y, varargin)
     F1 = y(2,:);
     F2 = y(3,:);
 
-    dydt(1,:) = P .* ((1 - delta_p) * r_p + delta_p * (c_p * ((alpha_p_f1 .* F1) ./ (h_p_f1 + F1) + (alpha_p_f2 .* F2) ./ (h_p_f2 + F2))) - ((delta_f1 + delta_f2)/2) * (q_p * (beta_p .* (F1 + F2) ./ (e_p + P))) - (d_p .* P));
+    dydt(1,:) = P .* ((1 - delta_p) * r_p + delta_p * (c_p * ((alpha_p_f1 .* F1) ./ (h_p_f1 + F1) + (alpha_p_f2 .* F2) ./ (h_p_f2 + F2))) - delta_f1 * (q_p * (beta_p .* F1 ./ (e_p + P))) - delta_f2 * (q_p * (beta_p .* F2 ./ (e_p + P))) - (d_p .* P));
 
     dydt(2,:) = F1 .* ((1 - delta_f1) * r_f1 + c_f1 * (delta_f1 * (alpha_f1_p .* P) ./ (h_f1_p + P)) - q_f1 * (delta_p * ((beta_f1 .* P) ./ (e_f1 + F1))) - (tau_12 .* F2) - (d_f1 .* F1));
 
