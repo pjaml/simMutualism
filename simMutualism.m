@@ -1,4 +1,4 @@
-function simMutualism(varargin)
+function simMutualism(outputDir, varargin)
 
 % we save the given parameters to a variable so we can use them to
 % name files and label plots
@@ -13,9 +13,9 @@ p.KeepUnmatched = true;
 addParameter(p, 'iterations', 60);
 addParameter(p, 'maxIterations', 500);
 addParameter(p, 'iterationStep', 100);
-addParameter(p, 'outputDir', './', @isfolder);
+addRequired(p, 'outputDir', @isfolder);
 
-parse(p, varargin{:});
+parse(p, outputDir, varargin{:});
 
 % I wish I knew a better way to get rid of all the p.Results that get attached inputParser parameters
 iterations = p.Results.iterations;

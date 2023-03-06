@@ -5,7 +5,7 @@
 Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species. The =simMutualism()= function can take a number of optional arguments.
 
 #+begin_src matlab :tangle simMutualism.m
-function simMutualism(varargin)
+function simMutualism(outputDir, varargin)
 
 % we save the given parameters to a variable so we can use them to
 % name files and label plots
@@ -32,9 +32,9 @@ p.KeepUnmatched = true;
 addParameter(p, 'iterations', 60);
 addParameter(p, 'maxIterations', 500);
 addParameter(p, 'iterationStep', 100);
-addParameter(p, 'outputDir', './', @isfolder);
+addRequired(p, 'outputDir', @isfolder);
 
-parse(p, varargin{:});
+parse(p, outputDir, varargin{:});
 
 % I wish I knew a better way to get rid of all the p.Results that get attached inputParser parameters
 iterations = p.Results.iterations;
@@ -548,7 +548,7 @@ end
 
 iterations = 100;
 maxIterations = 1000;
-tau12Range, tau21Range = 0:0.01:0.4;
+[tau12Range, tau21Range] = deal(0:0.01:0.4);
 outputDir = './tauSweep/';
 
 for tau12 = tau12Range
