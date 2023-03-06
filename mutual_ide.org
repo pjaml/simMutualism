@@ -4,7 +4,7 @@
 
 Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species. The =simMutualism()= function can take a number of optional arguments.
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab :tangle simMutualism.m :comments link
 function simMutualism(outputDir, varargin)
 
 % we save the given parameters to a variable so we can use them to
@@ -273,10 +273,20 @@ end
 
 *** Generate and save a mat file for the simulation
 
-We save our results to a mat file, which can then be used to generate figures, identify outcomes, etc. The =filename= string can be reused for saving figures as well. It takes any explicitly defined parameters from the call to =simMutualism()= and appends the names and values to =filename=.
+Using =maxIterations= to create the initial arrays means that these arrays may be storing many more rows than is actually necessary. Since we're saving these to mat files, we can reduce the size before saving by resizing the arrays.
+
+Then we can save our results to a mat file, which can then be used to generate figures, identify outcomes, etc. The =filename= string can be reused for saving figures as well. It takes any explicitly defined parameters from the call to =simMutualism()= and appends the names and values to =filename=.
 
 #+begin_src matlab :tangle simMutualism.m
 %% Save a mat file with the current parameter values
+
+nP = nP(1:(iterations + 1), :);
+nF1 = nF1(1:(iterations + 1), :);
+nF2 = nF2(1:(iterations + 1), :);
+
+instantSpeedP(1, 1:(iterations + 1));
+instantSpeedF1(1, 1:(iterations + 1));
+instantSpeedF1(1, 1:(iterations + 1));
 
 filename = strcat('results_', strjoin(string(parameters), '_'));
 
@@ -547,13 +557,17 @@ end
 #+begin_src matlab :tangle tauSweep.m
 
 iterations = 100;
-maxIterations = 1000;
+maxIterations = 400;
 [tau12Range, tau21Range] = deal(0:0.01:0.4);
 outputDir = './tauSweep/';
 
 for tau12 = tau12Range
 
     for tau21 = tau21Range
+
+        if tau12 > 0.13 && tau12 < 0.3 && tau21 < 0.15 || tau21 > 0.3
+            maxIterations = 1000;
+        end
 
         simMutualism('tau12', tau12, 'tau21', tau21, 'outputDir', outputDir, 'iterations', iterations, 'maxIterations', maxIterations);
 
