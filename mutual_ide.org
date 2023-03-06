@@ -286,7 +286,7 @@ nF2 = nF2(1:(iterations + 1), :);
 
 instantSpeedP(1, 1:(iterations + 1));
 instantSpeedF1(1, 1:(iterations + 1));
-instantSpeedF1(1, 1:(iterations + 1));
+instantSpeedF2(1, 1:(iterations + 1));
 
 filename = strcat('results_', strjoin(string(parameters), '_'));
 
