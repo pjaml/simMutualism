@@ -5,6 +5,7 @@
 #SBATCH --tmp=20g
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=lutzx119@umn.edu
+#SBATCH --output=/home/shawa/lutzx119/reports/tausweep-%j.out
 
 BASEDIR=~/mutualism
 module load matlab

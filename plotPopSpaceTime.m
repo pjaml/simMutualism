@@ -7,15 +7,15 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold');
+    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
 
     %% Figure for species P
     figure(1);
     clf
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nP;
-    nlow(nP>=nThreshold) = NaN;
-    nP(nP<nThreshold) = NaN;
+    nlow(nP >= nThreshold) = NaN;
+    nP(nP < nThreshold) = NaN;
     hold on
     for i = 1:5:60
         plot3(xx(i,:),tt(i,:),nP(i,:),'b', 'LineWidth', 3.0);
