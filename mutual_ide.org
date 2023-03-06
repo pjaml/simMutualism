@@ -274,7 +274,7 @@ end
 
 *** Generate and save a mat file for the simulation
 
-Using =maxIterations= to create the initial arrays means that these arrays may be storing many more rows than is actually necessary. Since we're saving these to mat files, we can reduce the size before saving by resizing the arrays.
+Using =maxIterations= to create the initial arrays means that these arrays may be storing many more rows than is actually necessary. Since we're saving these to mat files, we can reduce the size before saving by resizing the arrays. By getting rid of extra rows, we can also use the =end= index to get the population densities of the final iteration.
 
 Then we can save our results to a mat file, which can then be used to generate figures, identify outcomes, etc. The =filename= string can be reused for saving figures as well. It takes any explicitly defined parameters from the call to =simMutualism()= and appends the names and values to =filename=.
 
@@ -560,16 +560,27 @@ This is the main file to be edited when running parameter sweeps. The =simMutual
 We can adjust values of =maxIterations= in the for loop to allow for longer simulations of $\tau$ values that we know will take longer to reach a steady state. By allow for more iterations for only these values, we limit the number of very large mat files.
 
 #+begin_src matlab :tangle tauSweep.m
+cl=parcluster('local')
+pool = cl.parpool(16)
 
+% use integers for the number of iterations to run
+% since parfor requires it
+rangeStartInt = 0
+rangeInt = 40
+rangeStep = 0.01
 iterations = 100;
 maxIterations = 1000;
-[tau12Range, tau21Range] = deal(0:0.01:0.4);
-outputDir = './tauSweep/';
+[tau12Range, tau21Range] = deal(rangeStartInt:rangeStartInt);
 
-for tau12 = tau12Range
+outputDir = '~/tauSweep/';
 
-    for tau21 = tau21Range
+parfor i = tau12Range
 
+    tau12 = i * rangeStep;
+
+    for j = tau21Range
+
+        tau21 = j * rangeStep;
         % more iterations for tau values that result in regional coexistence
         if tau12 > 0.13 && tau12 < 0.3 && tau21 < 0.15 || tau21 > 0.3
             maxIterations = 2000;
@@ -584,65 +595,6 @@ end
 
 #+end_src
 
-#+begin_src shell :tangle no
-
-#!/bin/bash
-
-BASEDIR=~/sweep
-
-ORIGFILE=$BASEDIR/mutual_comp_model.m
-JOBSCRIPT=$BASEDIR/tau_jobscript.sh
-
-chmod 775 $JOBSCRIPT
-
-# create a directory to store all the .m and .mat files
-mkdir -p $BASEDIR/{m_files,mat_files}
-
-# create directories to store symlinks to the various figures
-mkdir -p $BASEDIR/figures/{n_v_x,range,speed}/png
-
-# create a directory to store each simulation
-mkdir -p $BASEDIR/tau_sweep
-
-# Loop through all the tau values you want to simulate
-for comp21 in $(seq 0.0 0.01 0.4);
-do
-    for comp12 in $(seq 0.13 0.01 0.29);
-    do
-
-	# Format the comp12 and comp21 floating point values with the same format spec as the MATLAB files
-	printf -v fcomp12 '%.2f' $comp12
-	printf -v fcomp21 '%.2f' $comp21
-
-        # Check to see if the current parameter value exists as a file (i.e. it's already been run on a previous sweep)
-        # If it exists, skip it
-        PARAMETERFILE=$BASEDIR/tau_sweep/mcm_comp21=${fcomp21}_comp12=${fcomp12}
-        if [ -f "$PARAMETERFILE" ]; then
-                continue
-        else
-                # create a directory to hold all files for each simulation
-                mkdir -p $PARAMETERFILE
-
-                # Replace the decimal values after comp_12 and comp_21 in the original .m file with the
-                # current for loop values and create a new .m file with these values in the filename
-                # then update .m file to save newly generated mat, fig, and png files to directory created above
-sed -r "s/(comp_12\s*=\s*)[0-9]+\.?[0-9]*/\1${fcomp12}/; s/(comp_21\s*=\s*)[0-9]+\.?[0-9]*/\1${fcomp21}/; s/comp_pheno_model/tau_sweep\/mcm_comp21=${fcomp21}_comp12=${fcomp12}/" <$ORIGFILE >$BASEDIR/m_files/mcm_comp21=${fcomp21}_comp12=${fcomp12}.m
-
-
-                chmod 775 $BASEDIR/m_files/mcm_comp21=${fcomp21}_comp12=${fcomp12}.m
-
-                # Append instructions for the new .m file to the MSI batch job script
-
-
-                # This updates the job script to use the current sim's values
-                sed -i -r "s/(comp[_]?12=)[0-9]+\.?[0-9]*/\1${fcomp12}/g; s/(comp[_]?21=)[0-9]+\.?[0-9]*/\1${fcomp21}/g" $JOBSCRIPT
-
-                sbatch $JOBSCRIPT
-        fi
-    done
-done
-
-#+end_src
 
 ** Slurm job script
 
@@ -657,6 +609,7 @@ Note that the $SBATCH lines *must* be at the top of the script. Anything before 
 #SBATCH --tmp=20g
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=lutzx119@umn.edu
+#SBATCH --output=/home/shawa/lutzx119/reports/tausweep-%j.out
 
 BASEDIR=~/mutualism
 module load matlab
@@ -666,24 +619,43 @@ matlab -nodisplay <$BASEDIR/tauSweep.m
 
 ** Function to classify outcome (=classifyOutcome.m=)
 
+This function takes the final population densities of species $F_1$ and $F_2$ and classifies the outcome of the simulation. The possible outcomes are:
+
+- F1 dominance (=outcome = 1=)
+- F2 dominance (=outcome = 2=)
+- local coexistence (=outcome = 3=)
+- local coexistence with F1 dominance (=outcome = 4=)
+- local coexistence with F2 dominance (=outcome = 5=)
+- regional coexistence (=outcome = 6=)
+- unknown (=outcome = 7=).
+
+First we find the values above =nThreshold= across the landscape — this gives us each species final range. We use the =max= function to determine whether $F_1$ or $F_2$ had the bigger range.
+
+In order to make classification easier we create a variable that tells us whether or not $F_1$ had the larger range than $F_2$, based on the result of the =max= function.
+
 #+begin_src matlab :tangle classifyOutcome.m
 
 %% Function to classify outcome of a given simulation
-function outcome = classifyOutcome(nP, nF1, nF2, nThreshold)
-
-    % get the final population densities of P, F1, and F2
-    finP = nP(end,:);
-    finF1 = nF1(end,:);
-    finF2 = nF2(end,:);
+function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
 
     % get the ranges where F1 and F2 populations are above the threshold
-    rangeP = find(finP >= nThreshold);
-    rangeF1 = find(finF1 >= nThreshold);
-    rangeF2 = find(finF2 >= nThreshold);
+    rangeF1 = find(finalNF1 >= nThreshold);
+    rangeF2 = find(finalNF2 >= nThreshold);
 
-    max_range = max(length(rangeF1), length(rangeF2));
-    % max_range = size(rangeP);
+    maxRange = max(length(rangeF1), length(rangeF2));
 
+    if length(rangeF1) == maxRange
+        isF1Dominant = true;
+    else
+        isF1Dominant = false;
+    end
+
+    % maxRange = size(rangeP);
+#+end_src
+
+In the simplest cases, there were no population values above =nThreshold= for either $F_1$ or $F_2$; this means the other species competitively excluded it and we can classify the outcome as /$F_1$ or $F_2$ dominance/.
+
+#+begin_src matlab :tangle classifyOutcome.m
     % if F2 is below the threshold across the total range, then classify as
     % F1 dominance
     if isempty(rangeF2)
@@ -694,24 +666,33 @@ function outcome = classifyOutcome(nP, nF1, nF2, nThreshold)
     elseif isempty(rangeF1)
         outcome = 2; % F2 dominance
 
-    % elseif length(rangeF1)/max_range >= 0.95 & length(rangeF2)/max_range >= 0.95
+#+end_src
+
+Next, we look to see if the $F$ species with the larger range was dominant for less than 0.05 of its total range. The =setxor= function gives us the areas of space where the species with the greater range competitively excluded the other. We determine the total length of these areas and then divide by =maxRange= to get the proportion of the total range where this species was dominant. If this proportion is less than the (arbitrary) threshold of 0.05, we classify this as /local coexistence/.
+
+#+begin_src matlab :tangle classifyOutcome.m
 
     % find the range of values in rangeF1 or rangeF2 but not both
     % if the proportion of this range over the total range is less than
     % the arbitrary value 0.05, we call it local coexistence
-    elseif length(setxor(rangeF1, rangeF2))/max_range < 0.05
+    elseif length(setxor(rangeF1, rangeF2))/maxRange < 0.05
         outcome = 3; % Local coexistence
+#+end_src
 
-    % if F1 is above threshold and F2 is below threshold or F2 is above
-    % threshold and F1 is below threshold
+It's possible that the proportion of space where the dominant species competitively excluded the other is greater than 0.05. In this case, we first determine if $F_1$ was the dominant species (i.e. it had the larger range). Since we've already found outcomes where the lengths of the ranges of $F_1$ and $F_2$ differ by less than 5%, we know that any outcomes found here will have at least some local dominance.
 
-    % elseif isempty(find(finF2(setxor(rangeF1, rangeF2)) >= nThreshold))
+Since =setxor(rangeF1, rangeF2)= gives us any area of the landscape where one species competitively excluded the other, we use =intersect= to see if any of those areas fall within =rangeF2=. In other words, if $F_2$ competitively excluded $F_1$ for any proportion of the landscape. If so, we classify this as /regional coexistence/.
 
-    % we find at least some F1 dominance
-    elseif not(isempty(intersect(rangeF1, setxor(rangeF1, rangeF2))))
+If not, this means that $F_1$ has regions of its total range where it has competitively excluded $F_2$ (the proportion of which must be greater than or equal to 0.05). We know from the comparisons above, however, that $F_1$ still occupies some proportion of the landscape, so we classify this as /local coexistence with $F_1$ dominance/.
+
+We then make the same comparisons when $F_2$ has the larger range. Finally, we classify any outcome that does not fall into these categories as "unknown", which most likely indicates some sort of error.
+
+#+begin_src matlab :tangle classifyOutcome.m
+
+    elseif length(rangeF1) > length(rangeF2)
 
         % we find at least some F2 dominance
-        if not(isempty(intersect(rangeF2, setxor(rangeF1, rangeF2))))
+        if intersect(rangeF2, setxor(rangeF1, rangeF2))
             outcome = 6; % regional coexistence
 
         % no F2 dominance
@@ -719,9 +700,14 @@ function outcome = classifyOutcome(nP, nF1, nF2, nThreshold)
             outcome = 4; % Local coexistence + F1 dominance
         end
 
-    elseif not(isempty(intersect(rangeF2, setxor(rangeF1, rangeF2))))
-        outcome = 5; % Local coexistence + F2 dominance
+    elseif length(rangeF2) > length(rangeF1)
 
+        % we find at least some F1 dominance
+        if intersect(rangeF1, setxor(rangeF1, rangeF2))
+            outcome = 6; % regional coexistence
+        else
+            outcome = 5; % Local coexistence + F2 dominance
+        end
     else
         outcome = 7; % unknown
     end
@@ -747,73 +733,66 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold');
+    load(p.Results.simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
+
+    timeStep = round(iterations / 10);
 
     %% Figure for species P
     figure(1);
     clf
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nP;
-    nlow(nP>=nThreshold) = NaN;
-    nP(nP<nThreshold) = NaN;
+    nlow(nP >= nThreshold) = NaN;
+    nP(nP < nThreshold) = NaN;
+
+    rangeP = x(find(nP(end,:) >= nThreshold));
+
+    rangeMin = min(rangeP);
+    rangeMax = max(rangeP);
+
     hold on
-    for i = 1:5:60
-        plot3(xx(i,:),tt(i,:),nP(i,:),'b', 'LineWidth', 3.0);
+    for i = 1:timeStep:iterations
+        lineP = plot3(xx(i,:),tt(i,:),nP(i,:),'b', 'LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
     % plot3(rangeEdgeP(1:11),0:10,nThreshold*ones(1,11),'k');
-    axis([-120 120 0 iterations 0 6.25]);
-    xlabel('space (x)');
-    ylabel('time (t)');
-    zlabel('density');
+    axis([(rangeMin - 5) (rangeMax + 5) 0 iterations 0 6.25]);
+    xlabel('Spatial range');
+    ylabel('Generations');
+    zlabel('Population density');
     % title('Species P');
     view(30,30);
 
     %% Figure for species F1
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nF1;
-    nlow(nF1>=nThreshold) = NaN;
-    nF1(nF1<nThreshold) = NaN;
+    nlow(nF1 >= nThreshold) = NaN;
+    nF1(nF1 < nThreshold) = NaN;
     hold on
-    for i = 1:5:60
-        plot3(xx(i,:),tt(i,:),nF1(i,:),'r','LineWidth', 3.0);
+    for i = 3:timeStep:iterations
+        lineF1 = plot3(xx(i,:),tt(i,:),nF1(i,:),'r','LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
-
-    % plot3(rangeEdgeF1(1:11),0:10,nThreshold*ones(1,11),'k');
-    % axis([-15 15 0 10 0 5]);
-    % xlabel('space (x)');
-    % ylabel('time (t)');
-    % zlabel('species F1 density (nF1)');
-    % view(30,30);
-    % title('Species F1');
 
     %% Figure for species F2
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nF2;
-    nlow(nF2>=nThreshold) = NaN;
-    nF2(nF2<nThreshold) = NaN;
+    nlow(nF2 >= nThreshold) = NaN;
+    nF2(nF2 < nThreshold) = NaN;
     hold on
-    for i = 1:5:60
-        plot3(xx(i,:),tt(i,:),nF2(i,:),'g', 'LineWidth', 3.0);
+    for i = 5:timeStep:iterations
+        lineF2 = plot3(xx(i,:),tt(i,:),nF2(i,:),'g', 'LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
-
-    % plot3(rangeEdgeF2(1:11),0:100,nThreshold*ones(1,11),'k');
-    % axis([-15 15 0 10 0 5]);
-    % xlabel('space (x)');
-    % ylabel('time (t)');
-    % zlabel('species F2 density (nF2)');
-    % view(30,30);
-    % title('Species F2');
     hold off
 
+    legend([lineP lineF1 lineF2], {'P', 'F_1', 'F_2'});
     if p.Results.createFile
         filename = strcat('pop_space_time_', filename, '.fig');
-        savefig(strcat(imgDir, filename));
+        savefig(strcat(p.Results.imgDir, filename));
     end
 
 end
@@ -919,6 +898,65 @@ function plotRangeTime(simMatFile, varargin)
     end
 end
 
+#+end_src
+
+** Sweep outcomes plot
+
+This function generates a heatmap of the outcomes of a $\tau$ parameter sweep (it might be possible to make this more generic for other types of parameter sweeps in the future). It requires a directory where it can find mat files (the results of each simulation).
+
+It can optionally take arguments to specify the range of values used in the parameter sweep (by default it assumes that we used the range =0:0.01:0.40= for both $\tau_{12}$ and $\tau_{21}$).
+
+#+begin_src matlab :tangle plotOutcomes.m
+
+function plotOutcomes(sweepDir, varargin)
+
+    p = inputParser;
+
+    addRequired(p, 'sweepDir', @isfolder);
+    addParameter(p, 'tau12Range', 0:0.01:0.40);
+    addParameter(p, 'tau21Range', 0:0.01:0.40);
+    addParameter(p, 'outputDir', './', @isfolder);
+    parse(p, sweepDir, varargin{:});
+
+    tau12Range = p.Results.tau12Range;
+    tau21Range = p.Results.tau21Range;
+    outputDir = p.Results.outputDir;
+
+    outcomes = zeros(length(tau12Range), length(tau21Range));
+
+    files = dir(fullfile(p.Results.sweepDir, '*.mat'));
+
+    for file = 1:length(files)
+
+        load(file.name, 'nF1', 'nF2', 'nThreshold', 'parameters');
+
+        for i = 1:length(parameters)
+            if strcmp(parameters{i}, 'tau12')
+                tau12 = parameters{i + 1};
+            end
+
+            if strcmp(parameters{i}, 'tau21')
+                tau21 = parameters{i + 1};
+            end
+        end
+
+        finalNF1 = nF1(end,:);
+        finalNF2 = nF2(end,:);
+
+        outcomes(tau12,tau21) = classifyOutcome(finalNF1, finalNF2, nThreshold);
+
+    end
+end
+
+figure(1)
+heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
+xlabel('tau_{12}');
+ylabel('tau_{21}');
+
+filename = strcat(outputDir, 'tauSweepOutcomesPlot.fig');
+savefig(filename);
+
+end
 #+end_src
 
 ** Populations vs. time plot
@@ -1045,35 +1083,6 @@ hold off;
 #+end_src
 
 
-
-** Sweep outcomes plot
-
-#+begin_src matlab :tangle plotOutcomes.m
-
-function plotOutcomes(sweepDir)
-
-    tau12_list = [0.00:0.01:0.40];
-    tau21_list = [0.00:0.01:0.40];
-
-    outcomes = zeros(length(tau12_list), length(tau21_list));
-
-    for ii = 1:length(tau12_list)
-        for jj = 1:length(tau21_list)
-
-            load(strcat(['~/sweep/mat_files/comp_pheno_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=' num2str(tau12_list(ii), fspec) '_comp_21=' num2str(tau21_list(jj), fspec) '.mat']));
-
-            outcomes(ii,jj) = classifyOutcome(nP, nF1, nF2, 0.05);
-
-        end
-    end
-
-    figure(1)
-    heatmap(tau12_list, fliplr(tau21_list), rot90(outcomes));
-    xlabel('tau_{12}');
-    ylabel('tau_{21}');
-
-end
-#+end_src
 
 * Results
 
