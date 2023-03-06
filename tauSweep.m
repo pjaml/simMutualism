@@ -11,7 +11,7 @@ for tau12 = tau12Range
             maxIterations = 1000;
         end
 
-        simMutualism('tau12', tau12, 'tau21', tau21, 'outputDir', outputDir, 'iterations', iterations, 'maxIterations', maxIterations);
+        simMutualism(outputDir, 'tau12', tau12, 'tau21', tau21, 'iterations', iterations, 'maxIterations', maxIterations);
 
     end
 end
