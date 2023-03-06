@@ -1,5 +1,5 @@
 %% Function to classify outcome of a given simulation
-function outcome = det_outcome(nP, nF1, nF2, nThreshold)
+function outcome = classifyOutcome(nP, nF1, nF2, nThreshold)
 
     % get the final population densities of P, F1, and F2
     finP = nP(end,:);
