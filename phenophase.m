@@ -1,3 +1,4 @@
+% [[file:mutual_ide.org::*Initial setup for 3D phase space plot][Initial setup for 3D phase space plot:1]]
 maxpop = 10.0;
 popRange = 0.0:0.5:maxpop;
 
@@ -43,7 +44,9 @@ xlabel('P');
 ylabel('F1');
 zlabel('F2');
 hold on;
+% Initial setup for 3D phase space plot:1 ends here
 
+% [[file:mutual_ide.org::*Plot isoclines][Plot isoclines:1]]
 syms x y z
 eq1 = ((1-dep_p).*r_p + dep_p .* (c1.*((alpha_pf(1).*y)./(h2(1)+y) + (alpha_pf(2).*z)./(h2(2)+z)))- ((dep_f(1)+dep_f(2))/2) .*(q1.*(beta1.*(y + z)./(e1+x)))-(d_p.*x));
 eq2 = ((1-dep_f(1)).*r_f(1) + c2 .*(dep_f(1).*(alpha_fp(1).*x)./(h1(1)+x))-q2.*(dep_p.*((beta2(1).*x)./(e2(1)+y))) -(d_f(1).*y));
@@ -54,3 +57,4 @@ fimplicit3(eq2, [0 maxpop]);
 fimplicit3(eq3, [0 maxpop]);
 
 hold off;
+% Plot isoclines:1 ends here

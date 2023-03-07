@@ -1,3 +1,4 @@
+% [[file:mutual_ide.org::*Sweep outcomes plot][Sweep outcomes plot:1]]
 function plotOutcomes(sweepDir, varargin)
 
     p = inputParser;
@@ -47,3 +48,4 @@ filename = strcat(outputDir, 'tauSweepOutcomesPlot.fig');
 savefig(filename);
 
 end
+% Sweep outcomes plot:1 ends here

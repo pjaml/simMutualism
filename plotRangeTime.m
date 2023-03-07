@@ -1,3 +1,4 @@
+% [[file:mutual_ide.org::*Range vs. time][Range vs. time:1]]
 function plotRangeTime(simMatFile, varargin)
 
     p = inputParser;
@@ -28,3 +29,4 @@ function plotRangeTime(simMatFile, varargin)
         savefig(strcat(imgDir, filename));
     end
 end
+% Range vs. time:1 ends here

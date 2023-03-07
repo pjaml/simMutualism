@@ -1,19 +1,23 @@
+% [[file:mutual_ide.org::*Sweep script][Sweep script:1]]
+cl=parcluster('local')
+pool = cl.parpool(16)
+
 % use integers for the number of iterations to run
 % since parfor requires it
-rangeStartInt = 0;
-rangeInt = 40;
-rangeStep = 0.01;
+rangeStartInt = 0
+rangeInt = 40
+rangeStep = 0.01
 iterations = 100;
 maxIterations = 1000;
 [tau12Range, tau21Range] = deal(rangeStartInt:rangeStartInt);
 
 outputDir = '~/tauSweep/';
 
-parfor i = 0:40
+parfor i = tau12Range
 
     tau12 = i * rangeStep;
 
-    for j = 0:40
+    for j = tau21Range
 
         tau21 = j * rangeStep;
         % more iterations for tau values that result in regional coexistence
@@ -27,3 +31,4 @@ parfor i = 0:40
 
     end
 end
+% Sweep script:1 ends here

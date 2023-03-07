@@ -1,3 +1,4 @@
+% [[file:mutual_ide.org::*Function to classify outcome (=classifyOutcome.m=)][Function to classify outcome (=classifyOutcome.m=):1]]
 %% Function to classify outcome of a given simulation
 function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
 
@@ -14,7 +15,9 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
     end
 
     % maxRange = size(rangeP);
+% Function to classify outcome (=classifyOutcome.m=):1 ends here
 
+% [[file:mutual_ide.org::*Function to classify outcome (=classifyOutcome.m=)][Function to classify outcome (=classifyOutcome.m=):2]]
     % if F2 is below the threshold across the total range, then classify as
     % F1 dominance
     if isempty(rangeF2)
@@ -24,13 +27,17 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
     % F2 dominance
     elseif isempty(rangeF1)
         outcome = 2; % F2 dominance
+% Function to classify outcome (=classifyOutcome.m=):2 ends here
 
+% [[file:mutual_ide.org::*Function to classify outcome (=classifyOutcome.m=)][Function to classify outcome (=classifyOutcome.m=):3]]
     % find the range of values in rangeF1 or rangeF2 but not both
     % if the proportion of this range over the total range is less than
     % the arbitrary value 0.05, we call it local coexistence
     elseif length(setxor(rangeF1, rangeF2))/maxRange < 0.05
         outcome = 3; % Local coexistence
+% Function to classify outcome (=classifyOutcome.m=):3 ends here
 
+% [[file:mutual_ide.org::*Function to classify outcome (=classifyOutcome.m=)][Function to classify outcome (=classifyOutcome.m=):4]]
     elseif length(rangeF1) > length(rangeF2)
 
         % we find at least some F2 dominance
@@ -54,3 +61,4 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
         outcome = 7; % unknown
     end
 end
+% Function to classify outcome (=classifyOutcome.m=):4 ends here

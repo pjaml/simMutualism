@@ -1,3 +1,4 @@
+% [[file:mutual_ide.org::*Speed vs. time][Speed vs. time:1]]
 function plotSpeedTime(simMatFile, varargin)
 
     p = inputParser;
@@ -20,3 +21,4 @@ function plotSpeedTime(simMatFile, varargin)
         savefig(strcat(imgDir, filename));
     end
 end
+% Speed vs. time:1 ends here

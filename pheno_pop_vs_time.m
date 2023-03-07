@@ -1,3 +1,4 @@
+% [[file:mutual_ide.org::*Populations vs. time plot][Populations vs. time plot:1]]
 % time span
 tspan = 0.0:0.1:100.0;
 
@@ -37,3 +38,4 @@ plot(t, [P, F1, F2]);
 legend('P', 'F1', 'F2');
 xlabel('time');
 ylabel('population');
+% Populations vs. time plot:1 ends here

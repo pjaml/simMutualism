@@ -1,3 +1,6 @@
+:PROPERTIES:
+:header-args: :comments link
+:END:
 #+title: Mutualism Project Code
 #+auto_tangle: t
 

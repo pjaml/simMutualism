@@ -1,6 +1,9 @@
+% [[file:mutual_ide.org::*Function definition][Function definition:1]]
 % function dydt = growthODEs(t, y, r1, r2, alpha12, alpha21, q1, q2, beta1, beta2, c1, c2, d1, d2, h1, h2,e1, e2, nodes, dep_p, dep_f, comp_12, comp_21)
 function dydt = growthODEs(t, y, varargin)
+% Function definition:1 ends here
 
+% [[file:mutual_ide.org::*Default parameter values][Default parameter values:1]]
     %% Default ODE parameter values
 
     default_nodes = (2^16) + 1;
@@ -52,7 +55,9 @@ function dydt = growthODEs(t, y, varargin)
     % competition: tau12 is the effect F2 has on F1; tau21 is effect of F1 on F2
     default_tau12 = 0.0;
     default_tau21 = 0.0;
+% Default parameter values:1 ends here
 
+% [[file:mutual_ide.org::*Adding parameters with =inputParser=][Adding parameters with =inputParser=:1]]
     p = inputParser;
     p.KeepUnmatched = true;
 
@@ -169,17 +174,26 @@ function dydt = growthODEs(t, y, varargin)
 
     y = reshape(y,3,nodes);
     dydt  = zeros(size(y));
+% Adding parameters with =inputParser=:1 ends here
 
+% [[file:mutual_ide.org::*Species /P/][Species /P/:1]]
     % rename variables so equations are easier to read
     P = y(1,:);
     F1 = y(2,:);
     F2 = y(3,:);
 
     dydt(1,:) = P .* ((1 - deltaP) * rP + deltaP * (cP * ((alphaPF1 .* F1) ./ (hPF1 + F1) + (alphaPF2 .* F2) ./ (hPF2 + F2))) - deltaF1 * (qP * (betaP .* F1 ./ (eP + P))) - deltaF2 * (qP * (betaP .* F2 ./ (eP + P))) - (dP .* P));
+% Species /P/:1 ends here
 
+% [[file:mutual_ide.org::*Species /F/, Phenotype 1][Species /F/, Phenotype 1:1]]
     dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + cF1 * (deltaF1 * (alphaF1P .* P) ./ (hF1P + P)) - qF1 * (deltaP * ((betaF1 .* P) ./ (eF1 + F1))) - (tau12 .* F2) - (dF1 .* F1));
+% Species /F/, Phenotype 1:1 ends here
 
+% [[file:mutual_ide.org::*Species /F/, Phenotype 2][Species /F/, Phenotype 2:1]]
     dydt(3,:) = F2 .* ((1 - deltaF2) * rF2 + cF2 * (deltaF2 * (alphaF2P .* P) ./ (hF2P + P)) - qF2 * (deltaP * ((betaF2 .* P) ./ (eF2 + F2))) - (tau21 .* F1) - (dF2 .* F2));
+% Species /F/, Phenotype 2:1 ends here
 
+% [[file:mutual_ide.org::*Reshape][Reshape:1]]
     dydt = reshape(dydt,3*nodes,1);
 end
+% Reshape:1 ends here

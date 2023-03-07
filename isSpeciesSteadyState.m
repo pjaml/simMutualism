@@ -1,3 +1,4 @@
+% [[file:mutual_ide.org::*Checking if a species is at a steady state][Checking if a species is at a steady state:1]]
 function isSteadyState = isSpeciesSteadyState(speed, tolerance, generation)
 % takes a matrix of speed values and checks whether the variance in the last 10 values is at or below a threshold
 
@@ -9,3 +10,4 @@ function isSteadyState = isSpeciesSteadyState(speed, tolerance, generation)
         isSteadyState = false;
     end
 end
+% Checking if a species is at a steady state:1 ends here

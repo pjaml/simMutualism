@@ -1,3 +1,4 @@
+# [[file:mutual_ide.org::*Slurm job script][Slurm job script:1]]
 #!/bin/bash -l
 #SBATCH --time=24:00:00
 #SBATCH --ntasks=16
@@ -7,6 +8,7 @@
 #SBATCH --mail-user=lutzx119@umn.edu
 #SBATCH --output=/home/shawa/lutzx119/reports/tausweep-%j.out
 
-cd ~/code/MATLAB/mutualism
-
-matlab -nodisplay <tauSweep.m
+BASEDIR=~/mutualism
+module load matlab
+matlab -nodisplay <$BASEDIR/tauSweep.m
+# Slurm job script:1 ends here

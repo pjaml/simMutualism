@@ -1,9 +1,12 @@
+% [[file:mutual_ide.org::*Simulation][Simulation:1]]
 function simMutualism(outputDir, varargin)
 
 % we save the given parameters to a variable so we can use them to
 % name files and label plots
 parameters = varargin;
+% Simulation:1 ends here
 
+% [[file:mutual_ide.org::*Simulation parameters][Simulation parameters:1]]
 %% for simulation
 
 p = inputParser;
@@ -25,10 +28,14 @@ outputDir = p.Results.outputDir;
 
 % threshold for speed variance at steady state
 steadyStateThreshold = 1e-04;
+% Simulation parameters:1 ends here
 
+% [[file:mutual_ide.org::*Simulation parameters][Simulation parameters:2]]
 % format spec for floating point values in filenames
 fspec = '%.2f';
+% Simulation parameters:2 ends here
 
+% [[file:mutual_ide.org::*Space parameters][Space parameters:1]]
 %% Initialize space parameters
 lowval = 1e-9;
 diameter = 1200;  %total size of landscape along positive x-axis (so technically half the size of the total landscape)
@@ -37,20 +44,26 @@ radius = diameter / 2;
 x = linspace(-radius, radius, nodes);
 x2 = linspace(-diameter, diameter, 2 * nodes - 1);
 dx = diameter / (nodes - 1);
+% Space parameters:1 ends here
 
+% [[file:mutual_ide.org::*Initialization][Initialization:1]]
 [instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations)); % preallocate arrays for max possible iterations
 
 [rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = deal(zeros(1, maxIterations));
 
 [nP, nF1, nF2] = deal(zeros(maxIterations, length(x)));
+% Initialization:1 ends here
 
+% [[file:mutual_ide.org::*Dispersal kernels][Dispersal kernels:1]]
 sigma_sq = 0.25; % Dispersal variance
 
 % gaussian dispersal kernels
 kP = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
 kF1 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
 kF2 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
+% Dispersal kernels:1 ends here
 
+% [[file:mutual_ide.org::*Initial population densities][Initial population densities:1]]
 % SET THE INITIAL CONDITIONS
 irad = 2; % Initial condition range
 initDensities = [0.1,0.1,0.1];
@@ -62,7 +75,9 @@ temp_F2 = find(abs(x) <= irad);
 nP(1,temp_P) = initDensities(1) * normpdf(x(temp_P),0,1); %Computes pdf values evaluated at the values in x i.e. all x(temp) values for the normal distribution with mean 0 and standard deviation 1.
 nF1(1,temp_F1) = initDensities(2) * normpdf(x(temp_F1),0,1);
 nF2(1,temp_F2) = initDensities(3) * normpdf(x(temp_F2),0,1);
+% Initial population densities:1 ends here
 
+% [[file:mutual_ide.org::*Initial front location][Initial front location:1]]
 % FIND THE INITIAL FRONT LOCATION
 jj_P = find(nP(1,:) >= nThreshold,1,'last'); %find the farthest distance travelled by the population above a certain threshold density and assign it to jj
 jj_F1 = find(nF1(1,:) >= nThreshold,1,'last');
@@ -78,11 +93,15 @@ end
 if jj_F2
   rangeEdgeF2(1) = interp1(nF2(1,jj_F2:jj_F2+1),x(jj_F2:jj_F2+1),nThreshold);
 end
+% Initial front location:1 ends here
 
+% [[file:mutual_ide.org::*Simulating growth and dispersal over many generations][Simulating growth and dispersal over many generations:1]]
 generation = 1;
 %% Looping for growth and dispersal
 while generation <= iterations
+% Simulating growth and dispersal over many generations:1 ends here
 
+% [[file:mutual_ide.org::*Growth phase][Growth phase:1]]
     % for ode45
     tspan = [0, 10];
 
@@ -99,7 +118,9 @@ while generation <= iterations
     fP = y(end,(1:3:end)); % final row; element 1, +3, elem. 4, etc. until end
     fF1 = y(end,(2:3:end));
     fF2 = y(end,(3:3:end));
+% Growth phase:1 ends here
 
+% [[file:mutual_ide.org::*Dispersal phase][Dispersal phase:1]]
 %   DISPERSAL
     n1P = fft_conv(kP,fP);   % dispersing individuals
     n1F1 = fft_conv(kF1,fF1);
@@ -147,7 +168,9 @@ while generation <= iterations
 
     instantSpeedF2(generation) = rangeEdgeF2(generation + 1) - rangeEdgeF2(generation);
     avgSpeedF2(generation) = (rangeEdgeF2(generation + 1) - rangeEdgeF2(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
+% Dispersal phase:1 ends here
 
+% [[file:mutual_ide.org::*Determine whether to continue running the simulation for more iterations][Determine whether to continue running the simulation for more iterations:1]]
     % check for steady state, and determine whether to run for more generations
     if (generation == iterations)
 
@@ -167,7 +190,9 @@ while generation <= iterations
 
 % while loop end
 end
+% Determine whether to continue running the simulation for more iterations:1 ends here
 
+% [[file:mutual_ide.org::*Generate and save a mat file for the simulation][Generate and save a mat file for the simulation:1]]
 %% Save a mat file with the current parameter values
 
 nP = nP(1:(iterations + 1), :);
@@ -178,26 +203,10 @@ instantSpeedP(1, 1:(iterations + 1));
 instantSpeedF1(1, 1:(iterations + 1));
 instantSpeedF2(1, 1:(iterations + 1));
 
-filename = 'results';
-formatSpec = '%.2f';
+filename = strcat('results_', strjoin(string(parameters), '_'));
 
-for i = 1:length(parameters)
-    param = parameters{i};
-
-    if isnumeric(param)
-        param = num2str(param, formatSpec);
-    else
-        param = string(param);
-    end
-
-    filename = strcat(filename, '_', param);
-end
-
-filename = strcat(filename, '.mat');
-
-disp("Saving ", filename, "...");
-
-save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
+save(strcat(outputDir, filename, '.mat'), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
 
 % end of simMutualism function
 end
+% Generate and save a mat file for the simulation:1 ends here
