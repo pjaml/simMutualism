@@ -178,9 +178,26 @@ instantSpeedP(1, 1:(iterations + 1));
 instantSpeedF1(1, 1:(iterations + 1));
 instantSpeedF2(1, 1:(iterations + 1));
 
-filename = strcat('results_', strjoin(string(parameters), '_'));
+filename = 'results';
+formatSpec = '%.2f';
 
-save(strcat(outputDir, filename, '.mat'), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
+for i = 1:length(parameters)
+    param = parameters{i};
+
+    if isnumeric(param)
+        param = num2str(param, formatSpec);
+    else
+        param = string(param);
+    end
+
+    filename = strcat(filename, '_', param);
+end
+
+filename = strcat(filename, '.mat');
+
+disp("Saving ", filename, "...");
+
+save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
 
 % end of simMutualism function
 end

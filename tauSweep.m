@@ -1,22 +1,18 @@
-function tauSweep()
+% use integers for the number of iterations to run (rather than the actual
+% values of tau12 and tau21) because it seems parfor requires it
+tau12RangeStartInt = 0;
+tau12RangeEndInt = 40;
+tau21RangeStartInt = 0;
+tau21RangeEndInt = 40;
 
-	% use integers for the number of iterations to run (rather than the actual
-	% values of tau12 and tau21) because it seems parfor requires it
-	tau12RangeStartInt = 0;
-	tau12RangeEndInt = 40;
+rangeStep = 0.01;
+iterations = 100;
+maxIterations = 1000;
 
-	tau21RangeStartInt = 0;
-	tau21RangeEndInt = 40;
+tau12RangeSeq = tau12RangeStartInt:tau12RangeEndInt;
+tau21RangeSeq = tau21RangeStartInt:tau21RangeEndInt;
 
-
-	rangeStep = 0.01;
-	iterations = 100;
-
-	outputDir = '/home/shawa/lutzx119/tauSweep/';
-
-	tau12RangeSeq = tau12RangeStartInt:tau12RangeEndInt;
-	tau21RangeSeq = tau21RangeStartInt:tau21RangeEndInt;
-
+outputDir = '/home/shawa/lutzx119/tauSweep/';
 
 	tic
 	parfor i = tau12RangeSeq
