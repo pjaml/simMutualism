@@ -7,6 +7,6 @@
 #SBATCH --mail-user=lutzx119@umn.edu
 #SBATCH --output=/home/shawa/lutzx119/reports/tausweep-%j.out
 
-BASEDIR=~/mutualism
-module load matlab
-matlab -nodisplay <$BASEDIR/tauSweep.m
+cd ~/code/MATLAB/mutualism
+
+matlab -nodisplay <tauSweep.m

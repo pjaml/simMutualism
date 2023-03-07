@@ -1,22 +1,19 @@
-cl=parcluster('local')
-pool = cl.parpool(16)
-
 % use integers for the number of iterations to run
 % since parfor requires it
-rangeStartInt = 0
-rangeInt = 40
-rangeStep = 0.01
+rangeStartInt = 0;
+rangeInt = 40;
+rangeStep = 0.01;
 iterations = 100;
 maxIterations = 1000;
 [tau12Range, tau21Range] = deal(rangeStartInt:rangeStartInt);
 
 outputDir = '~/tauSweep/';
 
-parfor i = tau12Range
+parfor i = 0:40
 
     tau12 = i * rangeStep;
 
-    for j = tau21Range
+    for j = 0:40
 
         tau21 = j * rangeStep;
         % more iterations for tau values that result in regional coexistence
