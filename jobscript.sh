@@ -1,12 +1,14 @@
 #!/bin/bash -l
-#SBATCH --time=24:00:00
-#SBATCH --ntasks=16
-#SBATCH --mem=20g
-#SBATCH --tmp=20g
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --time=4:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=lutzx119@umn.edu
 #SBATCH --output=/home/shawa/lutzx119/reports/tausweep-%j.out
 
-BASEDIR=~/mutualism
+cd /home/shawa/lutzx119/mutualism
+module purge
+
 module load matlab
-matlab -nodisplay <$BASEDIR/tauSweep.m
+matlab -nodisplay <tauSweep.m

@@ -1,37 +1,41 @@
-cl=parcluster('local')
-pool = cl.parpool(16)
+function tauSweep()
 
-% use integers for the number of iterations to run
-% since parfor requires it
-rangeStartInt = 0
-rangeInt = 40
-rangeStep = 0.01
-iterations = 100;
-maxIterations = 1000;
-<<<<<<< HEAD
-[tau12Range, tau21Range] = deal(0:0.01:0.4);
-outputDir = '~/tauSweep/';
-=======
-[tau12Range, tau21Range] = deal(rangeStartInt:rangeStartInt);
+	% use integers for the number of iterations to run (rather than the actual
+	% values of tau12 and tau21) because it seems parfor requires it
+	tau12RangeStartInt = 0;
+	tau12RangeEndInt = 40;
 
-outputDir = '~/tauSweep/';
+	tau21RangeStartInt = 0;
+	tau21RangeEndInt = 40;
 
-parfor i = tau12Range
->>>>>>> a355c91d24bbfa405f2459abbe5c301a155b61b4
 
-    tau12 = i * rangeStep;
+	rangeStep = 0.01;
+	iterations = 100;
 
-    for j = tau21Range
+	outputDir = '/home/shawa/lutzx119/tauSweep/';
 
-        tau21 = j * rangeStep;
-        % more iterations for tau values that result in regional coexistence
-        if tau12 > 0.13 && tau12 < 0.3 && tau21 < 0.15 || tau21 > 0.3
-            maxIterations = 2000;
-        else
-            maxIterations = 1000;
-        end
+	tau12RangeSeq = tau12RangeStartInt:tau12RangeEndInt;
+	tau21RangeSeq = tau21RangeStartInt:tau21RangeEndInt;
 
-        simMutualism(outputDir, 'tau12', tau12, 'tau21', tau21, 'iterations', iterations, 'maxIterations', maxIterations);
 
-    end
+	tic
+	parfor i = tau12RangeSeq
+
+		for j = tau21RangeSeq
+
+			tau12 = i * rangeStep;
+			tau21 = j * rangeStep;
+
+			% more iterations for tau values that result in regional coexistence
+			if (tau12 > 0.13 && tau12 < 0.25 && tau21 < 0.15) || (tau21 > 0.28 && tau12 > 0.23 && tau12 < 0.3)
+				maxIterations = 2000;
+			else
+				maxIterations = 1000;
+			end
+
+			simMutualism(outputDir, 'tau12', tau12, 'tau21', tau21, 'iterations', iterations, 'maxIterations', maxIterations);
+
+		end
+	end
+	parallel_time=toc
 end
