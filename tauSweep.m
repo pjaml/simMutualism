@@ -9,15 +9,12 @@ rangeStep = 0.01;
 iterations = 100;
 maxIterations = 1000;
 
-tau12RangeSeq = tau12RangeStartInt:tau12RangeEndInt;
-tau21RangeSeq = tau21RangeStartInt:tau21RangeEndInt;
-
 outputDir = '/home/shawa/lutzx119/tauSweep/';
 
 	tic
-	parfor i = tau12RangeSeq
+	parfor i = tau12RangeStartInt:tau12RangeEndInt
 
-		for j = tau21RangeSeq
+		for j = tau21RangeStartInt:tau21RangeEndInt
 
 			tau12 = i * rangeStep;
 			tau21 = j * rangeStep;
