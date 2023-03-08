@@ -243,7 +243,7 @@ end
 
 filename = strcat(filename, '.mat');
 
-save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
+save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x', 'maxIterations', 'diameter');
 
 % end of simMutualism function
 end
