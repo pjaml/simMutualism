@@ -1,5 +1,5 @@
 % [[file:mutual_ide.org::*Simulation][Simulation:1]]
-function simMutualism(outputDir, varargin)
+function simMutualism(varargin)
 
 % we save the given parameters to a variable so we can use them to
 % name files and label plots
@@ -13,26 +13,40 @@ p = inputParser;
 p.KeepUnmatched = true;
 
 % minimum number of cycles of growth and dispersal
-addParameter(p, 'iterations', 60);
-addParameter(p, 'maxIterations', 500);
-addParameter(p, 'iterationStep', 100);
-addRequired(p, 'outputDir', @isfolder);
+addParameter(p, 'iterations', 100, @isnumeric);
+addParameter(p, 'maxIterations', 480, @isnumeric);
+addParameter(p, 'iterationStep', 100, @isnumeric);
+addParameter(p, 'outputDir', './', @isfolder);
+addParameter(p, 'steadyStateThreshold', 1e-04, @isnumeric);
+addParameter(p, 'diameter', 1200, @isnumeric);
 
-parse(p, outputDir, varargin{:});
+parse(p, varargin{:});
 
 % I wish I knew a better way to get rid of all the p.Results that get attached inputParser parameters
 iterations = p.Results.iterations;
 maxIterations = p.Results.maxIterations;
+
+if iterations > maxIterations
+    disp("Warning: the value of iterations is greater than or equal to maxIterations, so maxIterations has been increased.");
+    maxIterations = iterations;
+end
+
 iterationStep = p.Results.iterationStep;
 outputDir = p.Results.outputDir;
+steadyStateThreshold = p.Results.steadyStateThreshold;
 
-% threshold for speed variance at steady state
-steadyStateThreshold = 1e-04;
+%total size of landscape along positive x-axis (so half the total landscape)
+diameter = p.Results.diameter;
+
+if maxIterations > 490
+    diameter = 3600;
+    disp("Warning: maxIterations > 490 risks exceeding the spatial landscape boundaries. The diameter of the landscape has been increased to 3600. The spatial resolution has NOT been increased.");
+end
 % Simulation parameters:1 ends here
 
+% [[file:mutual_ide.org::*Space parameters][Space parameters:1]]
 %% Initialize space parameters
 lowval = 1e-9;
-diameter = 1200;  %total size of landscape along positive x-axis (so technically half the size of the total landscape)
 nodes = (2^16) + 1; %total points in space -- 65537
 radius = diameter / 2;
 x = linspace(-radius, radius, nodes);
@@ -41,11 +55,11 @@ dx = diameter / (nodes - 1);
 % Space parameters:1 ends here
 
 % [[file:mutual_ide.org::*Initialization][Initialization:1]]
-[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations)); % preallocate arrays for max possible iterations
+[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations + 1)); % preallocate arrays for max possible iterations + 1
 
-[rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = deal(zeros(1, maxIterations));
+[rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = deal(zeros(1, maxIterations + 1));
 
-[nP, nF1, nF2] = deal(zeros(maxIterations, length(x)));
+[nP, nF1, nF2] = deal(zeros(maxIterations + 1, length(x)));
 % Initialization:1 ends here
 
 % [[file:mutual_ide.org::*Dispersal kernels][Dispersal kernels:1]]
@@ -105,7 +119,7 @@ while generation <= iterations
     % reshape happens such that 3 consecutive rows for nP, nF1, and nF2 values are stacked
     y0 = reshape(y0, 3*length(y0), 1);
 
-    [t,y] = ode45(@(t,y) growthODEs(t,y), tspan, y0); %remember to alter where the dep_p and dep_f are being called from
+    [t,y] = ode45(@(t,y) growthODEs(t,y, varargin{:}), tspan, y0); %remember to alter where the dep_p and dep_f are being called from
 
 
     % We just want the results of the growth phase (end)
@@ -141,6 +155,15 @@ while generation <= iterations
     jj_P = find(nP(generation + 1,:) >= nThreshold,1,'last');
     jj_F1 = find(nF1(generation + 1,:) >= nThreshold,1,'last');
     jj_F2 = find(nF2(generation + 1,:) >= nThreshold,1,'last');
+
+    % if any of the species' range edge is equal to the edge of the entire
+    % spatial range, stop the growth-dispersal loop. We set total iterations to
+    % the last iteration + 1 so the data is still usable.
+    if (jj_P == nodes) | (jj_F1 == nodes) | (jj_F2 == nodes)
+        iterations = generation;
+        disp("Warning: the simulation was stopped because one or more species have reached the edge of the landscape.");
+        break;
+    end
 
     if jj_P
          rangeEdgeP(generation + 1) = interp1(nP(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1),nThreshold);
@@ -202,16 +225,20 @@ instantSpeedF2(1, 1:(iterations + 1));
 filename = 'results';
 formatSpec = '%.2f';
 
-for i = 1:length(parameters)
-    param = parameters{i};
+if ~(isempty(parameters))
+    for i = 1:length(parameters)
+        param = parameters{i};
 
-    if isnumeric(param)
-        param = num2str(param, formatSpec);
-    else
-        param = string(param);
+        if isnumeric(param)
+            param = num2str(param, formatSpec);
+        elseif strcmp(param, 'outputDir') || isfolder(param)
+            continue
+        else
+            param = string(param);
+        end
+
+        filename = strcat(filename, '_', param);
     end
-
-    filename = strcat(filename, '_', param);
 end
 
 filename = strcat(filename, '.mat');
