@@ -563,23 +563,26 @@ This is the main file to be edited when running parameter sweeps. The =simMutual
 We can adjust values of =maxIterations= in the for loop to allow for longer simulations of $\tau$ values that we know will take longer to reach a steady state. By allow for more iterations for only these values, we limit the number of very large mat files.
 
 #+begin_src matlab :tangle tauSweep.m
-% use integers for the number of iterations to run
-% since parfor requires it
+
+% use integers for the number of iterations to run (rather than the actual
+% values of tau12 and tau21) because it seems parfor requires it
+
+rangeStep = 0.01;
 iterations = 100;
 maxIterations = 1000;
 
-outputDir = '~/tauSweep/';
+outputDir = '/home/shawa/lutzx119/tauSweep/';
 
-parfor i = tau12Range
+parfor i = 0:40
 
 
-    for j = tau21Range
+    for j = 0:40
 
         tau12 = i * rangeStep;
         tau21 = j * rangeStep;
 
         % more iterations for tau values that result in regional coexistence
-        if tau12 > 0.13 && tau12 < 0.3 && tau21 < 0.15 || tau21 > 0.3
+        if (tau12 > 0.13 && tau12 < 0.25 && tau21 < 0.15) || (tau21 > 0.28 && tau12 > 0.23 && tau12 < 0.3)
             maxIterations = 2000;
         else
             maxIterations = 1000;
@@ -596,20 +599,26 @@ end
 
 Note that the $SBATCH lines *must* be at the top of the script. Anything before that will break Slurm.
 
-#+begin_src shell :tangle jobscript.sh
+#+begin_comment
+For this reason, I'm not setting up detangling for the jobscript.
+#+end_comment
 
+
+#+begin_src shell :tangle jobscript.sh :comments none
 #!/bin/bash -l
-#SBATCH --time=24:00:00
-#SBATCH --ntasks=16
-#SBATCH --mem=20g
-#SBATCH --tmp=20g
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=18:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=lutzx119@umn.edu
 #SBATCH --output=/home/shawa/lutzx119/reports/tausweep-%j.out
 
-BASEDIR=~/mutualism
+cd /home/shawa/lutzx119/mutualism
+module purge
+
 module load matlab
-matlab -nodisplay <$BASEDIR/tauSweep.m
+matlab -nodisplay <tauSweep.m
 
 #+end_src
 
@@ -711,6 +720,12 @@ end
 #+end_src
 
 * Figures
+
+** Generate plots for paper
+
+#+begin_src matlab :tangle generatePlots.m :comments link
+
+#+end_src
 
 ** 3D population density vs. space vs. time plots
 
