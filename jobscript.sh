@@ -1,14 +1,15 @@
 # [[file:mutual_ide.org::*Slurm job script][Slurm job script:1]]
 #!/bin/bash -l
-#SBATCH --time=24:00:00
-#SBATCH --ntasks=16
-#SBATCH --mem=20g
-#SBATCH --tmp=20g
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=18:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=lutzx119@umn.edu
 #SBATCH --output=/home/shawa/lutzx119/reports/tausweep-%j.out
 
-BASEDIR=~/mutualism
+cd /home/shawa/lutzx119/mutualism
+module purge
+
 module load matlab
-matlab -nodisplay <$BASEDIR/tauSweep.m
-# Slurm job script:1 ends here
+matlab -nodisplay <tauSweep.m

@@ -1,21 +1,24 @@
 % [[file:mutual_ide.org::*Sweep script][Sweep script:1]]
-% use integers for the number of iterations to run
-% since parfor requires it
+
+% use integers for the number of iterations to run (rather than the actual
+% values of tau12 and tau21) because it seems parfor requires it
+
+rangeStep = 0.01;
 iterations = 100;
 maxIterations = 1000;
 
-outputDir = '~/tauSweep/';
+outputDir = '/home/shawa/lutzx119/tauSweep/';
 
-parfor i = tau12Range
+parfor i = 0:40
 
 
-    for j = tau21Range
+    for j = 0:40
 
         tau12 = i * rangeStep;
         tau21 = j * rangeStep;
 
         % more iterations for tau values that result in regional coexistence
-        if tau12 > 0.13 && tau12 < 0.3 && tau21 < 0.15 || tau21 > 0.3
+        if (tau12 > 0.13 && tau12 < 0.25 && tau21 < 0.15) || (tau21 > 0.28 && tau12 > 0.23 && tau12 < 0.3)
             maxIterations = 2000;
         else
             maxIterations = 1000;
@@ -25,4 +28,5 @@ parfor i = tau12Range
 
     end
 end
+
 % Sweep script:1 ends here
