@@ -26,9 +26,6 @@ outputDir = p.Results.outputDir;
 % threshold for speed variance at steady state
 steadyStateThreshold = 1e-04;
 
-% format spec for floating point values in filenames
-fspec = '%.2f';
-
 %% Initialize space parameters
 lowval = 1e-9;
 diameter = 1200;  %total size of landscape along positive x-axis (so technically half the size of the total landscape)
@@ -168,8 +165,6 @@ while generation <= iterations
 % while loop end
 end
 
-%% Save a mat file with the current parameter values
-
 nP = nP(1:(iterations + 1), :);
 nF1 = nF1(1:(iterations + 1), :);
 nF2 = nF2(1:(iterations + 1), :);
@@ -177,6 +172,8 @@ nF2 = nF2(1:(iterations + 1), :);
 instantSpeedP(1, 1:(iterations + 1));
 instantSpeedF1(1, 1:(iterations + 1));
 instantSpeedF2(1, 1:(iterations + 1));
+
+%% Save a mat file with the current parameter values
 
 filename = 'results';
 formatSpec = '%.2f';
@@ -194,8 +191,6 @@ for i = 1:length(parameters)
 end
 
 filename = strcat(filename, '.mat');
-
-disp("Saving ", filename, "...");
 
 save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x');
 
