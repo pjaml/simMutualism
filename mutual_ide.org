@@ -563,27 +563,21 @@ This is the main file to be edited when running parameter sweeps. The =simMutual
 We can adjust values of =maxIterations= in the for loop to allow for longer simulations of $\tau$ values that we know will take longer to reach a steady state. By allow for more iterations for only these values, we limit the number of very large mat files.
 
 #+begin_src matlab :tangle tauSweep.m
-cl=parcluster('local')
-pool = cl.parpool(16)
-
 % use integers for the number of iterations to run
 % since parfor requires it
-rangeStartInt = 0
-rangeInt = 40
-rangeStep = 0.01
 iterations = 100;
 maxIterations = 1000;
-[tau12Range, tau21Range] = deal(rangeStartInt:rangeStartInt);
 
 outputDir = '~/tauSweep/';
 
 parfor i = tau12Range
 
-    tau12 = i * rangeStep;
 
     for j = tau21Range
 
+        tau12 = i * rangeStep;
         tau21 = j * rangeStep;
+
         % more iterations for tau values that result in regional coexistence
         if tau12 > 0.13 && tau12 < 0.3 && tau21 < 0.15 || tau21 > 0.3
             maxIterations = 2000;
@@ -595,7 +589,6 @@ parfor i = tau12Range
 
     end
 end
-
 #+end_src
 
 
