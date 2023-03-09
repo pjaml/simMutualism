@@ -4,7 +4,7 @@ figDir = '~/figures/';
 formatSpec = '%.2f';
 
 % get the heatmap of all the outcomes
-plotOutcomes(sweepDir, figDir);
+plotOutcomes(sweepDir, 'figDir', figDir);
 
 % tau12 and tau21 pairs
 taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
