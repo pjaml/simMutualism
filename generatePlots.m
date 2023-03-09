@@ -14,11 +14,15 @@ for i = 1:length(taus)
 
     filename = fullfile(sweepDir, targetFile.name);
 
-    plotPopSpaceTime(filename, 'figDir', figDir);
+    curFile = load(filename, 'iterations', 'filename', 'nP', 'nF1', 'nF2', 'nThreshold', 'x', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
 
-    plotFinalPopSpace(filename, 'figDir', figDir);
+    plotPopSpaceTime(curFile, 'figDir', figDir);
 
-    plotSpeedTime(filename, 'figDir', figDir);
+    plotFinalPopSpace(curFile, 'figDir', figDir);
+
+    plotSpeedTime(curFile, 'figDir', figDir);
+
+    clear curFile;
 end
 
 % get the heatmap of all the outcomes
