@@ -2,6 +2,7 @@
 % use integers for the number of iterations to run (rather than the actual
 % values of tau12 and tau21) because it seems parfor requires it
 
+maxIterations = 1000;
 rangeStep = 0.01;
 
 outputDir = '/home/shawa/lutzx119/tauSweep/';
