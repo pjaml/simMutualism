@@ -19,7 +19,7 @@ function plotOutcomes(sweepDir, varargin)
 
     for file = 1:length(files)
 
-        load(files(file).name, 'nF1', 'nF2', 'nThreshold', 'parameters');
+        load(strcat(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
 
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
