@@ -763,7 +763,7 @@ plotOutcomes(sweepDir, 'figDir', figDir);
 % tau12 and tau21 pairs
 taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
 
-for i = length(taus)
+for i = 1:length(taus)
     filename = strcat(sweepDir, "results_tau12_", num2str(taus(i, 1), formatSpec), "_tau21_", num2str(taus(i, 2), formatSpec), ".mat");
 
     plotPopSpaceTime(filename, 'figDir', figDir);
@@ -998,8 +998,9 @@ function plotOutcomes(sweepDir, varargin)
 
     for file = 1:length(files)
 
-        load(strcat(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
+        curFile = load(strcat(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
 
+        parameters = curFile.parameters;
         % get the values of tau12 and tau21
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
@@ -1008,10 +1009,12 @@ function plotOutcomes(sweepDir, varargin)
         tau12Index = find(tau12Range == tau12);
         tau21Index = find(tau21Range == tau21);
 
-        finalNF1 = nF1(end,:);
-        finalNF2 = nF2(end,:);
+        finalNF1 = curFile.nF1(end,:);
+        finalNF2 = curFile.nF2(end,:);
 
-        outcomes(tau12Index,tau21Index) = classifyOutcome(finalNF1, finalNF2, nThreshold);
+        outcomes(tau12Index,tau21Index) = classifyOutcome(finalNF1, finalNF2, curFile.nThreshold);
+
+        clear curFile;
 
     end
 
