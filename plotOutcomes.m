@@ -31,8 +31,9 @@ function plotOutcomes(sweepDir, varargin)
 
     end
 
-    figure(1)
+    figure(1);
     heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
+    axis square;
     xlabel('tau_{12}');
     ylabel('tau_{21}');
 
