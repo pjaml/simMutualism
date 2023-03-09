@@ -3,7 +3,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=4G
-#SBATCH --time=1:00:00
+#SBATCH --time=2:00:00
 #SBATCH --array=0-40
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=lutzx119@umn.edu

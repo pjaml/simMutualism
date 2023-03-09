@@ -38,6 +38,4 @@ for file = 1:length(figs)
     saveas(curFig, filename);
     close(curFig);
 end
-
-
 % Generate plots for paper:1 ends here

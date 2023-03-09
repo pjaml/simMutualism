@@ -2,27 +2,24 @@
 function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
-    addRequired(p, 'simMatFile', @isfile);
+    addRequired(p, 'simMatFile');
     addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
-    curFile = load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
-
-    iterations = curFile.iterations;
-    nP = curFile.nP;
-    nF1 = curFile.nF1;
-    nF2 = curFile.nF2;
-    nThreshold = curFile.nThreshold;
-    x = curFile.x;
-
+    filename = simMatFile.filename;
+    iterations = simMatFile.iterations;
+    nP = simMatFile.nP;
+    nF1 = simMatFile.nF1;
+    nF2 = simMatFile.nF2;
+    nThreshold = simMatFile.nThreshold;
+    x = simMatFile.x;
 
     timeStep = round(iterations / 10);
 
     %% Figure for species P
     figure(1);
-    clf
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nP;
     nlow(nP >= nThreshold) = NaN;
@@ -75,12 +72,11 @@ function plotPopSpaceTime(simMatFile, varargin)
     legend([lineP lineF1 lineF2], {'P', 'F_1', 'F_2'});
 
     if p.Results.createFig
-        [~, filename, ~] = fileparts(curFile.filename);
+        [~, filename, ~] = fileparts(filename);
         filename = strcat('pop_space_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
     end
     clf;
-    clear curFile;
 
 end
 % 3D population density vs. space vs. time plots:1 ends here
