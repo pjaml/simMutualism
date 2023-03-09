@@ -17,7 +17,5 @@ for i = length(taus)
     plotFinalPopSpace(filename, 'figDir', figDir);
 
     plotSpeedTime(filename, 'figDir', figDir);
-
-    plotRangeTime(filename, 'figDir', figDir);
 end
 % Generate plots for paper:1 ends here
