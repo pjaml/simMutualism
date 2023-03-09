@@ -2,19 +2,24 @@
 function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
-    addRequired(p, 'simMatFile', @isfile);
+    addRequired(p, 'simMatFile');
     addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
+    filename = simMatFile.filename;
+    iterations = simMatFile.iterations;
+    nP = simMatFile.nP;
+    nF1 = simMatFile.nF1;
+    nF2 = simMatFile.nF2;
+    nThreshold = simMatFile.nThreshold;
+    x = simMatFile.x;
 
     timeStep = round(iterations / 10);
 
     %% Figure for species P
     figure(1);
-    clf
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nP;
     nlow(nP >= nThreshold) = NaN;

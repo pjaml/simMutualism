@@ -2,13 +2,17 @@
 function plotSpeedTime(simMatFile, varargin)
 
     p = inputParser;
-    addRequired(p, 'simMatFile', @isfile);
+    addRequired(p, 'simMatFile');
     addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'filename', 'iterations', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
+    filename = simMatFile.filename;
+    iterations = simMatFile.iteration;
+    instantSpeedP = simMatFile.instantSpeedP;
+    instantSpeedF1 = simMatFile.instantSpeedF1;
+    instantSpeedF2 = simMatFile.instantSpeedF2;
 
     plot(1:(iterations + 1), instantSpeedP, 1:(iterations + 1), instantSpeedF1, 1:(iterations + 1), instantSpeedF2);
     legend('P', 'F1', 'F2');

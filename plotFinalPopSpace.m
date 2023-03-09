@@ -2,13 +2,17 @@
 function plotFinalPopSpace(simMatFile, varargin)
 
     p = inputParser;
-    addRequired(p, 'simMatFile', @isfile);
+    addRequired(p, 'simMatFile');
     addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'nP', 'nF1', 'nF2', 'iterations', 'filename');
+    nP = simMatFile.nP;  'nF2', 'iterations', 'filename');
+    nF1 = simMatFile.nF1;
+    nF2 = simMatFile.nF2;
+    iterations = simMatFile.iterations;
+    filename = simMatFile.filename;
 
     hold on
     plot(nP(iterations + 1,:));
