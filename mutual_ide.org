@@ -597,6 +597,7 @@ We can adjust values of =maxIterations= in the for loop to allow for longer simu
 % use integers for the number of iterations to run (rather than the actual
 % values of tau12 and tau21) because it seems parfor requires it
 
+maxIterations = 1000;
 rangeStep = 0.01;
 
 outputDir = '/home/shawa/lutzx119/tauSweep/';
@@ -635,8 +636,8 @@ For this reason, I'm not setting up detangling for the jobscript.
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=8G
-#SBATCH --time=4:00:00
+#SBATCH --mem-per-cpu=4G
+#SBATCH --time=1:00:00
 #SBATCH --array=0-40
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=lutzx119@umn.edu
@@ -757,7 +758,7 @@ figDir = '~/figures/';
 formatSpec = '%.2f';
 
 % get the heatmap of all the outcomes
-plotOutcomes(sweepDir, figDir);
+plotOutcomes(sweepDir, 'figDir', figDir);
 
 % tau12 and tau21 pairs
 taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
@@ -773,7 +774,6 @@ for i = length(taus)
 
     plotRangeTime(filename, 'figDir', figDir);
 end
-
 #+end_src
 
 ** 3D population density vs. space vs. time plots
@@ -788,7 +788,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', true, @islogical);
+    addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
@@ -851,7 +851,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     legend([lineP lineF1 lineF2], {'P', 'F_1', 'F_2'});
 
-    if p.Results.createFile
+    if p.Results.createFig
         [~, filename, ~] = fileparts(filename);
         filename = strcat('pop_space_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
@@ -863,31 +863,29 @@ end
 ** Speed vs. time
 
 #+begin_src matlab :tangle plotSpeedTime.m
-
 function plotSpeedTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', true, @islogical);
+    addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
     load(simMatFile, 'filename', 'iterations', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
 
-    plot(1:iterations, instantSpeedP, 1:iterations, instantSpeedF1, 1:iterations, instantSpeedF2);
+    plot(1:(iterations + 1), instantSpeedP, 1:(iterations + 1), instantSpeedF1, 1:(iterations + 1), instantSpeedF2);
     legend('P', 'F1', 'F2');
     title(strcat(['Spread speed vs. time']));
     xlabel('iterations');
     ylabel('speed');
 
-    if p.Results.createFile
+    if p.Results.createFig
         [~, filename, ~] = fileparts(filename);
         filename = strcat('speed_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
     end
 end
-
 #+end_src
 
 ** Final population densities across space
@@ -898,7 +896,7 @@ function plotFinalPopSpace(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', true, @islogical);
+    addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
@@ -913,7 +911,7 @@ function plotFinalPopSpace(simMatFile, varargin)
     title(strcat(['N vs. x']));
     hold off
 
-    if p.Results.createFile
+    if p.Results.createFig
         [~, filename, ~] = fileparts(filename);
         filename = strcat('final_pop_space_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
@@ -935,7 +933,7 @@ function plotRangeTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', true, @islogical);
+    addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
 
@@ -956,7 +954,7 @@ function plotRangeTime(simMatFile, varargin)
     title(strcat(['Range size vs. time']));
     legend('P', 'F1', 'F2');
 
-    if p.Results.createFile
+    if p.Results.createFig
         [~, filename, ~] = fileparts(filename);
         filename = strcat('range_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
@@ -992,7 +990,7 @@ function plotOutcomes(sweepDir, varargin)
 
     for file = 1:length(files)
 
-        load(files(file).name, 'nF1', 'nF2', 'nThreshold', 'parameters');
+        load(strcat(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
 
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
