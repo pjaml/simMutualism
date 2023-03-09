@@ -19,8 +19,9 @@ function plotOutcomes(sweepDir, varargin)
 
     for file = 1:length(files)
 
-        load(strcat(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
+        curFile = load(strcat(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
 
+        parameters = curFile.parameters;
         % get the values of tau12 and tau21
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
@@ -29,10 +30,12 @@ function plotOutcomes(sweepDir, varargin)
         tau12Index = find(tau12Range == tau12);
         tau21Index = find(tau21Range == tau21);
 
-        finalNF1 = nF1(end,:);
-        finalNF2 = nF2(end,:);
+        finalNF1 = curFile.nF1(end,:);
+        finalNF2 = curFile.nF2(end,:);
 
-        outcomes(tau12Index,tau21Index) = classifyOutcome(finalNF1, finalNF2, nThreshold);
+        outcomes(tau12Index,tau21Index) = classifyOutcome(finalNF1, finalNF2, curFile.nThreshold);
+
+        clear curFile;
 
     end
 
