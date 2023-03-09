@@ -10,9 +10,9 @@ taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25
 for i = 1:length(taus)
 
     % probably a better way to do this with regexp
-    targetFile = dir(strcat(sweepDir, "*tau12_", num2str(taus(i, 1), formatSpec), "*tau21_", num2str(taus(i, 2), formatSpec), "*.mat"));
+    targetFile = dir(fullfile(sweepDir, strcat("*tau12_", num2str(taus(i, 1), formatSpec), "*tau21_", num2str(taus(i, 2), formatSpec), "*.mat")));
 
-    filename = targetFile.name;
+    filename = fullfile(sweepDir, targetFile.name);
 
     plotPopSpaceTime(filename, 'figDir', figDir);
 
