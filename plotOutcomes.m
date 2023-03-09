@@ -27,8 +27,8 @@ function plotOutcomes(sweepDir, varargin)
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
 
         % get the outcomes index of the tau12 and tau21 values
-        tau12Index = find(tau12Range == tau12);
-        tau21Index = find(tau21Range == tau21);
+        tau12Index = find(tau12Range(:) == tau12);
+        tau21Index = find(tau21Range(:) == tau21);
 
         finalNF1 = curFile.nF1(end,:);
         finalNF2 = curFile.nF2(end,:);
