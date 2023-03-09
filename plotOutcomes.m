@@ -15,7 +15,7 @@ function plotOutcomes(sweepDir, varargin)
 
     outcomes = zeros(length(tau12Range), length(tau21Range));
 
-    files = dir(fullfile(p.Results.sweepDir, '*.mat'));
+    files = dir(fullfile(sweepDir, '*.mat'));
 
     for file = 1:length(files)
 
@@ -30,15 +30,14 @@ function plotOutcomes(sweepDir, varargin)
         outcomes(tau12,tau21) = classifyOutcome(finalNF1, finalNF2, nThreshold);
 
     end
-end
 
-figure(1)
-heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
-xlabel('tau_{12}');
-ylabel('tau_{21}');
+    figure(1)
+    heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
+    xlabel('tau_{12}');
+    ylabel('tau_{21}');
 
-filename = strcat(figDir, 'tauSweepOutcomesPlot.fig');
-savefig(filename);
+    filename = strcat(figDir, 'tauSweepOutcomesPlot.fig');
+    savefig(filename);
 
 end
 % Sweep outcomes plot:1 ends here
