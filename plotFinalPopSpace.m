@@ -21,7 +21,7 @@ function plotFinalPopSpace(simMatFile, varargin)
     if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
         filename = strcat('final_pop_space_', filename, '.fig');
-        savefig(strcat(figDir, filename));
+        savefig(strcat(p.Results.figDir, filename));
     end
 end
 % Final population densities across space:1 ends here

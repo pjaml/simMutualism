@@ -884,7 +884,7 @@ function plotSpeedTime(simMatFile, varargin)
     if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
         filename = strcat('speed_time_', filename, '.fig');
-        savefig(strcat(figDir, filename));
+        savefig(strcat(p.Results.figDir, filename));
     end
 end
 
@@ -916,7 +916,7 @@ function plotFinalPopSpace(simMatFile, varargin)
     if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
         filename = strcat('final_pop_space_', filename, '.fig');
-        savefig(strcat(figDir, filename));
+        savefig(strcat(p.Results.figDir, filename));
     end
 end
 #+end_src
@@ -959,7 +959,7 @@ function plotRangeTime(simMatFile, varargin)
     if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
         filename = strcat('range_time_', filename, '.fig');
-        savefig(strcat(figDir, filename));
+        savefig(strcat(p.Results.figDir, filename));
     end
 end
 
@@ -972,7 +972,6 @@ This function generates a heatmap of the outcomes of a $\tau$ parameter sweep (i
 It can optionally take arguments to specify the range of values used in the parameter sweep (by default it assumes that we used the range =0:0.01:0.40= for both $\tau_{12}$ and $\tau_{21}$).
 
 #+begin_src matlab :tangle plotOutcomes.m
-
 function plotOutcomes(sweepDir, varargin)
 
     p = inputParser;
@@ -989,7 +988,7 @@ function plotOutcomes(sweepDir, varargin)
 
     outcomes = zeros(length(tau12Range), length(tau21Range));
 
-    files = dir(fullfile(p.Results.sweepDir, '*.mat'));
+    files = dir(fullfile(sweepDir, '*.mat'));
 
     for file = 1:length(files)
 
@@ -1004,15 +1003,14 @@ function plotOutcomes(sweepDir, varargin)
         outcomes(tau12,tau21) = classifyOutcome(finalNF1, finalNF2, nThreshold);
 
     end
-end
 
-figure(1)
-heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
-xlabel('tau_{12}');
-ylabel('tau_{21}');
+    figure(1)
+    heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
+    xlabel('tau_{12}');
+    ylabel('tau_{21}');
 
-filename = strcat(figDir, 'tauSweepOutcomesPlot.fig');
-savefig(filename);
+    filename = strcat(figDir, 'tauSweepOutcomesPlot.fig');
+    savefig(filename);
 
 end
 #+end_src

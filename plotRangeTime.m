@@ -27,7 +27,7 @@ function plotRangeTime(simMatFile, varargin)
     if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
         filename = strcat('range_time_', filename, '.fig');
-        savefig(strcat(figDir, filename));
+        savefig(strcat(p.Results.figDir, filename));
     end
 end
 % Range vs. time:1 ends here
