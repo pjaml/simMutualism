@@ -18,4 +18,16 @@ for i = length(taus)
 
     plotSpeedTime(filename, 'figDir', figDir);
 end
+
+% also save plots as PNGs
+figs = dir(fullfile(figDir, '*.fig'));
+for file = 1:length(figs)
+    curFig = openfig(fullfile(figDir, figs(file)));
+    [~, filename, ~] = fileparts(figs(file));
+    filename = strcat(figDir, filename, ".png");
+    saveas(curFig, filename);
+    close(curFig);
+end
+
+
 % Generate plots for paper:1 ends here
