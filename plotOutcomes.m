@@ -19,7 +19,7 @@ function plotOutcomes(sweepDir, varargin)
 
     for file = 1:length(files)
 
-        curFile = load(strcat(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
+        curFile = load(fullfile(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
 
         parameters = curFile.parameters;
         % get the values of tau12 and tau21
@@ -41,11 +41,10 @@ function plotOutcomes(sweepDir, varargin)
 
     figure(1);
     heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
-    axis square;
     xlabel('tau_{12}');
     ylabel('tau_{21}');
 
-    filename = strcat(figDir, 'tauSweepOutcomesPlot.fig');
+    filename = fullfile(figDir, 'tauSweepOutcomesPlot.fig');
     savefig(filename);
 
 end
