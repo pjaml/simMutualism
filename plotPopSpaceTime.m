@@ -8,7 +8,15 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
+    curFile = load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
+
+    iterations = curFile.iterations;
+    nP = curFile.nP;
+    nF1 = curFile.nF1;
+    nF2 = curFile.nF2;
+    nThreshold = curFile.nThreshold;
+    x = curFile.x;
+
 
     timeStep = round(iterations / 10);
 
@@ -67,10 +75,12 @@ function plotPopSpaceTime(simMatFile, varargin)
     legend([lineP lineF1 lineF2], {'P', 'F_1', 'F_2'});
 
     if p.Results.createFig
-        [~, filename, ~] = fileparts(filename);
+        [~, filename, ~] = fileparts(curFile.filename);
         filename = strcat('pop_space_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
     end
+    clf;
+    clear curFile;
 
 end
 % 3D population density vs. space vs. time plots:1 ends here
