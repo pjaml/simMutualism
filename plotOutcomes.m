@@ -21,13 +21,18 @@ function plotOutcomes(sweepDir, varargin)
 
         load(strcat(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
 
+        % get the values of tau12 and tau21
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
+
+        % get the outcomes index of the tau12 and tau21 values
+        tau12Index = find(tau12Range == tau12);
+        tau21Index = find(tau21Range == tau21);
 
         finalNF1 = nF1(end,:);
         finalNF2 = nF2(end,:);
 
-        outcomes(tau12,tau21) = classifyOutcome(finalNF1, finalNF2, nThreshold);
+        outcomes(tau12Index,tau21Index) = classifyOutcome(finalNF1, finalNF2, nThreshold);
 
     end
 
