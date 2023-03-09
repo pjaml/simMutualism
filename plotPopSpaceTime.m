@@ -8,7 +8,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(p.Results.simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
+    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
 
     timeStep = round(iterations / 10);
 
