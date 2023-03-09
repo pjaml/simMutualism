@@ -757,9 +757,6 @@ sweepDir = '~/tauSweep/';
 figDir = '~/figures/';
 formatSpec = '%.2f';
 
-% get the heatmap of all the outcomes
-plotOutcomes(sweepDir, 'figDir', figDir);
-
 % tau12 and tau21 pairs
 taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
 
@@ -772,6 +769,10 @@ for i = 1:length(taus)
 
     plotSpeedTime(filename, 'figDir', figDir);
 end
+
+% get the heatmap of all the outcomes
+disp('Generating outcomes plot...')
+plotOutcomes(sweepDir, 'figDir', figDir);
 
 % also save plots as PNGs
 figs = dir(fullfile(figDir, '*.fig'));
@@ -791,7 +792,6 @@ These plots are helpful to see how the population densities change over time, bu
 We generate a plot for each species, and they're superimposed in a single figure.
 
 #+begin_src matlab :tangle plotPopSpaceTime.m
-
 function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
@@ -801,7 +801,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    load(p.Results.simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
+    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
 
     timeStep = round(iterations / 10);
 
@@ -1006,8 +1006,8 @@ function plotOutcomes(sweepDir, varargin)
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
 
         % get the outcomes index of the tau12 and tau21 values
-        tau12Index = find(tau12Range == tau12);
-        tau21Index = find(tau21Range == tau21);
+        tau12Index = find(tau12Range(:) == tau12);
+        tau21Index = find(tau21Range(:) == tau21);
 
         finalNF1 = curFile.nF1(end,:);
         finalNF2 = curFile.nF2(end,:);
