@@ -752,6 +752,27 @@ end
 ** Generate plots for paper
 
 #+begin_src matlab :tangle generatePlots.m :comments link
+sweepDir = '~/tauSweep/';
+figDir = '~/figures/';
+formatSpec = '%.2f';
+
+% get the heatmap of all the outcomes
+plotOutcomes(sweepDir, figDir);
+
+% tau12 and tau21 pairs
+taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
+
+for i = length(taus)
+    filename = strcat(sweepDir, "results_tau12_", num2str(taus(i, 1), formatSpec), "_tau21_", num2str(taus(i, 2), formatSpec), ".mat");
+
+    plotPopSpaceTime(filename, 'figDir', figDir);
+
+    plotFinalPopSpace(filename, 'figDir', figDir);
+
+    plotSpeedTime(filename, 'figDir', figDir);
+
+    plotRangeTime(filename, 'figDir', figDir);
+end
 
 #+end_src
 
@@ -767,8 +788,8 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', false, @islogical);
-    addOptional(p, 'imgDir', './', @isfolder);
+    addOptional(p,'createFile', true, @islogical);
+    addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
@@ -829,9 +850,11 @@ function plotPopSpaceTime(simMatFile, varargin)
     hold off
 
     legend([lineP lineF1 lineF2], {'P', 'F_1', 'F_2'});
+
     if p.Results.createFile
+        [~, filename, ~] = fileparts(filename);
         filename = strcat('pop_space_time_', filename, '.fig');
-        savefig(strcat(p.Results.imgDir, filename));
+        savefig(strcat(p.Results.figDir, filename));
     end
 
 end
@@ -845,8 +868,8 @@ function plotSpeedTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', false, @islogical);
-    addOptional(p, 'imgDir', './', @isfolder);
+    addOptional(p,'createFile', true, @islogical);
+    addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
@@ -859,8 +882,9 @@ function plotSpeedTime(simMatFile, varargin)
     ylabel('speed');
 
     if p.Results.createFile
+        [~, filename, ~] = fileparts(filename);
         filename = strcat('speed_time_', filename, '.fig');
-        savefig(strcat(imgDir, filename));
+        savefig(strcat(figDir, filename));
     end
 end
 
@@ -874,8 +898,8 @@ function plotFinalPopSpace(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', false, @islogical);
-    addOptional(p, 'imgDir', './', @isfolder);
+    addOptional(p,'createFile', true, @islogical);
+    addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
@@ -890,8 +914,9 @@ function plotFinalPopSpace(simMatFile, varargin)
     hold off
 
     if p.Results.createFile
+        [~, filename, ~] = fileparts(filename);
         filename = strcat('final_pop_space_', filename, '.fig');
-        savefig(strcat(imgDir, filename));
+        savefig(strcat(figDir, filename));
     end
 end
 #+end_src
@@ -910,8 +935,8 @@ function plotRangeTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', false, @islogical);
-    addOptional(p, 'imgDir', './', @isfolder);
+    addOptional(p,'createFile', true, @islogical);
+    addOptional(p, 'figDir', './', @isfolder);
 
 
     parse(p, simMatFile, varargin{:});
@@ -932,8 +957,9 @@ function plotRangeTime(simMatFile, varargin)
     legend('P', 'F1', 'F2');
 
     if p.Results.createFile
+        [~, filename, ~] = fileparts(filename);
         filename = strcat('range_time_', filename, '.fig');
-        savefig(strcat(imgDir, filename));
+        savefig(strcat(figDir, filename));
     end
 end
 
@@ -954,12 +980,12 @@ function plotOutcomes(sweepDir, varargin)
     addRequired(p, 'sweepDir', @isfolder);
     addParameter(p, 'tau12Range', 0:0.01:0.40);
     addParameter(p, 'tau21Range', 0:0.01:0.40);
-    addParameter(p, 'outputDir', './', @isfolder);
+    addParameter(p, 'figDir', './', @isfolder);
     parse(p, sweepDir, varargin{:});
 
     tau12Range = p.Results.tau12Range;
     tau21Range = p.Results.tau21Range;
-    outputDir = p.Results.outputDir;
+    figDir = p.Results.figDir;
 
     outcomes = zeros(length(tau12Range), length(tau21Range));
 
@@ -985,7 +1011,7 @@ heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
 xlabel('tau_{12}');
 ylabel('tau_{21}');
 
-filename = strcat(outputDir, 'tauSweepOutcomesPlot.fig');
+filename = strcat(figDir, 'tauSweepOutcomesPlot.fig');
 savefig(filename);
 
 end

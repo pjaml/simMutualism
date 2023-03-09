@@ -6,12 +6,12 @@ function plotOutcomes(sweepDir, varargin)
     addRequired(p, 'sweepDir', @isfolder);
     addParameter(p, 'tau12Range', 0:0.01:0.40);
     addParameter(p, 'tau21Range', 0:0.01:0.40);
-    addParameter(p, 'outputDir', './', @isfolder);
+    addParameter(p, 'figDir', './', @isfolder);
     parse(p, sweepDir, varargin{:});
 
     tau12Range = p.Results.tau12Range;
     tau21Range = p.Results.tau21Range;
-    outputDir = p.Results.outputDir;
+    figDir = p.Results.figDir;
 
     outcomes = zeros(length(tau12Range), length(tau21Range));
 
@@ -37,7 +37,7 @@ heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
 xlabel('tau_{12}');
 ylabel('tau_{21}');
 
-filename = strcat(outputDir, 'tauSweepOutcomesPlot.fig');
+filename = strcat(figDir, 'tauSweepOutcomesPlot.fig');
 savefig(filename);
 
 end

@@ -3,8 +3,8 @@ function plotRangeTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', false, @islogical);
-    addOptional(p, 'imgDir', './', @isfolder);
+    addOptional(p,'createFile', true, @islogical);
+    addOptional(p, 'figDir', './', @isfolder);
 
 
     parse(p, simMatFile, varargin{:});
@@ -25,8 +25,9 @@ function plotRangeTime(simMatFile, varargin)
     legend('P', 'F1', 'F2');
 
     if p.Results.createFile
+        [~, filename, ~] = fileparts(filename);
         filename = strcat('range_time_', filename, '.fig');
-        savefig(strcat(imgDir, filename));
+        savefig(strcat(figDir, filename));
     end
 end
 % Range vs. time:1 ends here

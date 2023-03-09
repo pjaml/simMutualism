@@ -3,8 +3,8 @@ function plotFinalPopSpace(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', false, @islogical);
-    addOptional(p, 'imgDir', './', @isfolder);
+    addOptional(p,'createFile', true, @islogical);
+    addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
@@ -19,8 +19,9 @@ function plotFinalPopSpace(simMatFile, varargin)
     hold off
 
     if p.Results.createFile
+        [~, filename, ~] = fileparts(filename);
         filename = strcat('final_pop_space_', filename, '.fig');
-        savefig(strcat(imgDir, filename));
+        savefig(strcat(figDir, filename));
     end
 end
 % Final population densities across space:1 ends here
