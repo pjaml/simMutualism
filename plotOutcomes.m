@@ -26,19 +26,20 @@ function plotOutcomes(sweepDir, varargin)
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
 
-        % get the outcomes index of the tau12 and tau21 values
-        tau12Index = find(tau12Range(:) == tau12);
-        tau21Index = find(tau21Range(:) == tau21);
-
         finalNF1 = curFile.nF1(end,:);
         finalNF2 = curFile.nF2(end,:);
 
-        outcomes(tau12Index,tau21Index) = classifyOutcome(finalNF1, finalNF2, curFile.nThreshold);
+        curOutcome = classifyOutcome(finalNF1, finalNF2, curFile.nThreshold);
+
+        disp(strcat("The outcome of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " is ", num2str(curOutcome)));
+
+        outcomes(tau12Range == tau12,tau21Range == tau21) = curOutcome;
 
         clear curFile;
 
     end
 
+    disp("Saving outcomes plot...")
     figure(1);
     heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
     xlabel('tau_{12}');
