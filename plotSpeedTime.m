@@ -3,7 +3,7 @@ function plotSpeedTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', true, @islogical);
+    addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
@@ -16,7 +16,7 @@ function plotSpeedTime(simMatFile, varargin)
     xlabel('iterations');
     ylabel('speed');
 
-    if p.Results.createFile
+    if p.Results.createFig
         [~, filename, ~] = fileparts(filename);
         filename = strcat('speed_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));

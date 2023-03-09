@@ -3,7 +3,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFile', true, @islogical);
+    addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
@@ -66,7 +66,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     legend([lineP lineF1 lineF2], {'P', 'F_1', 'F_2'});
 
-    if p.Results.createFile
+    if p.Results.createFig
         [~, filename, ~] = fileparts(filename);
         filename = strcat('pop_space_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
