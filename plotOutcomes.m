@@ -28,7 +28,9 @@ function plotOutcomes(sweepDir, varargin)
 
         disp(strcat("The outcome of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " is ", num2str(curFile.outcome)));
 
-        outcomes(tau12Range == tau12,tau21Range == tau21) = curFile.outcome;
+        % You can't use == for comparison of floating point numbers, you have to use this ismembertol function
+        % The default tolerance is fine for this purpose.
+        outcomes(ismembertol(tau12Range, tau12), ismembertol(tau21Range, tau21)) = curFile.outcome;
 
         clear curFile;
 
