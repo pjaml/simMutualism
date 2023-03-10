@@ -32,8 +32,8 @@ plotOutcomes(sweepDir, 'figDir', figDir);
 % also save plots as PNGs
 figs = dir(fullfile(figDir, '*.fig'));
 for file = 1:length(figs)
-    curFig = openfig(fullfile(figDir, figs(file)));
-    [~, filename, ~] = fileparts(figs(file));
+    curFig = openfig(fullfile(figDir, figs(file).name));
+    [~, filename, ~] = fileparts(figs(file).name);
     filename = strcat(figDir, filename, ".png");
     saveas(curFig, filename);
     close(curFig);
