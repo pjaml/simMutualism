@@ -1,6 +1,6 @@
 % [[file:mutual_ide.org::*Function to classify outcome (=classifyOutcome.m=)][Function to classify outcome (=classifyOutcome.m=):1]]
 %% Function to classify outcome of a given simulation
-function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
+function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold)
 
     % get the ranges where F1 and F2 populations are above the threshold
     rangeF1 = find(finalNF1 >= nThreshold);
