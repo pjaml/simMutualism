@@ -8,16 +8,13 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
 
     maxRange = max(length(rangeF1), length(rangeF2));
 
-    if length(rangeF1) == maxRange
-        isF1Dominant = true;
-    else
-        isF1Dominant = false;
-    end
+    % range where one species exists but not the other
+    exclusiveRange = setxor(rangeF1, rangeF2);
 
-    % maxRange = size(rangeP);
 % Function to classify outcome (=classifyOutcome.m=):1 ends here
 
 % [[file:mutual_ide.org::*Function to classify outcome (=classifyOutcome.m=)][Function to classify outcome (=classifyOutcome.m=):2]]
+
     % if F2 is below the threshold across the total range, then classify as
     % F1 dominance
     if isempty(rangeF2)
@@ -33,7 +30,7 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
     % find the range of values in rangeF1 or rangeF2 but not both
     % if the proportion of this range over the total range is less than
     % the arbitrary value 0.05, we call it local coexistence
-    elseif length(setxor(rangeF1, rangeF2))/maxRange < 0.05
+    elseif length(exclusiveRange)/maxRange < 0.05
         outcome = 3; % Local coexistence
 % Function to classify outcome (=classifyOutcome.m=):3 ends here
 
@@ -41,7 +38,7 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
     elseif length(rangeF1) > length(rangeF2)
 
         % we find at least some F2 dominance
-        if intersect(rangeF2, setxor(rangeF1, rangeF2))
+        if intersect(rangeF2, exclusiveRange)
             outcome = 6; % regional coexistence
 
         % no F2 dominance
@@ -52,7 +49,7 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
     elseif length(rangeF2) > length(rangeF1)
 
         % we find at least some F1 dominance
-        if intersect(rangeF1, setxor(rangeF1, rangeF2))
+        if intersect(rangeF1, exclusiveRange)
             outcome = 6; % regional coexistence
         else
             outcome = 5; % Local coexistence + F2 dominance
