@@ -627,12 +627,11 @@ end
 
 ** Slurm job script
 
-Note that the $SBATCH lines *must* be at the top of the script. Anything before that will break Slurm.
+Note that the $SBATCH lines *must* be at the top of the script. Anything before that will cause an error with Slurm.
 
 #+begin_comment
 For this reason, I'm not setting up detangling for the jobscript.
 #+end_comment
-
 
 #+begin_src shell :tangle jobscript.sh :comments none
 #!/bin/bash -l
@@ -653,6 +652,20 @@ module load matlab
 matlab -nodisplay <tauSweep.m
 
 #+end_src
+
+*** Using the Slurm ~--array command~
+
+Note the ~#SBATCH --array=0-40~ command. For a parameter sweep, we might normally use two for-loops to iterate through a range of values for two parameters (in this case $\tau_{12}$ and $\tau_{21}$). Instead, we can replace the outer for loop with Slurm's ~--array~ command. It takes a range of numbers (or a comma separated list in brackets, like =[5, 10, 15, 25]=), and creates a separate, parallelized task for each one. We access the task ID with the environment variable =SLURM_ARRAY_TASK_ID=.
+
+In our case, we want to run simulations for all values of $\tau_{12}$ and $\tau_{21}$ in the range 0 - 0.4 with a step size of 0.01. Since the Slurm array command only recognizes integers, we use ~--array=0-40~. Then in our Matlab sweep script, we remove our outer for-loop and replace wherever we were using the for-loop index variable with =str2num(getenv("SLURM_ARRAY_TASK_ID")) * 0.01=. Now Slurm will set up one job with 41 sub-tasks that run in parallel, one for each value of $\tau_{12}$.
+
+*** Making the right job request
+
+This [[https://researchcomputing.princeton.edu/support/knowledge-base/slurm][introductory guide]] from Princeton Research Computing was very helpful. They also have [[https://researchcomputing.princeton.edu/support/knowledge-base/matlab][specific instructions]] for Matlab.
+
+The key takeaway is that requesting more resources as a way to speed up a job is usually a bad idea. Often it'll get stuck in the queue and any performance gains are offset by this wait. Even worse, Matlab in particular doesn't typically benefit from multiple nodes/ntasks. It's best to simply use ~--nodes=1~ and ~--ntasks=1~. Using the ~--array~ command as mentioned above with automatically spread the parameter sweep simulations across many CPUs/cores, so there's no need to do anything else except request sufficient memory, either with ~--mem=~ or ~--mem-per-cpu=~.
+
+It /is/ possible to parallelize your code as well, but it's not totally clear whether this is always beneficial. You can replace a for-loop with =parfor=, and then add ~--cpus-per-task~ to your Slurm script. This is another case where more is not always better, ~--cpus-per-task=4~ has given me the best results in my very informal testing. More CPUs and your job ends up in the queue for much longer. Now for each array sub-task, 4 CPUs will divide up the inner for-loop in the sweep script. The problem is that these extra CPUs can mean that your other array sub-tasks get stuck in the queue since you're using more resources per task.
 
 ** Function to classify outcome (=classifyOutcome.m=)
 
@@ -1170,6 +1183,5 @@ fimplicit3(eq3, [0 maxpop]);
 hold off;
 
 #+end_src
-
 
 
