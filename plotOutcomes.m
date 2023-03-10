@@ -19,12 +19,14 @@ function plotOutcomes(sweepDir, varargin)
 
     for file = 1:length(files)
 
-        curFile = load(fullfile(sweepDir, files(file).name), 'outcome', 'parameters');
+        curFile = matfile(fullfile(sweepDir, files(file).name));
 
         parameters = curFile.parameters;
         % get the values of tau12 and tau21
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
+
+        disp(strcat("The outcome of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " is ", num2str(curFile.outcome)));
 
         outcomes(tau12Range == tau12,tau21Range == tau21) = curFile.outcome;
 
