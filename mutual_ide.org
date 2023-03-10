@@ -302,6 +302,9 @@ instantSpeedP = instantSpeedP(1, 1:(iterations + 1));
 instantSpeedF1 = instantSpeedF1(1, 1:(iterations + 1));
 instantSpeedF2 = instantSpeedF2(1, 1:(iterations + 1));
 
+% classify outcome here so we don't have to do it later
+outcome = classifyOutcome(nF1(end,:), nF2(end,:), nThreshold);
+
 %% Save a mat file with the current parameter values
 
 filename = 'results';
@@ -325,7 +328,7 @@ end
 
 filename = strcat(filename, '.mat');
 
-save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x', 'maxIterations', 'diameter');
+save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x', 'maxIterations', 'diameter', 'outcome');
 
 % end of simMutualism function
 end
@@ -760,14 +763,23 @@ formatSpec = '%.2f';
 % tau12 and tau21 pairs
 taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
 
+
 for i = 1:length(taus)
-    filename = strcat(sweepDir, "results_tau12_", num2str(taus(i, 1), formatSpec), "_tau21_", num2str(taus(i, 2), formatSpec), ".mat");
 
-    plotPopSpaceTime(filename, 'figDir', figDir);
+    % probably a better way to do this with regexp
+    targetFile = dir(fullfile(sweepDir, strcat("*tau12_", num2str(taus(i, 1), formatSpec), "*tau21_", num2str(taus(i, 2), formatSpec), "*.mat")));
 
-    plotFinalPopSpace(filename, 'figDir', figDir);
+    filename = fullfile(sweepDir, targetFile.name);
 
-    plotSpeedTime(filename, 'figDir', figDir);
+    curFile = load(filename, 'iterations', 'filename', 'nP', 'nF1', 'nF2', 'nThreshold', 'x', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
+
+    plotPopSpaceTime(curFile, 'figDir', figDir);
+
+    plotFinalPopSpace(curFile, 'figDir', figDir);
+
+    plotSpeedTime(curFile, 'figDir', figDir);
+
+    clear curFile;
 end
 
 % get the heatmap of all the outcomes
@@ -795,19 +807,24 @@ We generate a plot for each species, and they're superimposed in a single figure
 function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
-    addRequired(p, 'simMatFile', @isfile);
+    addRequired(p, 'simMatFile');
     addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'filename', 'iterations', 'nP', 'nF1', 'nF2', 'nThreshold', 'x');
+    filename = simMatFile.filename;
+    iterations = simMatFile.iterations;
+    nP = simMatFile.nP;
+    nF1 = simMatFile.nF1;
+    nF2 = simMatFile.nF2;
+    nThreshold = simMatFile.nThreshold;
+    x = simMatFile.x;
 
     timeStep = round(iterations / 10);
 
     %% Figure for species P
     figure(1);
-    clf
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nP;
     nlow(nP >= nThreshold) = NaN;
@@ -864,6 +881,7 @@ function plotPopSpaceTime(simMatFile, varargin)
         filename = strcat('pop_space_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
     end
+    clf;
 
 end
 #+end_src
@@ -874,13 +892,17 @@ end
 function plotSpeedTime(simMatFile, varargin)
 
     p = inputParser;
-    addRequired(p, 'simMatFile', @isfile);
+    addRequired(p, 'simMatFile');
     addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'filename', 'iterations', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
+    filename = simMatFile.filename;
+    iterations = simMatFile.iterations;
+    instantSpeedP = simMatFile.instantSpeedP;
+    instantSpeedF1 = simMatFile.instantSpeedF1;
+    instantSpeedF2 = simMatFile.instantSpeedF2;
 
     plot(1:(iterations + 1), instantSpeedP, 1:(iterations + 1), instantSpeedF1, 1:(iterations + 1), instantSpeedF2);
     legend('P', 'F1', 'F2');
@@ -893,23 +915,28 @@ function plotSpeedTime(simMatFile, varargin)
         filename = strcat('speed_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
     end
+
+    clf;
 end
 #+end_src
 
 ** Final population densities across space
 
  #+begin_src matlab :tangle plotFinalPopSpace.m
-
 function plotFinalPopSpace(simMatFile, varargin)
 
     p = inputParser;
-    addRequired(p, 'simMatFile', @isfile);
+    addRequired(p, 'simMatFile');
     addOptional(p,'createFig', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
 
-    load(simMatFile, 'nP', 'nF1', 'nF2', 'iterations', 'filename');
+    nP = simMatFile.nP;
+    nF1 = simMatFile.nF1;
+    nF2 = simMatFile.nF2;
+    iterations = simMatFile.iterations;
+    filename = simMatFile.filename;
 
     hold on
     plot(nP(iterations + 1,:));
@@ -924,6 +951,7 @@ function plotFinalPopSpace(simMatFile, varargin)
         filename = strcat('final_pop_space_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
     end
+    clf;
 end
 #+end_src
 
@@ -936,7 +964,6 @@ In order to obtain the range of a species at a given time, you could find all th
 Does range size need to be contiguous? In other words, if F1 is only present at the edges, could you total its ranges at each edge and call that its "range size"?
 
 #+begin_src matlab :tangle plotRangeTime.m
-
 function plotRangeTime(simMatFile, varargin)
 
     p = inputParser;
@@ -968,7 +995,6 @@ function plotRangeTime(simMatFile, varargin)
         savefig(strcat(p.Results.figDir, filename));
     end
 end
-
 #+end_src
 
 ** Sweep outcomes plot
@@ -998,33 +1024,33 @@ function plotOutcomes(sweepDir, varargin)
 
     for file = 1:length(files)
 
-        curFile = load(strcat(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
+        curFile = load(fullfile(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
 
         parameters = curFile.parameters;
         % get the values of tau12 and tau21
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
 
-        % get the outcomes index of the tau12 and tau21 values
-        tau12Index = find(tau12Range(:) == tau12);
-        tau21Index = find(tau21Range(:) == tau21);
-
         finalNF1 = curFile.nF1(end,:);
         finalNF2 = curFile.nF2(end,:);
 
-        outcomes(tau12Index,tau21Index) = classifyOutcome(finalNF1, finalNF2, curFile.nThreshold);
+        curOutcome = classifyOutcome(finalNF1, finalNF2, curFile.nThreshold);
+
+        disp(strcat("The outcome of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " is ", num2str(curOutcome)));
+
+        outcomes(tau12Range == tau12,tau21Range == tau21) = curOutcome;
 
         clear curFile;
 
     end
 
+    disp("Saving outcomes plot...")
     figure(1);
     heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
-    axis square;
     xlabel('tau_{12}');
     ylabel('tau_{21}');
 
-    filename = strcat(figDir, 'tauSweepOutcomesPlot.fig');
+    filename = fullfile(figDir, 'tauSweepOutcomesPlot.fig');
     savefig(filename);
 
 end
@@ -1155,94 +1181,3 @@ hold off;
 
 
 
-* Results
-
-** Table of results
-
-=comp_12= is how F2 negatively impacts F1, and =comp_21= is how F1 negatively impacts F2 through competition.
-
-| dep_f(1) | dep_f(2) | alpha21(1) | alpha21(2) | comp_12 | comp_21 | result  | dom. pheno |
-|----------+----------+------------+------------+---------+---------+---------+------------|
-|      0.1 |      0.9 |        0.5 |        0.5 |     0.5 |     0.4 | dom     | F1         |
-|      0.1 |      0.9 |        0.5 |        0.5 |     0.2 |     0.1 | dom     | F1         |
-|      0.1 |      0.9 |        0.5 |        0.5 |     0.1 |     0.2 | dom     | F2         |
-|      0.1 |      0.9 |        0.5 |        0.5 |    0.01 |    0.02 | loc     | F2         |
-|      0.5 |      0.9 |        0.5 |        0.5 |       1 |     0.4 | dom     | F1         |
-|      0.5 |      0.9 |        0.5 |        0.5 |     0.8 |     0.4 | dom     | F1         |
-|      0.5 |      0.9 |        0.5 |        0.5 |     0.5 |     0.4 | dom     | F1         |
-|      0.5 |      0.9 |        0.5 |        0.5 |     0.4 |     2.3 | dom     | F2         |
-|      0.5 |      0.9 |        0.5 |        0.5 |     0.4 |       1 | dom     | F2         |
-|      0.6 |      0.9 |        0.5 |        0.5 |    0.08 |    0.04 | loc     | F1         |
-|      0.6 |      0.9 |        0.5 |        0.5 |    0.08 |    0.03 | loc     | F2         |
-|      0.7 |      0.9 |        0.5 |        0.5 |     0.1 |     0.2 | dom     | F2         |
-|      0.7 |      0.9 |        0.5 |        0.5 |    0.01 |    0.02 | loc     | F2         |
-|      0.9 |      0.6 |        0.5 |        0.5 |    0.08 |    0.04 | dom/loc | F1         |
-|      0.9 |      0.6 |        0.5 |        0.7 |    0.08 |    0.04 | loc     | F1/F2      |
-|      0.9 |      0.6 |        0.3 |        0.7 |    0.08 |    0.04 | dom/loc | F2         |
-|      0.9 |      0.6 |        0.3 |        0.9 |    0.08 |    0.04 | dom/loc | F2         |
-|      0.9 |      0.1 |        0.5 |        0.5 |    0.09 |    0.01 | dom     | F1         |
-|      0.9 |      0.1 |        0.5 |        0.5 |    0.07 |    0.01 | dom/loc | F1         |
-|      0.9 |      0.1 |        0.5 |        0.5 |    0.04 |    0.01 | dom/loc | F1         |
-|      0.9 |      0.1 |        0.5 |        0.5 |    0.01 |    0.04 | dom/loc | F1         |
-|      0.9 |      0.1 |        0.8 |        0.5 |    0.01 |    0.04 | dom/loc | F1         |
-|      0.9 |      0.1 |        0.8 |        0.5 |    0.01 |    0.07 | dom/loc | F1         |
-|      0.9 |      0.1 |        0.8 |        0.5 |    0.01 |     0.1 | dom/loc | F1         |
-|      0.9 |      0.1 |        0.8 |        0.5 |    0.01 |     0.4 | reg     | F1/F2      |
-|      0.9 |      0.1 |        0.5 |        0.5 |    0.01 |     0.4 | dom     | F2         |
-|      0.9 |      0.1 |        0.5 |        0.5 |    0.01 |    0.06 | dom/loc | F1/F2      |
-|      0.9 |      0.1 |        0.5 |        0.5 |    0.01 |    0.09 | dom/loc | F1/F2      |
-|      0.9 |      0.1 |        0.5 |        0.5 |    0.01 |     0.2 | reg     | F1/F2      |
-|      0.9 |      0.1 |        0.5 |        0.5 |    0.01 |    0.03 | dom/loc | F1/F2      |
-
-** Interpretation
-
-If we plot the two competition factors F1 and F2, we can determine where we find local coexistence, regional coexistence, and dominance. What we found is not entirely what we expected (specifically in the upper right region), where the competition factors are equal.
-
-
-
-*** Defining local and regional coexistence
-
-/Regional coexistence/ could be defined as both phenotypes being completely dominant in a portion of the total range at steady state.
-
-/Local coexistence/ occurs when both phenotypes occupy the majority of the total range together at steady state.
-
-*** Do we need 𝛅?
-
-
-
-** 𝛕 sweep results
-
-*** Interesting plots
-
-**** Regional coexistence
-
-=tau12 = 0.21=
-
-[[~/sweep2/figures/n_v_x/png/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.21_comp_21=0.23.png]]
-
-[[~/sweep2/figures/n_v_x/png/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.22_comp_21=0.25.png]]
-
-[[~/sweep2/figures/n_v_x/png/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.23_comp_21=0.12.png]]
-
-[[~/sweep2/figures/n_v_x/png/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.23_comp_21=0.27.png]]
-
-[[~/sweep2/figures/n_v_x/png/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.24_comp_21=0.29.png]]
-
-=tau12 = 0.24=
-
-[[~/sweep2/figures/n_v_x/png/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.25_comp_21=0.31.png]]
-
-[[~/sweep2/figures/n_v_x/png/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.27_comp_21=0.36.png]]
-
-[[~/sweep2/figures/n_v_x/png/N_v_x_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.28_comp_21=0.40.png]]
-
-[[~/sweep2/figures/range/png/range_size_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.28_comp_21=0.40.png]]
-
-[[~/sweep2/figures/speed/png/speed_depF1=0.9_depF2=0.1_alphaF1=0.5_alphaF2=0.5_comp_12=0.28_comp_21=0.40.png]]
-
-
-** Iterations issue
-
-In order to see what happens in areas of regional coexistence over the long-term, we're attempting to run these simulations with 1000 iterations. Using the m file as-is, we get the error: ~Index in position 2 exceeds array bounds (must not exceed 65537)~
-
-Clearly this is an issue with the number of nodes or the diameter. Space shouldn't change; it seems that in trying to increase the number of iterations you're increasing space somewhere.
