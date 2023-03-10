@@ -37,22 +37,22 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
 % [[file:mutual_ide.org::*Function to classify outcome (=classifyOutcome.m=)][Function to classify outcome (=classifyOutcome.m=):4]]
     elseif length(rangeF1) > length(rangeF2)
 
-        % we find at least some F2 dominance
-        if intersect(rangeF2, exclusiveRange)
-            outcome = 6; % regional coexistence
-
         % no F2 dominance
-        else
+        if isempty(intersect(rangeF2, exclusiveRange))
             outcome = 4; % Local coexistence + F1 dominance
+        % we find at least some F2 dominance
+        else
+            outcome = 6; % regional coexistence
         end
 
     elseif length(rangeF2) > length(rangeF1)
 
-        % we find at least some F1 dominance
-        if intersect(rangeF1, exclusiveRange)
-            outcome = 6; % regional coexistence
-        else
+        % no F1 dominance
+        if isempty(intersect(rangeF1, exclusiveRange))
             outcome = 5; % Local coexistence + F2 dominance
+        else
+            % we find at least some F1 dominance
+            outcome = 6; % regional coexistence
         end
     else
         outcome = 7; % unknown
