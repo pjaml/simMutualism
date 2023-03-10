@@ -6,7 +6,7 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
     rangeF1 = find(finalNF1 >= nThreshold);
     rangeF2 = find(finalNF2 >= nThreshold);
 
-    maxRange = max(length(rangeF1), length(rangeF2));
+    lenMaxRange = max(length(rangeF1), length(rangeF2));
 
     % range where one species exists but not the other
     exclusiveRange = setxor(rangeF1, rangeF2);
@@ -30,7 +30,7 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
     % find the range of values in rangeF1 or rangeF2 but not both
     % if the proportion of this range over the total range is less than
     % the arbitrary value 0.05, we call it local coexistence
-    elseif length(exclusiveRange)/maxRange < 0.05
+    elseif length(exclusiveRange)/lenMaxRange < 0.05
         outcome = 3; % Local coexistence
 % Function to classify outcome (=classifyOutcome.m=):3 ends here
 
