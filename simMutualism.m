@@ -220,6 +220,9 @@ instantSpeedP = instantSpeedP(1, 1:(iterations + 1));
 instantSpeedF1 = instantSpeedF1(1, 1:(iterations + 1));
 instantSpeedF2 = instantSpeedF2(1, 1:(iterations + 1));
 
+% classify outcome here so we don't have to do it later
+outcome = classifyOutcome(nF1(end,:), nF2(end,:), nThreshold);
+
 %% Save a mat file with the current parameter values
 
 filename = 'results';
@@ -243,7 +246,7 @@ end
 
 filename = strcat(filename, '.mat');
 
-save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x', 'maxIterations', 'diameter');
+save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'filename', 'parameters', 'x', 'maxIterations', 'diameter', 'outcome');
 
 % end of simMutualism function
 end
