@@ -8,7 +8,7 @@ function plotFinalPopSpace(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
-    nP = simMatFile.nP;  'nF2', 'iterations', 'filename');
+    nP = simMatFile.nP;
     nF1 = simMatFile.nF1;
     nF2 = simMatFile.nF2;
     iterations = simMatFile.iterations;
