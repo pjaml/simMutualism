@@ -1,5 +1,5 @@
 % [[file:mutual_ide.org::*Generate plots for paper][Generate plots for paper:1]]
-sweepDir = '~/tauSweep/';
+sweepDir = '~/v2Sweep/';
 figDir = '~/figures/';
 formatSpec = '%.2f';
 
