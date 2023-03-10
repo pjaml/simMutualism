@@ -5,14 +5,14 @@
 maxIterations = 1000;
 rangeStep = 0.01;
 
-outputDir = '/home/shawa/lutzx119/tauSweep/';
+outputDir = '/home/shawa/lutzx119/v2Sweep/';
 
 % instead of using a for loop for the tau12 values, we can use Slurm to set up
 % jobs for each tau12 value. To change the range of tau12 values, modify the
 % "SBATCH --array=" line in the Slurm job script.
 tau12 = rangeStep * str2num(getenv("SLURM_ARRAY_TASK_ID"));
 
-parfor j = 0:40
+for j = 0:40
 
     tau21 = j * rangeStep;
 
