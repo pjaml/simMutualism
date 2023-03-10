@@ -19,21 +19,14 @@ function plotOutcomes(sweepDir, varargin)
 
     for file = 1:length(files)
 
-        curFile = load(fullfile(sweepDir, files(file).name), 'nF1', 'nF2', 'nThreshold', 'parameters');
+        curFile = load(fullfile(sweepDir, files(file).name), 'outcome', 'parameters');
 
         parameters = curFile.parameters;
         % get the values of tau12 and tau21
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
 
-        finalNF1 = curFile.nF1(end,:);
-        finalNF2 = curFile.nF2(end,:);
-
-        curOutcome = classifyOutcome(finalNF1, finalNF2, curFile.nThreshold);
-
-        disp(strcat("The outcome of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " is ", num2str(curOutcome)));
-
-        outcomes(tau12Range == tau12,tau21Range == tau21) = curOutcome;
+        outcomes(tau12Range == tau12,tau21Range == tau21) = curFile.outcome;
 
         clear curFile;
 
