@@ -28,7 +28,7 @@ We also define the number of additional iterations (=iterationStep=) to add to t
 #+begin_comment
 Right now, all the optional parameters given to =simMutualism= are passed along to the =growthODEs= function. I'm not sure this matters, but it's possible that you could pass just =p.Unmatched= to =growthODEs= to make the code a little safer and more efficient.
 
-It would be difficult though, since p.Unmatched
+I'm not sure how you'd convert p.Unmatched to the right string format.
 #+end_comment
 
 #+begin_src matlab :tangle simMutualism.m
@@ -685,7 +685,7 @@ In order to make classification easier we create a variable that tells us whethe
 
 #+begin_src matlab :tangle classifyOutcome.m
 %% Function to classify outcome of a given simulation
-function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold);
+function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold)
 
     % get the ranges where F1 and F2 populations are above the threshold
     rangeF1 = find(finalNF1 >= nThreshold);
