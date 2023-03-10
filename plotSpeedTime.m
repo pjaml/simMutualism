@@ -9,7 +9,7 @@ function plotSpeedTime(simMatFile, varargin)
     parse(p, simMatFile, varargin{:});
 
     filename = simMatFile.filename;
-    iterations = simMatFile.iteration;
+    iterations = simMatFile.iterations;
     instantSpeedP = simMatFile.instantSpeedP;
     instantSpeedF1 = simMatFile.instantSpeedF1;
     instantSpeedF2 = simMatFile.instantSpeedF2;
