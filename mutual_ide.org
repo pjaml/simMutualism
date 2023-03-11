@@ -287,12 +287,27 @@ end
 
 *** Which simulations never reached a steady state?
 
-Sometimes a simulation ends because the =maxIterations= number is reached, rather than actually reaching a steady state. Here we write a function to tell us if a simulation ended because it reached the =maxIterations=.
+Sometimes a simulation ends because the =maxIterations= number is reached, rather than actually reaching a steady state. Here we write a function to tell us if a simulation ended because it reached the =maxIterations=. It will iterate through all the files in the given directory and print a list of the parameter regimes for which a steady state wasn't reached.
 
-#+begin_src matlab :tangle reachedMaxIterations.m
-function maxIterationsReached = reachedMaxIterations(simMatFile)
+#+begin_src matlab :tangle getNoSteadyState.m
+function getNoSteadyState(sweepDir)
 
+    files = dir(fullfile(sweepDir, '*.mat'));
 
+    for file = 1:length(files)
+        curFile = matfile(fullfile(sweepDir, files(file).name));
+
+        parameters = curFile.parameters;
+
+        % get the values of tau12 and tau21
+        tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
+        tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
+
+        if curFile.iterations == curFile.maxIterations
+            disp(strcat("The simulation of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), "reached the maxIterations value of ", num2str(curFile.maxIterations)));
+        end
+    end
+end
 #+end_src
 
 
