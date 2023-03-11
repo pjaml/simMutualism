@@ -285,6 +285,17 @@ function isSteadyState = isSpeciesSteadyState(speed, tolerance, generation)
 end
 #+end_src
 
+*** Which simulations never reached a steady state?
+
+Sometimes a simulation ends because the =maxIterations= number is reached, rather than actually reaching a steady state. Here we write a function to tell us if a simulation ended because it reached the =maxIterations=.
+
+#+begin_src matlab :tangle reachedMaxIterations.m
+function maxIterationsReached = reachedMaxIterations(simMatFile)
+
+
+#+end_src
+
+
 *** Generate and save a mat file for the simulation
 
 Using =maxIterations= to create the initial arrays means that these arrays may be storing many more rows than is actually necessary. Since we're saving these to mat files, we can reduce the size before saving by resizing the arrays. By getting rid of extra rows, we can also use the =end= index to get the population densities of the final iteration.
@@ -761,7 +772,7 @@ end
 ** Generate plots for paper
 
 #+begin_src matlab :tangle generatePlots.m :comments link
-sweepDir = '~/tauSweep/';
+sweepDir = '~/v2Sweep/';
 figDir = '~/figures/';
 formatSpec = '%.2f';
 
@@ -794,8 +805,8 @@ plotOutcomes(sweepDir, 'figDir', figDir);
 % also save plots as PNGs
 figs = dir(fullfile(figDir, '*.fig'));
 for file = 1:length(figs)
-    curFig = openfig(fullfile(figDir, figs(file)));
-    [~, filename, ~] = fileparts(figs(file));
+    curFig = openfig(fullfile(figDir, figs(file).name));
+    [~, filename, ~] = fileparts(figs(file).name);
     filename = strcat(figDir, filename, ".png");
     saveas(curFig, filename);
     close(curFig);
@@ -1029,14 +1040,18 @@ function plotOutcomes(sweepDir, varargin)
 
     for file = 1:length(files)
 
-        curFile = load(fullfile(sweepDir, files(file).name), 'outcome', 'parameters');
+        curFile = matfile(fullfile(sweepDir, files(file).name));
 
         parameters = curFile.parameters;
         % get the values of tau12 and tau21
         tau12 = parameters{find(strcmp('tau12', parameters)) + 1};
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
 
-        outcomes(tau12Range == tau12,tau21Range == tau21) = curFile.outcome;
+        disp(strcat("The outcome of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " is ", num2str(curFile.outcome)));
+
+        % You can't use == for comparison of floating point numbers, you have to use this ismembertol function
+        % The default tolerance is fine for this purpose.
+        outcomes(ismembertol(tau12Range, tau12), ismembertol(tau21Range, tau21)) = curFile.outcome;
 
         clear curFile;
 
