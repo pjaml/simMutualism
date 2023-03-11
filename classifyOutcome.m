@@ -10,11 +10,9 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold)
 
     % range where one species exists but not the other
     exclusiveRange = setxor(rangeF1, rangeF2);
-
 % Function to classify outcome (=classifyOutcome.m=):1 ends here
 
 % [[file:mutual_ide.org::*Function to classify outcome (=classifyOutcome.m=)][Function to classify outcome (=classifyOutcome.m=):2]]
-
     % if F2 is below the threshold across the total range, then classify as
     % F1 dominance
     if isempty(rangeF2)
