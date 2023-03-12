@@ -13,8 +13,10 @@ function getNoSteadyState(sweepDir)
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
 
         if curFile.iterations == curFile.maxIterations
-            disp(strcat("The simulation of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), "reached the maxIterations value of ", num2str(curFile.maxIterations)));
+            disp(strcat("The simulation of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " reached the maxIterations value of ", num2str(curFile.maxIterations)));
         end
+
+        clear curFile;
     end
 end
 % Which simulations never reached a steady state?:1 ends here

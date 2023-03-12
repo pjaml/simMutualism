@@ -304,8 +304,10 @@ function getNoSteadyState(sweepDir)
         tau21 = parameters{find(strcmp('tau21', parameters)) + 1};
 
         if curFile.iterations == curFile.maxIterations
-            disp(strcat("The simulation of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), "reached the maxIterations value of ", num2str(curFile.maxIterations)));
+            disp(strcat("The simulation of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " reached the maxIterations value of ", num2str(curFile.maxIterations)));
         end
+
+        clear curFile;
     end
 end
 #+end_src
@@ -911,9 +913,8 @@ function plotPopSpaceTime(simMatFile, varargin)
         [~, filename, ~] = fileparts(filename);
         filename = strcat('pop_space_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
+        clf;
     end
-    clf;
-
 end
 #+end_src
 
@@ -945,9 +946,8 @@ function plotSpeedTime(simMatFile, varargin)
         [~, filename, ~] = fileparts(filename);
         filename = strcat('speed_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
+        clf;
     end
-
-    clf;
 end
 #+end_src
 
@@ -981,8 +981,8 @@ function plotFinalPopSpace(simMatFile, varargin)
         [~, filename, ~] = fileparts(filename);
         filename = strcat('final_pop_space_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
+        clf;
     end
-    clf;
 end
 #+end_src
 
