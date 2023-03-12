@@ -24,8 +24,7 @@ function plotSpeedTime(simMatFile, varargin)
         [~, filename, ~] = fileparts(filename);
         filename = strcat('speed_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
+        clf;
     end
-
-    clf;
 end
 % Speed vs. time:1 ends here

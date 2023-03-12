@@ -75,8 +75,7 @@ function plotPopSpaceTime(simMatFile, varargin)
         [~, filename, ~] = fileparts(filename);
         filename = strcat('pop_space_time_', filename, '.fig');
         savefig(strcat(p.Results.figDir, filename));
+        clf;
     end
-    clf;
-
 end
 % 3D population density vs. space vs. time plots:1 ends here
