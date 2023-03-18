@@ -1,4 +1,4 @@
-# Created 2023-03-18 Sat 00:03
+# Created 2023-03-18 Sat 00:06
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -568,8 +568,8 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 
 
 $$
-\frac{dP}{dt} = P\left[ (1 - \delta P) r_P &+ \delta P \left( c_1 \left[\frac{\alpha_{PF_1} F_1}{h_P_1 + F_1}  + \frac{\alpha_{PF_2} F_2}{h_P_2 + F_2} \right] \right) \\
-&- \delta_{F1} \left( q_1 \left[ \frac{\beta_{P} F_1}{e_P + P} \right] \right) - \delta_{F2} \left( q_1 \left[ \frac{\beta_{P} F_2}{e_P + P} \right] \right) - d_{P} P \right]
+\frac{dP}{dt} = P\left[ (1 - \delta P) r_P + \delta P \left( c_1 \left[\frac{\alpha_{PF_1} F_1}{h_P_1 + F_1}  + \frac{\alpha_{PF_2} F_2}{h_P_2 + F_2} \right] \right) \\
+- \delta_{F1} \left( q_1 \left[ \frac{\beta_{P} F_1}{e_P + P} \right] \right) - \delta_{F2} \left( q_1 \left[ \frac{\beta_{P} F_2}{e_P + P} \right] \right) - d_{P} P \right]
 $$
 
 #+begin_src matlab
