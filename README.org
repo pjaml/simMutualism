@@ -1,4 +1,4 @@
-# Created 2023-03-18 Sat 00:57
+# Created 2023-03-18 Sat 10:20
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -410,8 +410,6 @@ Here we define the growth of each species using a system of ODEs.
 With =varargin=, we can optionally use parameter values other than the defaults, e.g. =growthODEs(t, y, 'rP', 0.4)=. We need to use an [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] to manage the function's parameters.
 
 #+begin_src matlab
-
-% function dydt = growthODEs(t, y, r1, r2, alpha12, alpha21, q1, q2, beta1, beta2, c1, c2, d1, d2, h1, h2,e1, e2, nodes, dep_p, dep_f, comp_12, comp_21)
 function dydt = growthODEs(t, y, varargin)
 #+end_src
 
@@ -600,9 +598,11 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 
 *** Species /P/
 
-$$
-\frac{dP}{dt} = P\left[ (1 - \delta_P) r_P + \delta_P \left( c_1 \left[\frac{\alpha_{P1} F_1}{h_{P1} + F_1}  + \frac{\alpha_{P2} F_2}{h_{P2} + F_2} \right] \right) - \delta_{F1} \left( q_1 \left[ \frac{\beta_{P} F_1}{e_P + P} \right] \right) - \delta_{F2} \left( q_1 \left[ \frac{\beta_{P} F_2}{e_P + P} \right] \right) - d_{P} P \right]
-$$
+#+begin_src math
+\begin{align*}
+\frac{dP}{dt} = P\left[ (1 - \delta_P) r_P &+ \delta_P \left( c_1 \left[\frac{\alpha_{PF_1} F_1}{h_{PF_1} + F_1}  + \frac{\alpha_{PF_2} F_2}{h_{PF_2} + F_2} \right] \right) &- \delta_{F_1} \left( q_1 \left[ \frac{\beta_{P} F_1}{e_P + P} \right] \right) - \delta_{F_2} \left( q_1 \left[ \frac{\beta_{P} F_2}{e_P + P} \right] \right) - d_P P \right]
+\end{align*}
+#+end_src
 
 #+begin_src matlab
 
@@ -620,9 +620,11 @@ $$
 
 *** Species /F/, Phenotype 1
 
-$$
-\frac{dF_1}{dt} = F_1[(1 - \delta_{F1})r_{F1} + \delta_{F1} \left( c_2 \left[\frac{\alpha_{F1} P}{h_{F1} + P} \right] \right) - \delta P \left(q_2  \left[ \frac{\beta_{F1} P}{e_{F1} + F_1} \right] \right) - \tau_{12} F_2 - d_{F1} F_1]
-$$
+#+begin_src math
+\begin{align*}
+\frac{dF_1}{dt} = F_1[(1 - \delta_{F_1})r_{F_1} + \delta_{F_1} \left( c_2 \left[\frac{\alpha_{F_1} P}{h_{F_1} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_1} P}{e_{F_1} + F_1} \right] \right) - \tau_{12} F_2 - d_{F_1} F_1]
+\end{align*}
+#+end_src
 
 #+begin_src matlab
 
@@ -634,9 +636,11 @@ $$
 
 *** Species /F/, Phenotype 2
 
-$$
-\frac{dF_2}{dt} = F_2[(1 - \delta_{F2}) r_{F2} + \delta_{F2} \left(c_2 \left[\frac{\alpha_{F2} P}{h_{F2} + P} \right] \right) - \delta P \left(q_2  \left[ \frac{\beta_{F2} P}{e_{F2} + F_2} \right] \right) - \tau_{21} F_1 - d_{F2} F_2]
-$$
+#+begin_src math
+\begin{align*}
+\frac{dF_2}{dt} = F_2[(1 - \delta_{F_2}) r_{F_2} + \delta_{F_2} \left(c_2 \left[\frac{\alpha_{F_2} P}{h_{F_2} + P} \right] \right) - \delta_P \left(q_2  \left[ \frac{\beta_{F_2} P}{e_{F_2} + F_2} \right] \right) - \tau_{21} F_1 - d_{F_2} F_2]
+\end{align*}
+#+end_src
 
 #+begin_src matlab
 
