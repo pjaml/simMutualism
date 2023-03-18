@@ -1,4 +1,4 @@
-% [[file:mutual_ide.org::*3D population density vs. space vs. time plots][3D population density vs. space vs. time plots:1]]
+% [[file:mutual_ide.org::*3D population density vs. space vs. time plot][3D population density vs. space vs. time plot:1]]
 function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
@@ -78,4 +78,4 @@ function plotPopSpaceTime(simMatFile, varargin)
         clf;
     end
 end
-% 3D population density vs. space vs. time plots:1 ends here
+% 3D population density vs. space vs. time plot:1 ends here

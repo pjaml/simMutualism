@@ -1,18 +1,17 @@
-:PROPERTIES:
-:header-args: :comments link
-:END:
+# Created 2023-03-17 Fri 23:50
+#+options: toc:nil num:nil
 #+title: Mutualism simulation
+#+author: Peter Lutz
 :LATEX:
-#+OPTIONS: toc:nil num:nil
-#+LATEX_CLASS: article
-#+LATEX_CLASS_OPTIONS: [letterpaper 12pt]
-#+LATEX_HEADER: \usepackage[margin=1in, tmargin=1in]{geometry}
-#+LATEX_HEADER: \setlength{\parindent}{20pt}
-#+LATEX_HEADER: \usepackage{parskip}
-#+LATEX_HEADER: \usepackage{enumerate}
-#+LATEX_HEADER: \usepackage[cal=cm]{mathalfa}
-#+LATEX_HEADER: \usepackage{amsthm}
-#+BIBLIOGRAPHY: ~/pdfs/01library.bib
+#+latex_class: article
+#+latex_class_options: [letterpaper 12pt]
+#+latex_header: \usepackage[margin=1in, tmargin=1in]{geometry}
+#+latex_header: \setlength{\parindent}{20pt}
+#+latex_header: \usepackage{parskip}
+#+latex_header: \usepackage{enumerate}
+#+latex_header: \usepackage[cal=cm]{mathalfa}
+#+latex_header: \usepackage{amsthm}
+#+bibliography: ~/pdfs/01library.bib
 #+cite_export: csl ~/pdfs/csl/ecology.csl
 #+exclude_tags: noexport
 #+export_file_name: README
@@ -22,7 +21,7 @@
 
 Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species. The =simMutualism()= function can take a number of optional arguments.
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 function simMutualism(varargin)
 
 % we save the given parameters to a variable so we can use them to
@@ -40,13 +39,7 @@ So the number of iterations defined here is just the /minimum/ number of iterati
 
 We also define the number of additional iterations (=iterationStep=) to add to the simulation before checking for steady states again.
 
-#+begin_comment
-Right now, all the optional parameters given to =simMutualism= are passed along to the =growthODEs= function. I'm not sure this matters, but it's possible that you could pass just =p.Unmatched= to =growthODEs= to make the code a little safer and more efficient.
-
-I'm not sure how you'd convert p.Unmatched to the right string format.
-#+end_comment
-
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 %% for simulation
 
 p = inputParser;
@@ -90,12 +83,7 @@ Here we create the one-dimensional landscape in which the species will disperse.
 
 =linspace(x1, x2, n)= creates a vector of =n= points between points =x1= and =x2=. Spacing between points is =(x2-x1)/(n-1)=. See [[https://in.mathworks.com/help/matlab/ref/linspace.html][linspace documentation]].
 
-#+begin_comment
-Why these specific values?
-
-#+end_comment
-
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 %% Initialize space parameters
 lowval = 1e-9;
 nodes = (2^16) + 1; %total points in space -- 65537
@@ -109,7 +97,7 @@ dx = diameter / (nodes - 1);
 
 Here we initialize the arrays we'll use throughout the simulation. The speed arrays save the instantaneous or average spread speed of a species for each iteration. The range edge arrays keep track of the furthest spatial location on one side of a species' range. The /n/ population arrays keep track of each species' population density across the entire spatial range.
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 [instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations + 1)); % preallocate arrays for max possible iterations + 1
 
 [rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = deal(zeros(1, maxIterations + 1));
@@ -121,7 +109,7 @@ Here we initialize the arrays we'll use throughout the simulation. The speed arr
 
 We use a Gaussian dispersal kernel for each species. At some point we'll rewrite this to allow for other dispersal kernel functions.
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 sigma_sq = 0.25; % Dispersal variance
 
 % gaussian dispersal kernels
@@ -134,7 +122,7 @@ kF2 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
 
 We set the initial population densities across the spatial range.
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 % SET THE INITIAL CONDITIONS
 irad = 2; % Initial condition range
 initDensities = [0.1,0.1,0.1];
@@ -150,7 +138,7 @@ nF2(1,temp_F2) = initDensities(3) * normpdf(x(temp_F2),0,1);
 
 *** Initial front location
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 % FIND THE INITIAL FRONT LOCATION
 jj_P = find(nP(1,:) >= nThreshold,1,'last'); %find the farthest distance travelled by the population above a certain threshold density and assign it to jj
 jj_F1 = find(nF1(1,:) >= nThreshold,1,'last');
@@ -170,7 +158,7 @@ end
 
 ** Simulating growth and dispersal over many generations
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 generation = 1;
 %% Looping for growth and dispersal
 while generation <= iterations
@@ -178,7 +166,7 @@ while generation <= iterations
 
 *** Growth phase
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
     % for ode45
     tspan = [0, 10];
 
@@ -199,7 +187,7 @@ while generation <= iterations
 
 *** Dispersal phase
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 %   DISPERSAL
     n1P = fft_conv(kP,fP);   % dispersing individuals
     n1F1 = fft_conv(kF1,fF1);
@@ -260,7 +248,7 @@ while generation <= iterations
 
 *** Determine whether to continue running the simulation for more iterations
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
     % check for steady state, and determine whether to run for more generations
     if (generation == iterations)
 
@@ -286,7 +274,7 @@ end
 
 This function takes the spread speed values for a given species and checks to see if the variance in the last 10 values is at or below a threshold to determine whether a steady state has been reached.
 
-#+begin_src matlab :tangle isSpeciesSteadyState.m
+#+begin_src matlab
 function isSteadyState = isSpeciesSteadyState(speed, tolerance, generation)
 % takes a matrix of speed values and checks whether the variance in the last 10 values is at or below a threshold
 
@@ -304,7 +292,7 @@ end
 
 Sometimes a simulation ends because the =maxIterations= number is reached, rather than actually reaching a steady state. Here we write a function to tell us if a simulation ended because it reached the =maxIterations=. It will iterate through all the files in the given directory and print a list of the parameter regimes for which a steady state wasn't reached.
 
-#+begin_src matlab :tangle getNoSteadyState.m
+#+begin_src matlab
 function getNoSteadyState(sweepDir)
 
     files = dir(fullfile(sweepDir, '*.mat'));
@@ -334,7 +322,7 @@ Using =maxIterations= to create the initial arrays means that these arrays may b
 
 Then we can save our results to a mat file, which can then be used to generate figures, identify outcomes, etc. The =filename= string can be reused for saving figures as well. It takes any explicitly defined parameters from the call to =simMutualism()= and appends the names and values to =filename=.
 
-#+begin_src matlab :tangle simMutualism.m
+#+begin_src matlab
 %% Save a mat file with the current parameter values
 
 nP = nP(1:(iterations + 1), :);
@@ -387,18 +375,17 @@ Here we define the growth of each species using a system of ODEs.
 
 With =varargin=, we can optionally use parameter values other than the defaults, e.g. =growthODEs(t, y, 'rP', 0.4)=. We need to use an [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] to manage the function's parameters.
 
-#+begin_src matlab :tangle growthODEs.m
+#+begin_src matlab
 
 % function dydt = growthODEs(t, y, r1, r2, alpha12, alpha21, q1, q2, beta1, beta2, c1, c2, d1, d2, h1, h2,e1, e2, nodes, dep_p, dep_f, comp_12, comp_21)
 function dydt = growthODEs(t, y, varargin)
-
 #+end_src
 
 *** Default parameter values
 
 We set our default parameter values here. If the parameter is not explicitly defined in the function call, then these default values are used.
 
-#+begin_src matlab :tangle growthODEs.m
+#+begin_src matlab
 
     %% Default ODE parameter values
 
@@ -451,14 +438,13 @@ We set our default parameter values here. If the parameter is not explicitly def
     % competition: tau12 is the effect F2 has on F1; tau21 is effect of F1 on F2
     default_tau12 = 0.0;
     default_tau21 = 0.0;
-
 #+end_src
 
 *** Adding parameters with =inputParser=
 
 See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] and [[https://www.mathworks.com/help/matlab/ref/inputparser.addparameter.html][addParameter]] documentation. By setting =p.KeepUnmatched = true=, we can pass along all the parameters given in the simMutualism function call and just ignore the ones that are not relevant to the ODE parameters.
 
-#+begin_src matlab :tangle growthODEs.m
+#+begin_src matlab
 
     p = inputParser;
     p.KeepUnmatched = true;
@@ -576,8 +562,6 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 
     y = reshape(y,3,nodes);
     dydt  = zeros(size(y));
-
-
 #+end_src
 
 *** Species /P/
@@ -588,7 +572,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 &- \delta_{F1} \left( q_1 \left[ \frac{\beta_{P} F_1}{e_P + P} \right] \right) - \delta_{F2} \left( q_1 \left[ \frac{\beta_{P} F_2}{e_P + P} \right] \right) - d_{P} P \right]
 \end{align*}
 
-#+begin_src matlab :tangle growthODEs.m
+#+begin_src matlab
 
     % rename variables so equations are easier to read
     P = y(1,:);
@@ -596,7 +580,6 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     F2 = y(3,:);
 
     dydt(1,:) = P .* ((1 - deltaP) * rP + deltaP * (cP * ((alphaPF1 .* F1) ./ (hPF1 + F1) + (alphaPF2 .* F2) ./ (hPF2 + F2))) - deltaF1 * (qP * (betaP .* F1 ./ (eP + P))) - deltaF2 * (qP * (betaP .* F2 ./ (eP + P))) - (dP .* P));
-
 #+end_src
 
 *** Species /F/, Phenotype 1
@@ -605,7 +588,7 @@ $$
 \frac{dF_1}{dt} = F_1[(1 - \delta_{F_1})r_{F_1} + \delta_{F_1} \left( c_2 \left[\frac{\alpha_{F_1P}P}{h_{F_1} + P} \right] \right) - \deltaP \left(q_2  \left[ \frac{\beta_{F_1}P}{e_{F_1} + F_1} \right] \right) - \tau_{12}F_2 - d_{F_1}F_1]
 $$
 
-#+begin_src matlab :tangle growthODEs.m
+#+begin_src matlab
 
     dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + cF1 * (deltaF1 * (alphaF1P .* P) ./ (hF1P + P)) - qF1 * (deltaP * ((betaF1 .* P) ./ (eF1 + F1))) - (tau12 .* F2) - (dF1 .* F1));
 #+end_src
@@ -616,19 +599,17 @@ $$
 \frac{dF_2}{dt} = F_2[(1 - \delta_{F_2})r_{F_2} + \delta_{F_2} \left(c_2 \left[\frac{\alpha_{F_2P}P}{h_{F_2} + P} \right] \right) - \deltaP \left(q_2  \left[ \frac{\beta_{F_2}P}{e_{F_2} + F_2} \right] \right) - \tau_{21}F_1 - d_{F_2}F_2]
 $$
 
-#+begin_src matlab :tangle growthODEs.m
+#+begin_src matlab
 
     dydt(3,:) = F2 .* ((1 - deltaF2) * rF2 + cF2 * (deltaF2 * (alphaF2P .* P) ./ (hF2P + P)) - qF2 * (deltaP * ((betaF2 .* P) ./ (eF2 + F2))) - (tau21 .* F1) - (dF2 .* F2));
-
 #+end_src
 
 *** Reshape
 
-#+begin_src matlab :tangle growthODEs.m
+#+begin_src matlab
 
     dydt = reshape(dydt,3*nodes,1);
 end
-
 #+end_src
 
 * Parameter sweep
@@ -639,7 +620,7 @@ This is the main file to be edited when running parameter sweeps. The =simMutual
 
 We can adjust values of =maxIterations= in the for loop to allow for longer simulations of $\tau$ values that we know will take longer to reach a steady state. By allow for more iterations for only these values, we limit the number of very large mat files.
 
-#+begin_src matlab :tangle tauSweep.m
+#+begin_src matlab
 % use integers for the number of iterations to run (rather than the actual
 % values of tau12 and tau21) because it seems parfor requires it
 
@@ -672,11 +653,7 @@ end
 
 Note that the $SBATCH lines *must* be at the top of the script. Anything before that will cause an error with Slurm.
 
-#+begin_comment
-For this reason, I'm not setting up detangling for the jobscript.
-#+end_comment
-
-#+begin_src shell :tangle jobscript.sh :comments none
+#+begin_src shell
 #!/bin/bash -l
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -693,7 +670,6 @@ module purge
 
 module load matlab
 matlab -nodisplay <tauSweep.m
-
 #+end_src
 
 *** Using the Slurm ~--array command~
@@ -726,7 +702,7 @@ First we find the values above =nThreshold= across the landscape — this gives 
 
 In order to make classification easier we create a variable that tells us whether or not $F_1$ had the larger range than $F_2$, based on the result of the =max= function.
 
-#+begin_src matlab :tangle classifyOutcome.m
+#+begin_src matlab
 %% Function to classify outcome of a given simulation
 function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold)
 
@@ -742,7 +718,7 @@ function outcome = classifyOutcome(finalNF1, finalNF2, nThreshold)
 
 In the simplest cases, there were no population values above =nThreshold= for either $F_1$ or $F_2$; this means the other species competitively excluded it and we can classify the outcome as /$F_1$ or $F_2$ dominance/.
 
-#+begin_src matlab :tangle classifyOutcome.m
+#+begin_src matlab
 
     % if F2 is below the threshold across the total range, then classify as
     % F1 dominance
@@ -757,7 +733,7 @@ In the simplest cases, there were no population values above =nThreshold= for ei
 
 Next, we look to see if the $F$ species with the larger range was dominant for less than 0.05 of its total range. The =setxor= function gives us the areas of space where the species with the greater range competitively excluded the other. We determine the total length of these areas and then divide by =maxRange= to get the proportion of the total range where this species was dominant. If this proportion is less than the (arbitrary) threshold of 0.05, we classify this as /local coexistence/.
 
-#+begin_src matlab :tangle classifyOutcome.m
+#+begin_src matlab
     % find the range of values in rangeF1 or rangeF2 but not both
     % if the proportion of this range over the total range is less than
     % the arbitrary value 0.05, we call it local coexistence
@@ -773,7 +749,7 @@ If not, this means that $F_1$ has regions of its total range where it has compet
 
 We then make the same comparisons when $F_2$ has the larger range. Finally, we classify any outcome that does not fall into these categories as "unknown", which most likely indicates some sort of error.
 
-#+begin_src matlab :tangle classifyOutcome.m
+#+begin_src matlab
     elseif length(rangeF1) > length(rangeF2)
 
         % no F2 dominance
@@ -803,7 +779,7 @@ end
 
 ** Generate figures from paper
 
-#+begin_src matlab :tangle generatePlots.m :comments link
+#+begin_src matlab
 sweepDir = '~/v2Sweep/';
 figDir = '~/figures/';
 formatSpec = '%.2f';
@@ -851,7 +827,7 @@ These plots are helpful to see how the population densities change over time, bu
 
 We generate a plot for each species, and they're superimposed in a single figure.
 
-#+begin_src matlab :tangle plotPopSpaceTime.m
+#+begin_src matlab
 function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
@@ -935,7 +911,7 @@ end
 
 ** Speed vs. time plot
 
-#+begin_src matlab :tangle plotSpeedTime.m
+#+begin_src matlab
 function plotSpeedTime(simMatFile, varargin)
 
     p = inputParser;
@@ -968,7 +944,7 @@ end
 
 ** Final population densities across space plot
 
- #+begin_src matlab :tangle plotFinalPopSpace.m
+#+begin_src matlab
 function plotFinalPopSpace(simMatFile, varargin)
 
     p = inputParser;
@@ -1007,7 +983,7 @@ This function generates a heatmap of the outcomes of a $\tau$ parameter sweep (i
 
 It can optionally take arguments to specify the range of values used in the parameter sweep (by default it assumes that we used the range =0:0.01:0.40= for both $\tau_{12}$ and $\tau_{21}$).
 
-#+begin_src matlab :tangle plotOutcomes.m
+#+begin_src matlab
 function plotOutcomes(sweepDir, varargin)
 
     p = inputParser;
@@ -1056,170 +1032,3 @@ function plotOutcomes(sweepDir, varargin)
 
 end
 #+end_src
-
-** Range vs. time :noexport:
-
-This plot shows how the overall range of each species changes over time.
-
-In order to obtain the range of a species at a given time, you could find all the spatial points in the /n/ matrices (columns) where the value is greater than some minimum population. =nP= is a matrix with rows for each iteration and columns for each spatial point.
-
-Does range size need to be contiguous? In other words, if F1 is only present at the edges, could you total its ranges at each edge and call that its "range size"?
-
-#+begin_src matlab :tangle plotRangeTime.m
-function plotRangeTime(simMatFile, varargin)
-
-    p = inputParser;
-    addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFig', true, @islogical);
-    addOptional(p, 'figDir', './', @isfolder);
-
-
-    parse(p, simMatFile, varargin{:});
-
-    load(simMatFile, 'filename', 'nThreshold', 'nP', 'nF1', 'nF2', 'iterations');
-
-    for i = 1:(iterations + 1)
-
-        rangeP(i) = length(find(nP(i,:) >= nThreshold));
-        rangeF1(i) = length(find(nF1(i,:) >= nThreshold));
-        rangeF2(i) = length(find(nF2(i,:) >= nThreshold));
-    end
-
-    plot(1:(iterations + 1), [rangeP; rangeF1; rangeF2]);
-    xlabel('iterations');
-    ylabel('range size');
-    title(strcat(['Range size vs. time']));
-    legend('P', 'F1', 'F2');
-
-    if p.Results.createFig
-        [~, filename, ~] = fileparts(filename);
-        filename = strcat('range_time_', filename, '.fig');
-        savefig(strcat(p.Results.figDir, filename));
-    end
-end
-#+end_src
-
-** Populations vs. time plot :noexport:
-
-
-#+begin_src matlab :tangle pheno_pop_vs_time.m
-
-% time span
-tspan = 0.0:0.1:100.0;
-
-% initial populations
-initpop = [2.0; 2.0; 2.0];
-
-r_p = 0.3;
-r_f = [0.30 0.30];
-alpha_pf = [0.5 0.5];
-alpha_fp = [0.5 0.5];
-q1 = 1.0;
-q2 = 1.0;
-beta1 = 0.0;
-beta2 = [0.0 0.0];
-c1 = 1.0;
-c2 = 1.0;
-d_p = 0.1;
-d_f = [0.1 0.1];
-h1 = [0.3 0.3];
-h2 = [0.3 0.3];
-e1 = 0.3;
-e2 = [0.3 0.3];
-dep_p = 0.0;
-dep_f = [0.4 0.9];
-
-nodes = 1;
-
-[t,y] = ode45(@(t,y) growthODEs(t,y,r_p,r_f,alpha_pf,alpha_fp,q1,q2,beta1,beta2,c1,c2,d_p,d_f,h1,h2,e1,e2,nodes,dep_p,dep_f, comp_12, comp_21), tspan, initpop);
-
-P = y(:,1);
-F1 = y(:,2);
-F2 = y(:,3);
-
-% generate plot
-figure;
-plot(t, [P, F1, F2]);
-legend('P', 'F1', 'F2');
-xlabel('time');
-ylabel('population');
-
-
-#+end_src
-
-** Phase space plot - P vs. F1 vs. F2 (=phenophase.m=) :noexport:
-
-In the two-species mutualism model, we took a range of possible starting population values (this is what we passed to the =meshgrid()= function to generate a matrix for each species). We then sent these matrices to our ODE function, which returned the growth rates for each combination of starting population values—this is how we got our vector field arrows.
-
-*** Initial setup for 3D phase space plot
-
-Here you generate the vector field with the =meshgrid()= and =quiver()= functions
-
-#+begin_src matlab :tangle phenophase.m
-
-maxpop = 10.0;
-popRange = 0.0:0.5:maxpop;
-
-[P, F1, F2] = meshgrid(popRange);
-
-r_p = 0.3;
-r_f = [0.30 0.30];
-alpha_pf = [0.5 0.5];
-alpha_fp = [0.5 0.5];
-q1 = 1.0;
-q2 = 1.0;
-beta1 = 0.0;
-beta2 = [0.0 0.0];
-c1 = 1.0;
-c2 = 1.0;
-d_p = 0.1;
-d_f = [0.1 0.1];
-h1 = [0.3 0.3];
-h2 = [0.3 0.3];
-e1 = 0.3;
-e2 = [0.3 0.3];
-dep_p = 0.0;
-dep_f = [0.4 0.9];
-comp_12 = 1.0;
-comp_21 = 4.0;
-
-ystart = [P(:).'; F1(:).'; F2(:).'];
-ystart = reshape(ystart, 3*length(ystart), 1);
-
-dy = growthODEs(0, ystart, r_p, r_f, alpha_pf, alpha_fp, q1, q2, beta1, beta2, c1, c2, d_p, d_f, h1, h2, e1, e2, length(P(:).'), dep_p, dep_f, comp_12, comp_21);
-
-dP = reshape(dy((1:3:end),:), length(P), length(P), length(P));
-dF1 = reshape(dy((2:3:end),:), length(P), length(P), length(P));
-dF2 = reshape(dy((3:3:end),:), length(P), length(P), length(P));
-
-u = dP ./ sqrt(dP .^ 2 + dF1 .^2 + dF2 .^ 2);
-v = dF1 ./ sqrt(dP .^ 2 + dF1 .^2 + dF2 .^ 2);
-w = dF2 ./ sqrt(dP .^ 2 + dF1 .^2 + dF2 .^ 2);
-
-figure;
-quiver3(P, F1, F2, u, v, w, 0.35);
-xlabel('P');
-ylabel('F1');
-zlabel('F2');
-hold on;
-
-#+end_src
-
-*** Plot isoclines
-
-#+begin_src matlab :tangle phenophase.m
-
-syms x y z
-eq1 = ((1-dep_p).*r_p + dep_p .* (c1.*((alpha_pf(1).*y)./(h2(1)+y) + (alpha_pf(2).*z)./(h2(2)+z)))- ((dep_f(1)+dep_f(2))/2) .*(q1.*(beta1.*(y + z)./(e1+x)))-(d_p.*x));
-eq2 = ((1-dep_f(1)).*r_f(1) + c2 .*(dep_f(1).*(alpha_fp(1).*x)./(h1(1)+x))-q2.*(dep_p.*((beta2(1).*x)./(e2(1)+y))) -(d_f(1).*y));
-eq3 = ((1-dep_f(2)).*r_f(2) + c2 .*(dep_f(2).*(alpha_fp(2).*x)./(h1(2)+x))-q2.*(dep_p.*((beta2(2).*x)./(e2(2)+z))) -(d_f(2).*z));
-
-fimplicit3(eq1, [0 maxpop]);
-fimplicit3(eq2, [0 maxpop]);
-fimplicit3(eq3, [0 maxpop]);
-
-hold off;
-
-#+end_src
-
-

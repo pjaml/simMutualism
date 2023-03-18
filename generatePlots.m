@@ -1,4 +1,4 @@
-% [[file:mutual_ide.org::*Generate plots for paper][Generate plots for paper:1]]
+% [[file:mutual_ide.org::*Generate figures from paper][Generate figures from paper:1]]
 sweepDir = '~/v2Sweep/';
 figDir = '~/figures/';
 formatSpec = '%.2f';
@@ -38,4 +38,4 @@ for file = 1:length(figs)
     saveas(curFig, filename);
     close(curFig);
 end
-% Generate plots for paper:1 ends here
+% Generate figures from paper:1 ends here

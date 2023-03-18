@@ -1,4 +1,4 @@
-% [[file:mutual_ide.org::*Final population densities across space][Final population densities across space:1]]
+% [[file:mutual_ide.org::*Final population densities across space plot][Final population densities across space plot:1]]
 function plotFinalPopSpace(simMatFile, varargin)
 
     p = inputParser;
@@ -29,4 +29,4 @@ function plotFinalPopSpace(simMatFile, varargin)
         clf;
     end
 end
-% Final population densities across space:1 ends here
+% Final population densities across space plot:1 ends here
