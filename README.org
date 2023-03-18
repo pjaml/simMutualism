@@ -1,4 +1,4 @@
-# Created 2023-03-18 Sat 00:06
+# Created 2023-03-18 Sat 00:24
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -567,7 +567,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 *** Species /P/
 
 $$
-\frac{dP}{dt} = P\left[ (1 - \delta P) r_P + \delta P \left( c_1 \left[\frac{\alpha_{PF_{1}} F_1}{h_{P_{1}} + F_1}  + \frac{\alpha_{PF_{2}} F_2}{h_{P_2} + F_2} \right] \right) - \delta_{F1} \left( q_1 \left[ \frac{\beta_{P} F_1}{e_P + P} \right] \right) - \delta_{F2} \left( q_1 \left[ \frac{\beta_{P} F_2}{e_P + P} \right] \right) - d_{P} P \right]
+\frac{dP}{dt} = P\left[ (1 - \delta P) r_P + \delta P \left( c_1 \left[\frac{\alpha_{P1} F_1}{h_{P1} + F_1}  + \frac{\alpha_{P2} F_2}{h_{P2} + F_2} \right] \right) - \delta_{F1} \left( q_1 \left[ \frac{\beta_{P} F_1}{e_P + P} \right] \right) - \delta_{F2} \left( q_1 \left[ \frac{\beta_{P} F_2}{e_P + P} \right] \right) - d_{P} P \right]
 $$
 
 #+begin_src matlab
@@ -583,7 +583,7 @@ $$
 *** Species /F/, Phenotype 1
 
 $$
-\frac{dF_1}{dt} = F_1[(1 - \delta_{F_1})r_{F_1} + \delta_{F_1} \left( c_2 \left[\frac{\alpha_{F_1P}P}{h_{F_1} + P} \right] \right) - \delta P \left(q_2  \left[ \frac{\beta_{F_1}P}{e_{F_1} + F_1} \right] \right) - \tau_{12}F_2 - d_{F_1}F_1]
+\frac{dF_1}{dt} = F_1[(1 - \delta_{F_1})r_{F_1} + \delta_{F_1} \left( c_2 \left[\frac{\alpha_{F_1P}P}{h_{F_1} + P} \right] \right) - \deltaP \left(q_2  \left[ \frac{\beta_{F_1}P}{e_{F_1} + F_1} \right] \right) - \tau_{12}F_2 - d_{F_1}F_1]
 $$
 
 #+begin_src matlab
@@ -594,7 +594,7 @@ $$
 *** Species /F/, Phenotype 2
 
 $$
-\frac{dF_2}{dt} = F_2[(1 - \delta_{F_2})r_{F_2} + \delta_{F_2} \left(c_2 \left[\frac{\alpha_{F_2P}P}{h_{F_2} + P} \right] \right) - \delta P \left(q_2  \left[ \frac{\beta_{F_2}P}{e_{F_2} + F_2} \right] \right) - \tau_{21}F_1 - d_{F_2}F_2]
+\frac{dF_2}{dt} = F_2[(1 - \delta_{F_2})r_{F_2} + \delta_{F_2} \left(c_2 \left[\frac{\alpha_{F_2P}P}{h_{F_2} + P} \right] \right) - \deltaP \left(q_2  \left[ \frac{\beta_{F_2}P}{e_{F_2} + F_2} \right] \right) - \tau_{21}F_1 - d_{F_2}F_2]
 $$
 
 #+begin_src matlab
