@@ -1,4 +1,4 @@
-# Created 2023-03-18 Sat 11:01
+# Created 2023-03-18 Sat 11:04
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -399,7 +399,7 @@ save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold'
 end
 #+end_src
 
-* Growth Equations
+* Growth equations function
 
 Here we define the growth of each species using a system of ODEs.
 
