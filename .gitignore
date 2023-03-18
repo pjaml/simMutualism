@@ -3,3 +3,7 @@
 /*.mat
 /*.out
 /mutual_ide.org
+/mutual_phase.m
+/odefunspatial.m
+/pheno_pop_vs_time.m
+/phenophase.m
