@@ -22,12 +22,14 @@ addParameter(p, 'diameter', 1200, @isnumeric);
 
 parse(p, varargin{:});
 
-% I wish I knew a better way to get rid of all the p.Results that get attached inputParser parameters
+% I wish I knew a better way to get rid of all the p.Results that get attached
+% inputParser parameters
 iterations = p.Results.iterations;
 maxIterations = p.Results.maxIterations;
 
 if iterations > maxIterations
-    disp("Warning: the value of iterations is greater than or equal to maxIterations, so maxIterations has been increased.");
+    disp("Warning: the value of iterations is greater than or ");
+    disp("equal to maxIterations, so maxIterations has been increased.");
     maxIterations = iterations;
 end
 
@@ -40,7 +42,9 @@ diameter = p.Results.diameter;
 
 if maxIterations > 490
     diameter = 3600;
-    disp("Warning: maxIterations > 490 risks exceeding the spatial landscape boundaries. The diameter of the landscape has been increased to 3600. The spatial resolution has NOT been increased.");
+    disp("Warning: maxIterations > 490 risks exceeding the spatial ");
+    disp("landscape boundaries. The diameter of the landscape has been");
+    disp("increased to 3600. The spatial resolution has NOT been increased.");
 end
 % Simulation parameters:1 ends here
 
@@ -55,7 +59,9 @@ dx = diameter / (nodes - 1);
 % Space parameters:1 ends here
 
 % [[file:mutual_ide.org::*Initialization][Initialization:1]]
-[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations + 1)); % preallocate arrays for max possible iterations + 1
+% preallocate arrays for max possible iterations + 1
+[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1,
+ instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations + 1));
 
 [rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = deal(zeros(1, maxIterations + 1));
 
@@ -91,7 +97,9 @@ jj_P = find(nP(1,:) >= nThreshold,1,'last'); %find the farthest distance travell
 jj_F1 = find(nF1(1,:) >= nThreshold,1,'last');
 jj_F2 = find(nF2(1,:) >= nThreshold,1,'last');
 
-if jj_P %the initial front is obtained from initialization which will be in the first row of 'n'
+% the initial front is obtained from initialization which will be in the first
+% row of 'n'
+if jj_P
   rangeEdgeP(1) = interp1(nP(1,jj_P:jj_P+1),x(jj_P:jj_P+1),nThreshold);
 end
 if jj_F1
@@ -116,10 +124,12 @@ while generation <= iterations
     %Growth
     y0 = [nP(generation,:);nF1(generation,:);nF2(generation,:)];
 
-    % reshape happens such that 3 consecutive rows for nP, nF1, and nF2 values are stacked
+    % reshape happens such that 3 consecutive rows for nP, nF1, and nF2 values
+    % are stacked
     y0 = reshape(y0, 3*length(y0), 1);
 
-    [t,y] = ode45(@(t,y) growthODEs(t,y, varargin{:}), tspan, y0); %remember to alter where the dep_p and dep_f are being called from
+    %remember to alter where the dep_p and dep_f are being called from
+    [t,y] = ode45(@(t,y) growthODEs(t,y, varargin{:}), tspan, y0);
 
 
     % We just want the results of the growth phase (end)
@@ -134,23 +144,30 @@ while generation <= iterations
     n1F1 = fft_conv(kF1,fF1);
     n1F2 = fft_conv(kF2,fF2);
 
-    nP(generation + 1,:) = dx*n1P(nodes:length(x2)); %the convolution apparently doubles the length of the array?
+    %the convolution apparently doubles the length of the array?
+    nP(generation + 1,:) = dx*n1P(nodes:length(x2));
     nF1(generation + 1,:) = dx*n1F1(nodes:length(x2));
     nF2(generation + 1,:) = dx*n1F2(nodes:length(x2));
 
-    nP(generation + 1,1) = nP(generation + 1,1)/2; nP(generation + 1,nodes) = nP(generation + 1,nodes)/2; %The population density at the edges is halved
+    nP(generation + 1,1) = nP(generation + 1,1)/2; nP(generation + 1,nodes) =
+    nP(generation + 1,nodes)/2; %The population density at the edges is halved
 
-    nF1(generation + 1,1) = nF1(generation + 1,1)/2; nF1(generation + 1,nodes) = nF1(generation + 1,nodes)/2;
+    nF1(generation + 1,1) = nF1(generation + 1,1)/2; nF1(generation + 1,nodes) =
+    nF1(generation + 1,nodes)/2;
 
-    nF2(generation + 1,1) = nF2(generation + 1,1)/2; nF2(generation + 1,nodes) = nF2(generation + 1,nodes)/2;
+    nF2(generation + 1,1) = nF2(generation + 1,1)/2; nF2(generation + 1,nodes) =
+    nF2(generation + 1,nodes)/2;
 
-    temp_P = find(nP(generation + 1,:) < lowval); %gives location of random places where numbers are above zero due to some numerical errors
+    % gives location of random places where numbers are above zero due to some
+    % numerical errors
+    temp_P = find(nP(generation + 1,:) < lowval);
     temp_F1 = find(nF1(generation + 1,:) < lowval);
     temp_F2 = find(nF2(generation + 1,:) < lowval);
 
-    nP(generation + 1,temp_P) = zeros(size(nP(generation + 1,temp_P))); %set the places with those numerical errors to zero
-    nF1(generation + 1,temp_F1) = zeros(size(nF1(generation + 1,temp_F1)));%delete this for STE
-    nF2(generation + 1,temp_F2) = zeros(size(nF2(generation + 1,temp_F2)));%delete this for STE
+    % set the places with those numerical errors to zero
+    nP(generation + 1,temp_P) = zeros(size(nP(generation + 1,temp_P)));
+    nF1(generation + 1,temp_F1) = zeros(size(nF1(generation + 1,temp_F1)));
+    nF2(generation + 1,temp_F2) = zeros(size(nF2(generation + 1,temp_F2)));
 
     jj_P = find(nP(generation + 1,:) >= nThreshold,1,'last');
     jj_F1 = find(nF1(generation + 1,:) >= nThreshold,1,'last');
@@ -161,30 +178,47 @@ while generation <= iterations
     % the last iteration + 1 so the data is still usable.
     if (jj_P == nodes) | (jj_F1 == nodes) | (jj_F2 == nodes)
         iterations = generation;
-        disp("Warning: the simulation was stopped because one or more species have reached the edge of the landscape.");
+        disp("Warning: the simulation was stopped because one or more species");
+        disp("have reached the edge of the landscape.");
         break;
     end
 
     if jj_P
-         rangeEdgeP(generation + 1) = interp1(nP(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1),nThreshold);
+         rangeEdgeP(generation + 1) =
+         interp1(nP(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1), nThreshold);
     end
 
     if jj_F1
-         rangeEdgeF1(generation + 1) = interp1(nF1(generation + 1,jj_F1:jj_F1 + 1),x(jj_F1:jj_F1 + 1),nThreshold);
+         rangeEdgeF1(generation + 1) =
+         interp1(nF1(generation + 1, jj_F1:jj_F1 + 1), x(jj_F1:jj_F1 + 1),
+                 nThreshold);
     end
 
     if jj_F2
-         rangeEdgeF2(generation + 1) = interp1(nF2(generation + 1,jj_F2:jj_F2 + 1),x(jj_F2:jj_F2 + 1),nThreshold);
+         rangeEdgeF2(generation + 1) =
+         interp1(nF2(generation + 1,jj_F2:jj_F2 + 1), x(jj_F2:jj_F2 + 1),
+                 nThreshold);
     end
 
-    avgSpeedP(generation) = (rangeEdgeP(generation + 1) - rangeEdgeP(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
-    instantSpeedP(generation) = rangeEdgeP(generation + 1) - rangeEdgeP(generation);
+    %latest position of wave edge - initial position of wave edge divided by time
+    avgSpeedP(generation) =
+    (rangeEdgeP(generation + 1) - rangeEdgeP(1)) / generation;
 
-    instantSpeedF1(generation) = rangeEdgeF1(generation + 1) - rangeEdgeF1(generation);
-    avgSpeedF1(generation) = (rangeEdgeF1(generation + 1) - rangeEdgeF1(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
+    instantSpeedP(generation) =
+    rangeEdgeP(generation + 1) - rangeEdgeP(generation);
 
-    instantSpeedF2(generation) = rangeEdgeF2(generation + 1) - rangeEdgeF2(generation);
-    avgSpeedF2(generation) = (rangeEdgeF2(generation + 1) - rangeEdgeF2(1)) / generation; %latest position of wave edge - initial position of wave edge divided by time
+    instantSpeedF1(generation) =
+    rangeEdgeF1(generation + 1) - rangeEdgeF1(generation);
+
+    %latest position of wave edge - initial position of wave edge divided by time
+    avgSpeedF1(generation) =
+    (rangeEdgeF1(generation + 1) - rangeEdgeF1(1)) / generation;
+
+    %latest position of wave edge - initial position of wave edge divided by time
+    instantSpeedF2(generation) =
+    rangeEdgeF2(generation + 1) - rangeEdgeF2(generation);
+    avgSpeedF2(generation) =
+    (rangeEdgeF2(generation + 1) - rangeEdgeF2(1)) / generation;
 % Dispersal phase:1 ends here
 
 % [[file:mutual_ide.org::*Determine whether to continue running the simulation for more iterations][Determine whether to continue running the simulation for more iterations:1]]

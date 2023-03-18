@@ -4,17 +4,23 @@ figDir = '~/figures/';
 formatSpec = '%.2f';
 
 % tau12 and tau21 pairs
-taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
+taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05;
+        0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
 
 
 for i = 1:length(taus)
 
     % probably a better way to do this with regexp
-    targetFile = dir(fullfile(sweepDir, strcat("*tau12_", num2str(taus(i, 1), formatSpec), "*tau21_", num2str(taus(i, 2), formatSpec), "*.mat")));
+    targetFile = dir(fullfile(sweepDir,
+                              strcat("*tau12_", num2str(taus(i, 1), formatSpec),
+                                     "*tau21_", num2str(taus(i, 2), formatSpec),
+                                     "*.mat")));
 
     filename = fullfile(sweepDir, targetFile.name);
 
-    curFile = load(filename, 'iterations', 'filename', 'nP', 'nF1', 'nF2', 'nThreshold', 'x', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
+    curFile = load(filename, 'iterations', 'filename', 'nP', 'nF1', 'nF2',
+                   'nThreshold', 'x', 'instantSpeedP', 'instantSpeedF1',
+                   'instantSpeedF2');
 
     plotPopSpaceTime(curFile, 'figDir', figDir);
 
