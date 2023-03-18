@@ -1,4 +1,4 @@
-# Created 2023-03-18 Sat 11:04
+# Created 2023-03-18 Sat 12:04
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -701,7 +701,7 @@ end
 
 ** Slurm job script
 
-Note that the $SBATCH lines *must* be at the top of the script. Anything before that will cause an error with Slurm.
+The SBATCH lines *must* be at the top of the script. Anything before that will cause an error with Slurm.
 
 #+begin_src shell
 #!/bin/bash -l
