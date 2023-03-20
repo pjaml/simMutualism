@@ -19,6 +19,8 @@ addParameter(p, 'iterationStep', 100, @isnumeric);
 addParameter(p, 'outputDir', './', @isfolder);
 addParameter(p, 'steadyStateThreshold', 1e-03, @isnumeric);
 addParameter(p, 'diameter', 1200, @isnumeric);
+addParameter(p, 'sigma_sq', 0.1, @isnumeric); % Dispersal variance
+
 
 parse(p, varargin{:});
 
@@ -69,8 +71,6 @@ dx = diameter / (nodes - 1);
 % Initialization:1 ends here
 
 % [[file:mutual_ide.org::*Dispersal kernels][Dispersal kernels:1]]
-sigma_sq = 0.1; % Dispersal variance
-
 % gaussian dispersal kernels
 kP = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
 kF1 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
