@@ -17,7 +17,7 @@ addParameter(p, 'iterations', 100, @isnumeric);
 addParameter(p, 'maxIterations', 480, @isnumeric);
 addParameter(p, 'iterationStep', 100, @isnumeric);
 addParameter(p, 'outputDir', './', @isfolder);
-addParameter(p, 'steadyStateThreshold', 1e-04, @isnumeric);
+addParameter(p, 'steadyStateThreshold', 1e-03, @isnumeric);
 addParameter(p, 'diameter', 1200, @isnumeric);
 
 parse(p, varargin{:});
