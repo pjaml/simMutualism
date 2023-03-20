@@ -1,4 +1,4 @@
-# Created 2023-03-18 Sat 12:38
+# Created 2023-03-20 Mon 17:32
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -19,7 +19,15 @@
 
 * Simulation
 
-Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species. The =simMutualism()= function can take a number of optional arguments.
+Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species.
+
+To run a simulation with specific parameter values, simply call the function with the parameter as an argument in quotes, followed by the desired value, e.g.
+
+#+begin_example
+simMutualism('tau12', 0.2, 'tau21', 0.3, 'sigma_sq', 0.1)
+#+end_example
+
+The specified parameters are used in the filename for the resulting mat file.
 
 #+begin_src matlab
 function simMutualism(varargin)
@@ -50,8 +58,10 @@ addParameter(p, 'iterations', 100, @isnumeric);
 addParameter(p, 'maxIterations', 480, @isnumeric);
 addParameter(p, 'iterationStep', 100, @isnumeric);
 addParameter(p, 'outputDir', './', @isfolder);
-addParameter(p, 'steadyStateThreshold', 1e-04, @isnumeric);
+addParameter(p, 'steadyStateThreshold', 1e-03, @isnumeric);
 addParameter(p, 'diameter', 1200, @isnumeric);
+addParameter(p, 'sigma_sq', 0.1, @isnumeric); % Dispersal variance
+
 
 parse(p, varargin{:});
 
@@ -59,6 +69,10 @@ parse(p, varargin{:});
 % inputParser parameters
 iterations = p.Results.iterations;
 maxIterations = p.Results.maxIterations;
+sigma_sq = p.Results.sigma_sq;
+deltaP = p.Results.deltaP;
+deltaF1 = p.Results.deltaF1;
+deltaF2 = p.Results.deltaF2;
 
 if iterations > maxIterations
     disp("Warning: the value of iterations is greater than or ");
@@ -116,12 +130,10 @@ Here we initialize the arrays we'll use throughout the simulation. The speed arr
 We use a Gaussian dispersal kernel for each species. At some point we'll rewrite this to allow for other dispersal kernel functions.
 
 #+begin_src matlab
-sigma_sq = 0.25; % Dispersal variance
-
 % gaussian dispersal kernels
-kP = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
-kF1 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
-kF2 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
+kP = exp(-(x2.^2)/(2 * sigma_sq * deltaP))./sqrt(2 * pi * sigma_sq);
+kF1 = exp(-(x2.^2)/(2 * sigma_sq * deltaF1))./sqrt(2 * pi * sigma_sq);
+kF2 = exp(-(x2.^2)/(2 * sigma_sq * deltaF2))./sqrt(2 * pi * sigma_sq);
 #+end_src
 
 *** Initial population densities
