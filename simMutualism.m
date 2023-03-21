@@ -152,11 +152,14 @@ while generation <= iterations
     nF1(generation + 1,:) = dx*n1F1(nodes:length(x2));
     nF2(generation + 1,:) = dx*n1F2(nodes:length(x2));
 
-    nP(generation + 1,1) = nP(generation + 1,1)/2; nP(generation + 1,nodes) = nP(generation + 1,nodes)/2; %The population density at the edges is halved
+    nP(generation + 1,1) = nP(generation + 1,1)/2;
+    nP(generation + 1,nodes) = nP(generation + 1,nodes)/2; %The population density at the edges is halved
 
-    nF1(generation + 1,1) = nF1(generation + 1,1)/2; nF1(generation + 1,nodes) = nF1(generation + 1,nodes)/2;
+    nF1(generation + 1,1) = nF1(generation + 1,1)/2;
+    nF1(generation + 1,nodes) = nF1(generation + 1,nodes)/2;
 
-    nF2(generation + 1,1) = nF2(generation + 1,1)/2; nF2(generation + 1,nodes) = nF2(generation + 1,nodes)/2;
+    nF2(generation + 1,1) = nF2(generation + 1,1)/2;
+    nF2(generation + 1,nodes) = nF2(generation + 1,nodes)/2;
 
     % gives location of random places where numbers are above zero due to some
     % numerical errors
