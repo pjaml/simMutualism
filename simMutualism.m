@@ -260,7 +260,7 @@ if ~(isempty(parameters))
 
         if isnumeric(param)
             param = num2str(param, formatSpec);
-        elseif strcmp(param, 'outputDir') || isfolder(param)
+        elseif strcmp(param, 'outputDir') || islogical(param) || isfolder(param)
             continue
         else
             param = string(param);
