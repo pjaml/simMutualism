@@ -71,7 +71,7 @@ dx = diameter / (nodes - 1);
 % Initialization:1 ends here
 
 % [[file:mutual_ide.org::*Dispersal kernels][Dispersal kernels:1]]
-if ~useDeltaDispKernels
+if ~p.Results.useDeltaDispKernels
     [deltaP, deltaF1, deltaF2] = deal(1);
 end
 % gaussian dispersal kernels
