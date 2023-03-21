@@ -20,6 +20,10 @@ addParameter(p, 'outputDir', './', @isfolder);
 addParameter(p, 'steadyStateThreshold', 1e-03, @isnumeric);
 addParameter(p, 'diameter', 1200, @isnumeric);
 addParameter(p, 'sigma_sq', 0.025, @isnumeric); % Dispersal variance
+addParameter(p, 'deltaP', 0.0, @isnumeric);
+addParameter(p, 'deltaF1', 0.9, @isnumeric);
+addParameter(p, 'deltaF2', 0.1, @isnumeric);
+addParameter(p, 'useDeltaDispKernels', false, @islogical);
 
 
 parse(p, varargin{:});
@@ -29,6 +33,9 @@ parse(p, varargin{:});
 iterations = p.Results.iterations;
 maxIterations = p.Results.maxIterations;
 sigma_sq = p.Results.sigma_sq;
+deltaP = p.Results.deltaP;
+deltaF1 = p.Results.deltaF1;
+deltaF2 = p.Results.deltaF2;
 
 if iterations > maxIterations
     disp("Warning: the value of iterations is greater than or ");
@@ -71,10 +78,13 @@ dx = diameter / (nodes - 1);
 % Initialization:1 ends here
 
 % [[file:mutual_ide.org::*Dispersal kernels][Dispersal kernels:1]]
+if ~useDeltaDispKernels
+    [deltaP, deltaF1, deltaF2] = deal(1);
+end
 % gaussian dispersal kernels
-kP = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
-kF1 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
-kF2 = exp(-(x2.^2)/(2*sigma_sq))./sqrt(2*pi*sigma_sq);
+kP = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaP)) ./ sqrt(2 * pi * sigma_sq);
+kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF1)) ./ sqrt(2 * pi * sigma_sq);
+kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF2)) ./ sqrt(2 * pi * sigma_sq);
 % Dispersal kernels:1 ends here
 
 % [[file:mutual_ide.org::*Initial population densities][Initial population densities:1]]

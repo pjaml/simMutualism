@@ -1,4 +1,4 @@
-# Created 2023-03-20 Mon 17:32
+# Created 2023-03-20 Mon 23:09
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -61,6 +61,10 @@ addParameter(p, 'outputDir', './', @isfolder);
 addParameter(p, 'steadyStateThreshold', 1e-03, @isnumeric);
 addParameter(p, 'diameter', 1200, @isnumeric);
 addParameter(p, 'sigma_sq', 0.1, @isnumeric); % Dispersal variance
+addParameter(p, 'deltaP', 0.0, @isnumeric);
+addParameter(p, 'deltaF1', 0.9, @isnumeric);
+addParameter(p, 'deltaF2', 0.1, @isnumeric);
+addParameter(p, 'useDeltaDispKernels', false, @islogical);
 
 
 parse(p, varargin{:});
@@ -129,11 +133,16 @@ Here we initialize the arrays we'll use throughout the simulation. The speed arr
 
 We use a Gaussian dispersal kernel for each species. At some point we'll rewrite this to allow for other dispersal kernel functions.
 
+If we want to have the dependence parameter affect the dispersal kernel, we can use the ='useDeltaDispKernels'= with the value =true= when calling =simMutualism()=. Otherwise, the default is to have dispersal unaffected by dependence.
+
 #+begin_src matlab
+if ~useDeltaDispKernels
+    [deltaP, deltaF1, deltaF2] = deal(1);
+end
 % gaussian dispersal kernels
-kP = exp(-(x2.^2)/(2 * sigma_sq * deltaP))./sqrt(2 * pi * sigma_sq);
-kF1 = exp(-(x2.^2)/(2 * sigma_sq * deltaF1))./sqrt(2 * pi * sigma_sq);
-kF2 = exp(-(x2.^2)/(2 * sigma_sq * deltaF2))./sqrt(2 * pi * sigma_sq);
+kP = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaP)) ./ sqrt(2 * pi * sigma_sq);
+kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF1)) ./ sqrt(2 * pi * sigma_sq);
+kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF2)) ./ sqrt(2 * pi * sigma_sq);
 #+end_src
 
 *** Initial population densities
