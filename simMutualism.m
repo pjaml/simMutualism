@@ -62,8 +62,7 @@ dx = diameter / (nodes - 1);
 
 % [[file:mutual_ide.org::*Initialization][Initialization:1]]
 % preallocate arrays for max possible iterations + 1
-[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1,
- instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations + 1));
+[instantSpeedP, avgSpeedP, instantSpeedF1, avgSpeedF1, instantSpeedF2, avgSpeedF2] = deal(zeros(1, maxIterations + 1));
 
 [rangeEdgeP,rangeEdgeF1, rangeEdgeF2] = deal(zeros(1, maxIterations + 1));
 
