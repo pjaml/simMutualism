@@ -28,6 +28,7 @@ parse(p, varargin{:});
 % inputParser parameters
 iterations = p.Results.iterations;
 maxIterations = p.Results.maxIterations;
+sigma_sq = p.Results.sigma_sq;
 
 if iterations > maxIterations
     disp("Warning: the value of iterations is greater than or ");
@@ -148,14 +149,11 @@ while generation <= iterations
     nF1(generation + 1,:) = dx*n1F1(nodes:length(x2));
     nF2(generation + 1,:) = dx*n1F2(nodes:length(x2));
 
-    nP(generation + 1,1) = nP(generation + 1,1)/2; nP(generation + 1,nodes) =
-    nP(generation + 1,nodes)/2; %The population density at the edges is halved
+    nP(generation + 1,1) = nP(generation + 1,1)/2; nP(generation + 1,nodes) = nP(generation + 1,nodes)/2; %The population density at the edges is halved
 
-    nF1(generation + 1,1) = nF1(generation + 1,1)/2; nF1(generation + 1,nodes) =
-    nF1(generation + 1,nodes)/2;
+    nF1(generation + 1,1) = nF1(generation + 1,1)/2; nF1(generation + 1,nodes) = nF1(generation + 1,nodes)/2;
 
-    nF2(generation + 1,1) = nF2(generation + 1,1)/2; nF2(generation + 1,nodes) =
-    nF2(generation + 1,nodes)/2;
+    nF2(generation + 1,1) = nF2(generation + 1,1)/2; nF2(generation + 1,nodes) = nF2(generation + 1,nodes)/2;
 
     % gives location of random places where numbers are above zero due to some
     % numerical errors
@@ -183,41 +181,30 @@ while generation <= iterations
     end
 
     if jj_P
-         rangeEdgeP(generation + 1) =
-         interp1(nP(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1), nThreshold);
+         rangeEdgeP(generation + 1) = interp1(nP(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1), nThreshold);
     end
 
     if jj_F1
-         rangeEdgeF1(generation + 1) =
-         interp1(nF1(generation + 1, jj_F1:jj_F1 + 1), x(jj_F1:jj_F1 + 1),
-                 nThreshold);
+         rangeEdgeF1(generation + 1) = interp1(nF1(generation + 1, jj_F1:jj_F1 + 1), x(jj_F1:jj_F1 + 1), nThreshold);
     end
 
     if jj_F2
-         rangeEdgeF2(generation + 1) =
-         interp1(nF2(generation + 1,jj_F2:jj_F2 + 1), x(jj_F2:jj_F2 + 1),
-                 nThreshold);
+         rangeEdgeF2(generation + 1) = interp1(nF2(generation + 1,jj_F2:jj_F2 + 1), x(jj_F2:jj_F2 + 1), nThreshold);
     end
 
     %latest position of wave edge - initial position of wave edge divided by time
-    avgSpeedP(generation) =
-    (rangeEdgeP(generation + 1) - rangeEdgeP(1)) / generation;
+    avgSpeedP(generation) = (rangeEdgeP(generation + 1) - rangeEdgeP(1)) / generation;
 
-    instantSpeedP(generation) =
-    rangeEdgeP(generation + 1) - rangeEdgeP(generation);
+    instantSpeedP(generation) = rangeEdgeP(generation + 1) - rangeEdgeP(generation);
 
-    instantSpeedF1(generation) =
-    rangeEdgeF1(generation + 1) - rangeEdgeF1(generation);
+    instantSpeedF1(generation) = rangeEdgeF1(generation + 1) - rangeEdgeF1(generation);
 
     %latest position of wave edge - initial position of wave edge divided by time
-    avgSpeedF1(generation) =
-    (rangeEdgeF1(generation + 1) - rangeEdgeF1(1)) / generation;
+    avgSpeedF1(generation) = (rangeEdgeF1(generation + 1) - rangeEdgeF1(1)) / generation;
 
     %latest position of wave edge - initial position of wave edge divided by time
-    instantSpeedF2(generation) =
-    rangeEdgeF2(generation + 1) - rangeEdgeF2(generation);
-    avgSpeedF2(generation) =
-    (rangeEdgeF2(generation + 1) - rangeEdgeF2(1)) / generation;
+    instantSpeedF2(generation) = rangeEdgeF2(generation + 1) - rangeEdgeF2(generation);
+    avgSpeedF2(generation) = (rangeEdgeF2(generation + 1) - rangeEdgeF2(1)) / generation;
 % Dispersal phase:1 ends here
 
 % [[file:mutual_ide.org::*Determine whether to continue running the simulation for more iterations][Determine whether to continue running the simulation for more iterations:1]]
