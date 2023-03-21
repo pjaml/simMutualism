@@ -49,13 +49,6 @@ steadyStateThreshold = p.Results.steadyStateThreshold;
 
 %total size of landscape along positive x-axis (so half the total landscape)
 diameter = p.Results.diameter;
-
-if maxIterations > 490
-    diameter = 3600;
-    disp("Warning: maxIterations > 490 risks exceeding the spatial ");
-    disp("landscape boundaries. The diameter of the landscape has been");
-    disp("increased to 3600. The spatial resolution has NOT been increased.");
-end
 % Simulation parameters:1 ends here
 
 % [[file:mutual_ide.org::*Space parameters][Space parameters:1]]
