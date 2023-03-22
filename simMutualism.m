@@ -19,7 +19,7 @@ addParameter(p, 'iterationStep', 100, @isnumeric);
 addParameter(p, 'outputDir', './', @isfolder);
 addParameter(p, 'steadyStateThreshold', 1e-03, @isnumeric);
 addParameter(p, 'diameter', 1200, @isnumeric);
-addParameter(p, 'sigma_sq', 0.025, @isnumeric); % Dispersal variance
+addParameter(p, 'sigma_sq', 0.05, @isnumeric); % Dispersal variance
 addParameter(p, 'deltaP', 0.0, @isnumeric);
 addParameter(p, 'deltaF1', 0.9, @isnumeric);
 addParameter(p, 'deltaF2', 0.1, @isnumeric);
