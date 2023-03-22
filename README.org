@@ -1,4 +1,4 @@
-# Created 2023-03-22 Wed 09:43
+# Created 2023-03-22 Wed 11:13
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -806,6 +806,8 @@ end
 
 ** Generate figures from paper
 
+The parameter space plot always includes all the parameter values in the sweep. For the other plots, the variables  =tau12Range= and =tau21Range= define for what range of parameter values the plots are generated.
+
 #+begin_src matlab
 sweepDir = '~/tauSweep/';
 figDir = '~/figures/';
@@ -814,8 +816,16 @@ formatSpec = '%.2f';
 mkdir(figDir)
 
 % tau12 and tau21 pairs
-taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
+tau12Range = 0.13:0.01:0.31;
+tau21Range = 0.0:0.01:0.4;
 
+taus = [];
+
+for tau12 = tau12Range
+
+    taus = [taus; ones(numel(tau21Range), 1) * tau12, tau21Range(:)]
+
+end
 
 for i = 1:length(taus)
 

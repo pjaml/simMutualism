@@ -1,13 +1,21 @@
 % [[file:mutual_ide.org::*Generate figures from paper][Generate figures from paper:1]]
-sweepDir = '~/tauSweep/';
-figDir = '~/figures/';
+sweepDir = '~/newSweep/';
+figDir = '~/newSweepFigures/';
 formatSpec = '%.2f';
 
 mkdir(figDir)
 
 % tau12 and tau21 pairs
-taus = [0 0; 0.05 0; 0.05 0.05; 0.05 0.10; 0.15 0.05; 0.20 0.05; 0.20 0.15; 0.25 0.05; 0.23 0.37; 0.26 0.37; 0.35 0.37];
+tau12Range = 0.13:0.01:0.31;
+tau21Range = 0.0:0.01:0.4;
 
+taus = [];
+
+for tau12 = tau12Range
+
+    taus = [taus; ones(numel(tau21Range), 1) * tau12, tau21Range(:)]
+
+end
 
 for i = 1:length(taus)
 
