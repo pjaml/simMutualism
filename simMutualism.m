@@ -13,13 +13,13 @@ p = inputParser;
 p.KeepUnmatched = true;
 
 % minimum number of cycles of growth and dispersal
-addParameter(p, 'iterations', 100, @isnumeric);
+addParameter(p, 'iterations', 50, @isnumeric);
 addParameter(p, 'maxIterations', 480, @isnumeric);
-addParameter(p, 'iterationStep', 100, @isnumeric);
+addParameter(p, 'iterationStep', 50, @isnumeric);
 addParameter(p, 'outputDir', './', @isfolder);
 addParameter(p, 'steadyStateThreshold', 1e-03, @isnumeric);
 addParameter(p, 'diameter', 1200, @isnumeric);
-addParameter(p, 'sigma_sq', 0.05, @isnumeric); % Dispersal variance
+addParameter(p, 'sigma_sq', 0.25, @isnumeric); % Dispersal variance
 addParameter(p, 'deltaP', 0.0, @isnumeric);
 addParameter(p, 'deltaF1', 0.9, @isnumeric);
 addParameter(p, 'deltaF2', 0.1, @isnumeric);
