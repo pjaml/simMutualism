@@ -1,42 +1,59 @@
 % [[file:mutual_ide.org::*Generate figures from paper][Generate figures from paper:1]]
-sweepDir = '~/newSweep/';
-figDir = '~/newSweepFigures/';
-formatSpec = '%.2f';
+function generatePlots(sweepDir, outputDir, varargin)
 
-mkdir(figDir)
+    p = inputParser;
+    addRequired(p, 'sweepDir', @isfolder);
+    addRequired(p, 'figDir', @isfolder);
+    addParameter(p, 'plotOutcomes', false, @islogical);
+    addParameter(p, 'plotPopSpaceTime', false, @islogical);
+    addParameter(p, 'plotFinalPopSpace', false, @islogical);
+    addParameter(p, 'plotSpeedTime', false, @islogical);
+    addParameter(p, 'tau12Range', 0.13:0.01:0.31, @isvector);
+    addParameter(p, 'tau21Range', 0.0:0.01:0.4, @isvector);
 
-% tau12 and tau21 pairs
-tau12Range = 0.13:0.01:0.31;
-tau21Range = 0.0:0.01:0.4;
+    parse(p, sweepDir, figDir, varargin{:});
 
-taus = [];
+    tau12Range = p.Results.tau12Range;
+    tau21Range = p.Results.tau21Range;
 
-for tau12 = tau12Range
+    mkdir(figDir)
 
-    taus = [taus; ones(numel(tau21Range), 1) * tau12, tau21Range(:)]
+    if p.Results.plotOutcomes
         % get the heatmap of all the outcomes
         disp('Generating outcomes plot...')
         plotOutcomes(sweepDir, 'figDir', figDir);
+    end
 
-end
+    formatSpec = '%.2f';
 
-for i = 1:length(taus)
+    taus = [];
 
-    % probably a better way to do this with regexp
-    targetFile = dir(fullfile(sweepDir, strcat("*tau12_", num2str(taus(i, 1), formatSpec), "*tau21_", num2str(taus(i, 2), formatSpec), "*.mat")));
+    for tau12 = tau12Range
 
-    filename = fullfile(sweepDir, targetFile.name);
+        taus = [taus; ones(numel(tau21Range), 1) * tau12, tau21Range(:)];
 
-    curFile = load(filename, 'iterations', 'filename', 'nP', 'nF1', 'nF2', 'nThreshold', 'x', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
+    end
 
-    plotPopSpaceTime(curFile, 'figDir', figDir);
+    for i = 1:length(taus)
 
-    plotFinalPopSpace(curFile, 'figDir', figDir);
+        % probably a better way to do this with regexp
+        targetFile = dir(fullfile(sweepDir, strcat("*tau12_", num2str(taus(i, 1), formatSpec), "*tau21_", num2str(taus(i, 2), formatSpec), "*.mat")));
 
-    plotSpeedTime(curFile, 'figDir', figDir);
+        filename = fullfile(sweepDir, targetFile.name);
 
-    clear curFile;
-end
+        curFile = load(filename, 'iterations', 'filename', 'nP', 'nF1', 'nF2', 'nThreshold', 'x', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
+
+        if p.Results.plotPopSpaceTime
+            plotPopSpaceTime(curFile, 'figDir', figDir);
+        end
+
+        if p.Results.plotFinalPopSpace
+            plotFinalPopSpace(curFile, 'figDir', figDir);
+        end
+
+        if p.Results.plotSpeedTime
+            plotSpeedTime(curFile, 'figDir', figDir);
+        end
 
         clear curFile;
     end
