@@ -17,6 +17,6 @@ tau12 = rangeStep * str2num(getenv("SLURM_ARRAY_TASK_ID"));
 parfor j = 0:40
 
     tau21 = j * rangeStep;
-    simMutualism('outputDir', outputDir, 'tau12', tau12, 'tau21', tau21, 'maxIterations', maxIterations);
+    simMutualism('outputDir', outputDir, 'tau12', tau12, 'tau21', tau21, 'useDeltaDispKernels', true);
 end
 % Sweep script:1 ends here
