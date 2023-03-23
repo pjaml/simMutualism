@@ -15,17 +15,18 @@ function plotFinalPopSpace(simMatFile, varargin)
     filename = simMatFile.filename;
 
     hold on
-    plot(nP(iterations + 1,:));
-    plot(nF1(iterations + 1,:));
-    plot(nF2(iterations + 1,:));
+    plot(nP(iterations,:));
+    plot(nF1(iterations,:));
+    plot(nF2(iterations,:));
     legend('P', 'F1', 'F2');
     title(strcat(['N vs. x']));
     hold off
 
     if p.Results.createFig
         [~, filename, ~] = fileparts(filename);
-        filename = strcat('final_pop_space_', filename, '.fig');
-        savefig(strcat(p.Results.figDir, filename));
+        filename = strcat('final_pop_space_', filename);
+        savefig(strcat(p.Results.figDir, filename, '.fig'));
+        saveas(strcat(p.Results.figDir, filename, '.png'));
         clf;
     end
 end
