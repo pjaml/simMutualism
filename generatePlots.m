@@ -1,5 +1,5 @@
 % [[file:mutual_ide.org::*Generate figures from paper][Generate figures from paper:1]]
-function generatePlots(sweepDir, outputDir, varargin)
+function generatePlots(sweepDir, figDir, varargin)
 
     p = inputParser;
     addRequired(p, 'sweepDir', @isfolder);
