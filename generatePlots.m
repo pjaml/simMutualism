@@ -14,6 +14,9 @@ taus = [];
 for tau12 = tau12Range
 
     taus = [taus; ones(numel(tau21Range), 1) * tau12, tau21Range(:)]
+        % get the heatmap of all the outcomes
+        disp('Generating outcomes plot...')
+        plotOutcomes(sweepDir, 'figDir', figDir);
 
 end
 
@@ -35,17 +38,7 @@ for i = 1:length(taus)
     clear curFile;
 end
 
-% get the heatmap of all the outcomes
-disp('Generating outcomes plot...')
-plotOutcomes(sweepDir, 'figDir', figDir);
-
-% also save plots as PNGs
-figs = dir(fullfile(figDir, '*.fig'));
-for file = 1:length(figs)
-    curFig = openfig(fullfile(figDir, figs(file).name));
-    [~, filename, ~] = fileparts(figs(file).name);
-    filename = strcat(figDir, filename, ".png");
-    saveas(curFig, filename);
-    close(curFig);
+        clear curFile;
+    end
 end
 % Generate figures from paper:1 ends here

@@ -22,8 +22,9 @@ function plotSpeedTime(simMatFile, varargin)
 
     if p.Results.createFig
         [~, filename, ~] = fileparts(filename);
-        filename = strcat('speed_time_', filename, '.fig');
-        savefig(strcat(p.Results.figDir, filename));
+        filename = strcat('speed_time_', filename);
+        savefig(strcat(p.Results.figDir, filename, '.fig'));
+        saveas(strcat(p.Results.figDir, filename, '.png'));
         clf;
     end
 end
