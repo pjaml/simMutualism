@@ -19,7 +19,7 @@ function plotPopSpaceTime(simMatFile, varargin)
     timeStep = round(iterations / 10);
 
     %% Figure for species P
-    figure(1);
+    f = figure('visible', 'off');
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nP;
     nlow(nP >= nThreshold) = NaN;
