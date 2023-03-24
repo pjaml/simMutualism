@@ -3,7 +3,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile');
-    addOptional(p,'createFig', true, @islogical);
+    addOptional(p,'createFile', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
@@ -19,7 +19,14 @@ function plotPopSpaceTime(simMatFile, varargin)
     timeStep = round(iterations / 10);
 
     %% Figure for species P
-    f = figure('visible', 'off');
+
+    % if you're creating a file, don't display the figure in a window
+    if p.Results.createFile
+        f = figure('visible', 'off');
+    else
+        figure(1);
+    end
+
     [xx,tt] = meshgrid(x,0:iterations);
     nlow = nP;
     nlow(nP >= nThreshold) = NaN;
@@ -71,7 +78,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     legend([lineP lineF1 lineF2], {'P', 'F_1', 'F_2'});
 
-    if p.Results.createFig
+    if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
         filename = strcat('pop_space_time_', filename);
         savefig(strcat(p.Results.figDir, filename, '.fig'));

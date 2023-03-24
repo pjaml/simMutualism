@@ -3,7 +3,7 @@ function plotRangeTime(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile', @isfile);
-    addOptional(p,'createFig', true, @islogical);
+    addOptional(p,'createFile', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
 
@@ -18,16 +18,23 @@ function plotRangeTime(simMatFile, varargin)
         rangeF2(i) = length(find(nF2(i,:) >= nThreshold));
     end
 
+    if p.Results.createFile
+        f = figure('visible', 'off');
+    else
+        figure(1);
+    end
+
     plot(1:(iterations + 1), [rangeP; rangeF1; rangeF2]);
     xlabel('iterations');
     ylabel('range size');
     title(strcat(['Range size vs. time']));
     legend('P', 'F1', 'F2');
 
-    if p.Results.createFig
+    if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
-        filename = strcat('range_time_', filename, '.fig');
-        savefig(strcat(p.Results.figDir, filename));
+        filename = fullfile(p.Results.figDir, strcat('range_time_', filename));
+        saveas(f, strcat(filename, '.fig'));
+        saveas(f, strcat(filename, '.png'));
     end
 end
 % Range vs. time:1 ends here

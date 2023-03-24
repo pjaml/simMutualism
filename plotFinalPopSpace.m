@@ -3,7 +3,7 @@ function plotFinalPopSpace(simMatFile, varargin)
 
     p = inputParser;
     addRequired(p, 'simMatFile');
-    addOptional(p,'createFig', true, @islogical);
+    addOptional(p,'createFile', true, @islogical);
     addOptional(p, 'figDir', './', @isfolder);
 
     parse(p, simMatFile, varargin{:});
@@ -14,6 +14,12 @@ function plotFinalPopSpace(simMatFile, varargin)
     iterations = simMatFile.iterations;
     filename = simMatFile.filename;
 
+    if p.Results.createFile
+        f = figure('visible', 'off');
+    else
+        figure(1);
+    end
+
     hold on
     plot(nP(iterations,:));
     plot(nF1(iterations,:));
@@ -22,11 +28,11 @@ function plotFinalPopSpace(simMatFile, varargin)
     title(strcat(['N vs. x']));
     hold off
 
-    if p.Results.createFig
+    if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
-        filename = strcat('final_pop_space_', filename);
-        savefig(strcat(p.Results.figDir, filename, '.fig'));
-        saveas(strcat(p.Results.figDir, filename, '.png'));
+        filename = fullfile(p.Results.figDir, strcat('final_pop_space_', filename));
+        saveas(f, strcat(filename, '.fig'));
+        saveas(f, strcat(filename, '.png'));
         clf;
     end
 end

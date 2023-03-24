@@ -38,15 +38,14 @@ function plotOutcomes(sweepDir, varargin)
     end
 
     disp("Saving outcomes plot...")
-    figure(1);
+    f = figure('visible', 'off');
     heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
     xlabel('tau_{12}');
     ylabel('tau_{21}');
 
     filename = fullfile(figDir, 'tauSweepOutcomesPlot');
-    savefig(strcat(filename, '.fig');
-    saveas(strcat(filename, '.png');
-    clf;
+    saveas(f, strcat(filename, '.fig');
+    saveas(f, strcat(filename, '.png');
 
 end
 % Sweep outcomes plot:1 ends here
