@@ -14,6 +14,8 @@ function getNoSteadyState(sweepDir)
 
         if curFile.iterations == curFile.maxIterations
             disp(strcat("The simulation of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " reached the maxIterations value of ", num2str(curFile.maxIterations)));
+        else
+            disp(strcat("The simulation of tau12 = ", num2str(tau12, "%.2f"), " and tau21 = ", num2str(tau21, "%.2f"), " ran for ", num2str(curFile.iterations), " iterations"))
         end
 
         clear curFile;
