@@ -75,7 +75,7 @@ if ~p.Results.useDeltaDispKernels
     [deltaP, deltaF1, deltaF2] = deal(1);
 end
 % gaussian dispersal kernels
-kP = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaP)) ./ sqrt(2 * pi * sigma_sq);
+kP = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
 kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF1)) ./ sqrt(2 * pi * sigma_sq);
 kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF2)) ./ sqrt(2 * pi * sigma_sq);
 % Dispersal kernels:1 ends here
