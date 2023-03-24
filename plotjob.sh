@@ -12,4 +12,4 @@ cd /home/shawa/lutzx119/mutualism
 module purge
 
 module load matlab
-matlab -nodisplay <generatePlots.m
+matlab -nodisplay -r "generatePlots('~/deltaDispSweep/', '~/figsDeltaDispSweep/', 'plotOutcomes', true)"
