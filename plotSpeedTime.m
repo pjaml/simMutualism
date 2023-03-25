@@ -20,7 +20,7 @@ function plotSpeedTime(simMatFile, varargin)
         figure(1);
     end
 
-    plot(1:iterations, instantSpeedP, 1:iterations, instantSpeedF1, 1:iterations, instantSpeedF2);
+    plot(1:iterations, instantSpeedP(1:iterations), 1:iterations, instantSpeedF1(1:iterations), 1:iterations, instantSpeedF2(1:iterations));
     legend('P', 'F1', 'F2');
     title(strcat(['Spread speed vs. time']));
     xlabel('iterations');
