@@ -1,4 +1,4 @@
-# Created 2023-03-24 Fri 20:11
+# Created 2023-03-27 Mon 14:00
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -159,21 +159,22 @@ nF2(1,temp_F2) = initDensities(3) * normpdf(x(temp_F2),0,1);
 
 #+begin_src matlab
 % FIND THE INITIAL FRONT LOCATION
-jj_P = find(nP(1,:) >= nThreshold,1,'last'); %find the farthest distance travelled by the population above a certain threshold density and assign it to jj
-jj_F1 = find(nF1(1,:) >= nThreshold,1,'last');
-jj_F2 = find(nF2(1,:) >= nThreshold,1,'last');
+% find the farthest distance travelled by the population above a certain threshold density and assign it to front
+frontP = find(nP(1,:) >= nThreshold,1,'last');
+frontF1 = find(nF1(1,:) >= nThreshold,1,'last');
+frontF2 = find(nF2(1,:) >= nThreshold,1,'last');
 
 % the initial front is obtained from initialization which will be in the first
 % row of 'n'
-if jj_P
-  rangeEdgeP(1) = interp1(nP(1,jj_P:jj_P+1),x(jj_P:jj_P+1),nThreshold);
+if frontP
+  rangeEdgeP(1) = interp1(nP(1,frontP:frontP+1),x(frontP:frontP+1),nThreshold);
 end
-if jj_F1
-  rangeEdgeF1(1) = interp1(nF1(1,jj_F1:jj_F1+1),x(jj_F1:jj_F1+1),nThreshold);
+if frontF1
+  rangeEdgeF1(1) = interp1(nF1(1,frontF1:frontF1+1),x(frontF1:frontF1+1),nThreshold);
 end
 
-if jj_F2
-  rangeEdgeF2(1) = interp1(nF2(1,jj_F2:jj_F2+1),x(jj_F2:jj_F2+1),nThreshold);
+if frontF2
+  rangeEdgeF2(1) = interp1(nF2(1,frontF2:frontF2+1),x(frontF2:frontF2+1),nThreshold);
 end
 #+end_src
 
@@ -212,17 +213,16 @@ while generation <= iterations
 
 #+begin_src matlab
 %   DISPERSAL
-    n1P = fft_conv(kP,fP);   % dispersing individuals
+    n1P = fft_conv(kP,fP);
     n1F1 = fft_conv(kF1,fF1);
     n1F2 = fft_conv(kF2,fF2);
 
-    %the convolution apparently doubles the length of the array?
     nP(generation + 1,:) = dx*n1P(nodes:length(x2));
     nF1(generation + 1,:) = dx*n1F1(nodes:length(x2));
     nF2(generation + 1,:) = dx*n1F2(nodes:length(x2));
 
     nP(generation + 1,1) = nP(generation + 1,1)/2;
-    nP(generation + 1,nodes) = nP(generation + 1,nodes)/2; %The population density at the edges is halved
+    nP(generation + 1,nodes) = nP(generation + 1,nodes)/2;
 
     nF1(generation + 1,1) = nF1(generation + 1,1)/2;
     nF1(generation + 1,nodes) = nF1(generation + 1,nodes)/2;
@@ -241,30 +241,27 @@ while generation <= iterations
     nF1(generation + 1,temp_F1) = zeros(size(nF1(generation + 1,temp_F1)));
     nF2(generation + 1,temp_F2) = zeros(size(nF2(generation + 1,temp_F2)));
 
-    jj_P = find(nP(generation + 1,:) >= nThreshold,1,'last');
-    jj_F1 = find(nF1(generation + 1,:) >= nThreshold,1,'last');
-    jj_F2 = find(nF2(generation + 1,:) >= nThreshold,1,'last');
+    frontP = find(nP(generation + 1,:) >= nThreshold,1,'last');
+    frontF1 = find(nF1(generation + 1,:) >= nThreshold,1,'last');
+    frontF2 = find(nF2(generation + 1,:) >= nThreshold,1,'last');
 
     % if any of the species' range edge is equal to the edge of the entire
     % spatial range, stop the growth-dispersal loop. We set total iterations to
     % the last iteration + 1 so the data is still usable.
-    if (jj_P == nodes) | (jj_F1 == nodes) | (jj_F2 == nodes)
-        iterations = generation;
-        disp("Warning: the simulation was stopped because one or more species");
-        disp("have reached the edge of the landscape.");
-        break;
+    if (frontP == nodes) | (frontF1 == nodes) | (frontF2 == nodes)
+        error("Warning: the simulation has stopped because the edge of the landscape was reached.");
     end
 
-    if jj_P
-         rangeEdgeP(generation + 1) = interp1(nP(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1), nThreshold);
+    if frontP
+         rangeEdgeP(generation + 1) = interp1(nP(generation + 1,frontP:frontP + 1),x(frontP:frontP + 1), nThreshold);
     end
 
-    if jj_F1
-         rangeEdgeF1(generation + 1) = interp1(nF1(generation + 1, jj_F1:jj_F1 + 1), x(jj_F1:jj_F1 + 1), nThreshold);
+    if frontF1
+         rangeEdgeF1(generation + 1) = interp1(nF1(generation + 1, frontF1:frontF1 + 1), x(frontF1:frontF1 + 1), nThreshold);
     end
 
-    if jj_F2
-         rangeEdgeF2(generation + 1) = interp1(nF2(generation + 1,jj_F2:jj_F2 + 1), x(jj_F2:jj_F2 + 1), nThreshold);
+    if frontF2
+         rangeEdgeF2(generation + 1) = interp1(nF2(generation + 1,frontF2:frontF2 + 1), x(frontF2:frontF2 + 1), nThreshold);
     end
 
     %latest position of wave edge - initial position of wave edge divided by time
@@ -290,6 +287,11 @@ while generation <= iterations
 
         % if not all species at steady state
         if ~(isSpeciesSteadyState(instantSpeedP, steadyStateThreshold, generation) && isSpeciesSteadyState(instantSpeedF1, steadyStateThreshold, generation) && isSpeciesSteadyState(instantSpeedF2, steadyStateThreshold, generation))
+
+            % end the simulation if you've hit maxIterations
+            if generation == maxIterations
+                error("Warning: The simulation for tau12 = %s and tau21 = %s has reached the maxIterations value of %s.", p.Results.tau12, p.Results.tau21, maxIterations)
+            end
 
             % iterations close to the max
             if iterations >= (maxIterations - iterationStep)
@@ -661,7 +663,7 @@ We can adjust values of =maxIterations= in the for loop to allow for longer simu
 
 rangeStep = 0.01;
 
-outputDir = '/home/shawa/lutzx119/sweep_delta_dk/';
+outputDir = '/home/shawa/lutzx119/deltaDispSweep/';
 
 mkdir(outputDir)
 
@@ -673,7 +675,7 @@ tau12 = rangeStep * str2num(getenv("SLURM_ARRAY_TASK_ID"));
 parfor j = 0:40
 
     tau21 = j * rangeStep;
-    simMutualism('outputDir', outputDir, 'tau12', tau12, 'tau21', tau21);
+    simMutualism('outputDir', outputDir, 'tau12', tau12, 'tau21', tau21, 'useDeltaDispKernels', true);
 end
 #+end_src
 
@@ -812,6 +814,9 @@ The parameter space plot always includes all the parameter values in the sweep. 
 #+begin_src matlab
 function generatePlots(sweepDir, figDir, varargin)
 
+    defaultTau12Range = 0.13:0.01:0.31;
+    defaultTau21Range = 0.0:0.01:0.4;
+
     p = inputParser;
     addRequired(p, 'sweepDir', @isfolder);
     addRequired(p, 'figDir');
@@ -819,8 +824,9 @@ function generatePlots(sweepDir, figDir, varargin)
     addParameter(p, 'plotPopSpaceTime', false, @islogical);
     addParameter(p, 'plotFinalPopSpace', false, @islogical);
     addParameter(p, 'plotSpeedTime', false, @islogical);
-    addParameter(p, 'tau12Range', 0.13:0.01:0.31, @isvector);
-    addParameter(p, 'tau21Range', 0.0:0.01:0.4, @isvector);
+    addParameter(p, 'tau12Range', defaultTau12Range, @isvector);
+    addParameter(p, 'tau21Range', defaultTau21Range, @isvector);
+    addParameter(p, 'taus', [], @ismatrix);
 
     parse(p, sweepDir, figDir, varargin{:});
 
@@ -829,20 +835,31 @@ function generatePlots(sweepDir, figDir, varargin)
     if p.Results.plotOutcomes
         % get the heatmap of all the outcomes
         disp('Generating outcomes plot...')
-        plotOutcomes(sweepDir, 'figDir', figDir);
+        if isfolder(figDir)
+            plotOutcomes(sweepDir, 'figDir', figDir);
+        else
+            error("figDir is not a folder")
+        end
     end
 
     if p.Results.plotPopSpaceTime || p.Results.plotFinalPopSpace || p.Results.plotSpeedTime
 
         tau12Range = p.Results.tau12Range;
         tau21Range = p.Results.tau21Range;
+        taus = p.Results.taus;
 
-        taus = [];
+        % check to make sure generatePlots is given either tau ranges or pairs but not both
+        if ~(isequal(tau12Range, defaultTau12Range) && isequal(tau21Range, defaultTau21Range)) && ~isempty(taus)
 
-        for tau12 = tau12Range
+            error("Specify values for tau ranges or a vector of tau pair values, but not both")
+        end
 
-            taus = [taus; ones(numel(tau21Range), 1) * tau12, tau21Range(:)];
+        if isempty(taus)
+            for tau12 = tau12Range
 
+                taus = [taus; ones(numel(tau21Range), 1) * tau12, tau21Range(:)];
+
+            end
         end
 
         for i = 1:length(taus)
@@ -1096,13 +1113,13 @@ function plotOutcomes(sweepDir, varargin)
 
     end
 
-    disp("Saving outcomes plot...")
     f = figure('visible', 'off');
     heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
     xlabel('tau_{12}');
     ylabel('tau_{21}');
 
     filename = fullfile(figDir, 'tauSweepOutcomesPlot');
+    disp("Saving outcomes plot to %s...", filename)
     saveas(f, strcat(filename, '.fig'));
     saveas(f, strcat(filename, '.png'));
 
