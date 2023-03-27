@@ -1,6 +1,9 @@
 % [[file:mutual_ide.org::*Generate figures from paper][Generate figures from paper:1]]
 function generatePlots(sweepDir, figDir, varargin)
 
+    defaultTau12Range = 0.13:0.01:0.31;
+    defaultTau21Range = 0.0:0.01:0.4;
+
     p = inputParser;
     addRequired(p, 'sweepDir', @isfolder);
     addRequired(p, 'figDir');
@@ -8,8 +11,9 @@ function generatePlots(sweepDir, figDir, varargin)
     addParameter(p, 'plotPopSpaceTime', false, @islogical);
     addParameter(p, 'plotFinalPopSpace', false, @islogical);
     addParameter(p, 'plotSpeedTime', false, @islogical);
-    addParameter(p, 'tau12Range', 0.13:0.01:0.31, @isvector);
-    addParameter(p, 'tau21Range', 0.0:0.01:0.4, @isvector);
+    addParameter(p, 'tau12Range', defaultTau12Range, @isvector);
+    addParameter(p, 'tau21Range', defaultTau21Range, @isvector);
+    addParameter(p, 'taus', [], @ismatrix);
 
     parse(p, sweepDir, figDir, varargin{:});
 
@@ -18,20 +22,31 @@ function generatePlots(sweepDir, figDir, varargin)
     if p.Results.plotOutcomes
         % get the heatmap of all the outcomes
         disp('Generating outcomes plot...')
-        plotOutcomes(sweepDir, 'figDir', figDir);
+        if isfolder(figDir)
+            plotOutcomes(sweepDir, 'figDir', figDir);
+        else
+            error("figDir is not a folder")
+        end
     end
 
     if p.Results.plotPopSpaceTime || p.Results.plotFinalPopSpace || p.Results.plotSpeedTime
 
         tau12Range = p.Results.tau12Range;
         tau21Range = p.Results.tau21Range;
+        taus = p.Results.taus;
 
-        taus = [];
+        % check to make sure generatePlots is given either tau ranges or pairs but not both
+        if ~(isequal(tau12Range, defaultTau12Range) && isequal(tau21Range, defaultTau21Range)) && ~isempty(taus)
 
-        for tau12 = tau12Range
+            error("Specify values for tau ranges or a vector of tau pair values, but not both")
+        end
 
-            taus = [taus; ones(numel(tau21Range), 1) * tau12, tau21Range(:)];
+        if isempty(taus)
+            for tau12 = tau12Range
 
+                taus = [taus; ones(numel(tau21Range), 1) * tau12, tau21Range(:)];
+
+            end
         end
 
         for i = 1:length(taus)
