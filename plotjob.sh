@@ -8,7 +8,7 @@
 #SBATCH --mail-user=lutzx119@umn.edu
 #SBATCH --output=/home/shawa/lutzx119/reports/plotjob-%j.out
 
-cd /home/shawa/lutzx119/mutualism
+cd /home/shawa/lutzx119/mutualism || return
 module purge
 
 module load matlab
