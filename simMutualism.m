@@ -96,21 +96,22 @@ nF2(1,temp_F2) = initDensities(3) * normpdf(x(temp_F2),0,1);
 
 % [[file:mutual_ide.org::*Initial front location][Initial front location:1]]
 % FIND THE INITIAL FRONT LOCATION
-jj_P = find(nP(1,:) >= nThreshold,1,'last'); %find the farthest distance travelled by the population above a certain threshold density and assign it to jj
-jj_F1 = find(nF1(1,:) >= nThreshold,1,'last');
-jj_F2 = find(nF2(1,:) >= nThreshold,1,'last');
+% find the farthest distance travelled by the population above a certain threshold density and assign it to front
+frontP = find(nP(1,:) >= nThreshold,1,'last');
+frontF1 = find(nF1(1,:) >= nThreshold,1,'last');
+frontF2 = find(nF2(1,:) >= nThreshold,1,'last');
 
 % the initial front is obtained from initialization which will be in the first
 % row of 'n'
-if jj_P
-  rangeEdgeP(1) = interp1(nP(1,jj_P:jj_P+1),x(jj_P:jj_P+1),nThreshold);
+if frontP
+  rangeEdgeP(1) = interp1(nP(1,frontP:frontP+1),x(frontP:frontP+1),nThreshold);
 end
-if jj_F1
-  rangeEdgeF1(1) = interp1(nF1(1,jj_F1:jj_F1+1),x(jj_F1:jj_F1+1),nThreshold);
+if frontF1
+  rangeEdgeF1(1) = interp1(nF1(1,frontF1:frontF1+1),x(frontF1:frontF1+1),nThreshold);
 end
 
-if jj_F2
-  rangeEdgeF2(1) = interp1(nF2(1,jj_F2:jj_F2+1),x(jj_F2:jj_F2+1),nThreshold);
+if frontF2
+  rangeEdgeF2(1) = interp1(nF2(1,frontF2:frontF2+1),x(frontF2:frontF2+1),nThreshold);
 end
 % Initial front location:1 ends here
 
@@ -143,17 +144,16 @@ while generation <= iterations
 
 % [[file:mutual_ide.org::*Dispersal phase][Dispersal phase:1]]
 %   DISPERSAL
-    n1P = fft_conv(kP,fP);   % dispersing individuals
+    n1P = fft_conv(kP,fP);
     n1F1 = fft_conv(kF1,fF1);
     n1F2 = fft_conv(kF2,fF2);
 
-    %the convolution apparently doubles the length of the array?
     nP(generation + 1,:) = dx*n1P(nodes:length(x2));
     nF1(generation + 1,:) = dx*n1F1(nodes:length(x2));
     nF2(generation + 1,:) = dx*n1F2(nodes:length(x2));
 
     nP(generation + 1,1) = nP(generation + 1,1)/2;
-    nP(generation + 1,nodes) = nP(generation + 1,nodes)/2; %The population density at the edges is halved
+    nP(generation + 1,nodes) = nP(generation + 1,nodes)/2;
 
     nF1(generation + 1,1) = nF1(generation + 1,1)/2;
     nF1(generation + 1,nodes) = nF1(generation + 1,nodes)/2;
@@ -172,30 +172,27 @@ while generation <= iterations
     nF1(generation + 1,temp_F1) = zeros(size(nF1(generation + 1,temp_F1)));
     nF2(generation + 1,temp_F2) = zeros(size(nF2(generation + 1,temp_F2)));
 
-    jj_P = find(nP(generation + 1,:) >= nThreshold,1,'last');
-    jj_F1 = find(nF1(generation + 1,:) >= nThreshold,1,'last');
-    jj_F2 = find(nF2(generation + 1,:) >= nThreshold,1,'last');
+    frontP = find(nP(generation + 1,:) >= nThreshold,1,'last');
+    frontF1 = find(nF1(generation + 1,:) >= nThreshold,1,'last');
+    frontF2 = find(nF2(generation + 1,:) >= nThreshold,1,'last');
 
     % if any of the species' range edge is equal to the edge of the entire
     % spatial range, stop the growth-dispersal loop. We set total iterations to
     % the last iteration + 1 so the data is still usable.
-    if (jj_P == nodes) | (jj_F1 == nodes) | (jj_F2 == nodes)
-        iterations = generation;
-        disp("Warning: the simulation was stopped because one or more species");
-        disp("have reached the edge of the landscape.");
-        break;
+    if (frontP == nodes) | (frontF1 == nodes) | (frontF2 == nodes)
+        error("Warning: the simulation has stopped because the edge of the landscape was reached.");
     end
 
-    if jj_P
-         rangeEdgeP(generation + 1) = interp1(nP(generation + 1,jj_P:jj_P + 1),x(jj_P:jj_P + 1), nThreshold);
+    if frontP
+         rangeEdgeP(generation + 1) = interp1(nP(generation + 1,frontP:frontP + 1),x(frontP:frontP + 1), nThreshold);
     end
 
-    if jj_F1
-         rangeEdgeF1(generation + 1) = interp1(nF1(generation + 1, jj_F1:jj_F1 + 1), x(jj_F1:jj_F1 + 1), nThreshold);
+    if frontF1
+         rangeEdgeF1(generation + 1) = interp1(nF1(generation + 1, frontF1:frontF1 + 1), x(frontF1:frontF1 + 1), nThreshold);
     end
 
-    if jj_F2
-         rangeEdgeF2(generation + 1) = interp1(nF2(generation + 1,jj_F2:jj_F2 + 1), x(jj_F2:jj_F2 + 1), nThreshold);
+    if frontF2
+         rangeEdgeF2(generation + 1) = interp1(nF2(generation + 1,frontF2:frontF2 + 1), x(frontF2:frontF2 + 1), nThreshold);
     end
 
     %latest position of wave edge - initial position of wave edge divided by time
