@@ -217,6 +217,11 @@ while generation <= iterations
         % if not all species at steady state
         if ~(isSpeciesSteadyState(instantSpeedP, steadyStateThreshold, generation) && isSpeciesSteadyState(instantSpeedF1, steadyStateThreshold, generation) && isSpeciesSteadyState(instantSpeedF2, steadyStateThreshold, generation))
 
+            % end the simulation if you've hit maxIterations
+            if generation == maxIterations
+                error("Warning: The simulation for tau12 = %s and tau21 = %s has reached the maxIterations value of %s.", p.Results.tau12, p.Results.tau21, maxIterations)
+            end
+
             % iterations close to the max
             if iterations >= (maxIterations - iterationStep)
                 iterations = maxIterations;
