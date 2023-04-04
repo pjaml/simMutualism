@@ -13,10 +13,11 @@ function plotPopSpaceTime(simMatFile, varargin)
     nP = simMatFile.nP;
     nF1 = simMatFile.nF1;
     nF2 = simMatFile.nF2;
+    diameter = simMatFile.diameter;
     nThreshold = simMatFile.nThreshold;
     x = simMatFile.x;
 
-    timeStep = round(iterations / 10);
+    timeStep = round(iterations / 15);
 
     %% Figure for species P
 
@@ -45,6 +46,8 @@ function plotPopSpaceTime(simMatFile, varargin)
     end
     % plot3(rangeEdgeP(1:11),0:10,nThreshold*ones(1,11),'k');
     axis([(rangeMin - 5) (rangeMax + 5) 0 iterations 0 6.25]);
+    xticks([rangeMin 0 rangeMax]);
+    xticklabels({num2str(-diameter/2), '0', num2str(diameter/2)})
     xlabel('Spatial range');
     ylabel('Generations');
     zlabel('Population density');
@@ -57,7 +60,7 @@ function plotPopSpaceTime(simMatFile, varargin)
     nlow(nF1 >= nThreshold) = NaN;
     nF1(nF1 < nThreshold) = NaN;
     hold on
-    for i = 3:timeStep:iterations
+    for i = 2:timeStep:iterations
         lineF1 = plot3(xx(i,:),tt(i,:),nF1(i,:),'r','LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
@@ -69,7 +72,7 @@ function plotPopSpaceTime(simMatFile, varargin)
     nlow(nF2 >= nThreshold) = NaN;
     nF2(nF2 < nThreshold) = NaN;
     hold on
-    for i = 5:timeStep:iterations
+    for i = 3:timeStep:iterations
         lineF2 = plot3(xx(i,:),tt(i,:),nF2(i,:),'g', 'LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
