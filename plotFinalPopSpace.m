@@ -11,6 +11,7 @@ function plotFinalPopSpace(simMatFile, varargin)
     nP = simMatFile.nP;
     nF1 = simMatFile.nF1;
     nF2 = simMatFile.nF2;
+    diameter = simMatFile.diameter;
     iterations = simMatFile.iterations;
     filename = simMatFile.filename;
 
@@ -24,6 +25,9 @@ function plotFinalPopSpace(simMatFile, varargin)
     plot(nP(iterations,:));
     plot(nF1(iterations,:));
     plot(nF2(iterations,:));
+    xlim([0 width(nP)]);
+    xticks([0, width(nP)/2, width(nP)]);
+    xticklabels({num2str(-diameter/2), '0', num2str(diameter/2)});
     legend('P', 'F1', 'F2');
     title(strcat(['N vs. x']));
     hold off
