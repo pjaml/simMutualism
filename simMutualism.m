@@ -76,8 +76,8 @@ if ~p.Results.useDeltaDispKernels
 end
 % gaussian dispersal kernels
 kP = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
-kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF1)) ./ sqrt(2 * pi * sigma_sq);
-kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF2)) ./ sqrt(2 * pi * sigma_sq);
+kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF1)) ./ sqrt(2 * pi * sigma_sq * deltaF1);
+kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF2)) ./ sqrt(2 * pi * sigma_sq * deltaF2);
 % Dispersal kernels:1 ends here
 
 % [[file:mutual_ide.org::*Initial population densities][Initial population densities:1]]
