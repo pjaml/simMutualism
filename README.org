@@ -1,4 +1,4 @@
-# Created 2023-03-27 Mon 14:00
+# Created 2023-04-04 Tue 23:55
 #+options: toc:nil num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -17,17 +17,21 @@
 #+export_file_name: README
 :END:
 
-* Simulation
+* How to run
 
-Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species.
+** Single simulations
 
-To run a simulation with specific parameter values, simply call the function with the parameter as an argument in quotes, followed by the desired value, e.g.
+To run a single simulation with specific parameter values, simply =cd= into the project directory and call the function =simMutualism()=. Add any custom parameter values as arguments to the function, with the variable name in quotes, followed by the desired value, e.g.:
 
 #+begin_example
 simMutualism('tau12', 0.2, 'tau21', 0.3, 'sigma_sq', 0.1)
 #+end_example
 
-The specified parameters are used in the filename for the resulting mat file.
+The specified parameters are used in the filename for the resulting mat file that the function generates.
+
+* Simulation
+
+Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species.
 
 #+begin_src matlab
 function simMutualism(varargin)
@@ -125,16 +129,19 @@ Here we initialize the arrays we'll use throughout the simulation. The speed arr
 
 We use a Gaussian dispersal kernel for each species. At some point we'll rewrite this to allow for other dispersal kernel functions.
 
-If we want to have the dependence parameter affect the dispersal kernel, we can use the ='useDeltaDispKernels'= with the value =true= when calling =simMutualism()=. Otherwise, the default is to have dispersal unaffected by dependence.
+If we want to have the dependence parameter affect the dispersal kernel, we can use the =useDeltaDispKernels= with the value =true= when calling =simMutualism()=. Otherwise, the default is to have dispersal unaffected by dependence.
 
 #+begin_src matlab
-if ~p.Results.useDeltaDispKernels
-    [deltaP, deltaF1, deltaF2] = deal(1);
+if p.Results.useDeltaDispKernels
+    % gaussian dispersal kernels
+    kP = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
+    kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF1)) ./ sqrt(2 * pi * sigma_sq * deltaF1);
+    kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF2)) ./ sqrt(2 * pi * sigma_sq * deltaF2);
+else
+    kP = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
+    kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
+    kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
 end
-% gaussian dispersal kernels
-kP = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
-kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF1)) ./ sqrt(2 * pi * sigma_sq);
-kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF2)) ./ sqrt(2 * pi * sigma_sq);
 #+end_src
 
 *** Initial population densities
@@ -615,7 +622,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     F1 = y(2,:);
     F2 = y(3,:);
 
-    dydt(1,:) = P .* ((1 - deltaP) * rP + deltaP * (cP * ((alphaPF1 .* F1) ./ (hPF1 + F1) + (alphaPF2 .* F2) ./ (hPF2 + F2))) - deltaF1 * (qP * (betaP .* F1 ./ (eP + P))) - deltaF2 * (qP * (betaP .* F2 ./ (eP + P))) - (dP .* P));
+    dydt(1,:) = P .* ((1 - deltaP) * rP + deltaP * (cP * (alphaPF1 .* F1 ./ (hPF1 + F1) + alphaPF2 .* F2 ./ (hPF2 + F2))) - deltaF1 * (qP * (betaP .* F1 ./ (eP + P))) - deltaF2 * (qP * (betaP .* F2 ./ (eP + P))) - dP .* P);
 #+end_src
 
 *** Species /F/, Phenotype 1
@@ -627,7 +634,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 #+end_src
 
 #+begin_src matlab
-    dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + cF1 * (deltaF1 * (alphaF1P .* P) ./ (hF1P + P)) - qF1 * (deltaP * ((betaF1 .* P) ./ (eF1 + F1))) - (tau12 .* F2) - (dF1 .* F1));
+    dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + deltaF1 * (cF1 * (alphaF1P .* P) ./ (hF1P + P)) - qF1 * (deltaP * ((betaF1 .* P) ./ (eF1 + F1))) - (tau12 .* F2) - dF1 .* F1);
 #+end_src
 
 *** Species /F/, Phenotype 2
@@ -639,7 +646,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 #+end_src
 
 #+begin_src matlab
-    dydt(3,:) = F2 .* ((1 - deltaF2) * rF2 + cF2 * (deltaF2 * (alphaF2P .* P) ./ (hF2P + P)) - qF2 * (deltaP * ((betaF2 .* P) ./ (eF2 + F2))) - (tau21 .* F1) - (dF2 .* F2));
+    dydt(3,:) = F2 .* ((1 - deltaF2) * rF2 + deltaF2 * (cF2 * (alphaF2P .* P) ./ (hF2P + P)) - qF2 * (deltaP * ((betaF2 .* P) ./ (eF2 + F2))) - (tau21 .* F1) - dF2 .* F2);
 #+end_src
 
 *** Reshape
@@ -912,10 +919,11 @@ function plotPopSpaceTime(simMatFile, varargin)
     nP = simMatFile.nP;
     nF1 = simMatFile.nF1;
     nF2 = simMatFile.nF2;
+    diameter = simMatFile.diameter;
     nThreshold = simMatFile.nThreshold;
     x = simMatFile.x;
 
-    timeStep = round(iterations / 10);
+    timeStep = round(iterations / 15);
 
     %% Figure for species P
 
@@ -944,6 +952,8 @@ function plotPopSpaceTime(simMatFile, varargin)
     end
     % plot3(rangeEdgeP(1:11),0:10,nThreshold*ones(1,11),'k');
     axis([(rangeMin - 5) (rangeMax + 5) 0 iterations 0 6.25]);
+    xticks([rangeMin 0 rangeMax]);
+    xticklabels({num2str(-diameter/2), '0', num2str(diameter/2)})
     xlabel('Spatial range');
     ylabel('Generations');
     zlabel('Population density');
@@ -956,7 +966,7 @@ function plotPopSpaceTime(simMatFile, varargin)
     nlow(nF1 >= nThreshold) = NaN;
     nF1(nF1 < nThreshold) = NaN;
     hold on
-    for i = 3:timeStep:iterations
+    for i = 2:timeStep:iterations
         lineF1 = plot3(xx(i,:),tt(i,:),nF1(i,:),'r','LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
@@ -968,7 +978,7 @@ function plotPopSpaceTime(simMatFile, varargin)
     nlow(nF2 >= nThreshold) = NaN;
     nF2(nF2 < nThreshold) = NaN;
     hold on
-    for i = 5:timeStep:iterations
+    for i = 3:timeStep:iterations
         lineF2 = plot3(xx(i,:),tt(i,:),nF2(i,:),'g', 'LineWidth', 3.0);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
@@ -1041,6 +1051,7 @@ function plotFinalPopSpace(simMatFile, varargin)
     nP = simMatFile.nP;
     nF1 = simMatFile.nF1;
     nF2 = simMatFile.nF2;
+    diameter = simMatFile.diameter;
     iterations = simMatFile.iterations;
     filename = simMatFile.filename;
 
@@ -1054,6 +1065,9 @@ function plotFinalPopSpace(simMatFile, varargin)
     plot(nP(iterations,:));
     plot(nF1(iterations,:));
     plot(nF2(iterations,:));
+    xlim([0 width(nP)]);
+    xticks([0, width(nP)/2, width(nP)]);
+    xticklabels({num2str(-diameter/2), '0', num2str(diameter/2)});
     legend('P', 'F1', 'F2');
     title(strcat(['N vs. x']));
     hold off
