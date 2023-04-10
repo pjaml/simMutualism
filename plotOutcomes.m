@@ -43,7 +43,6 @@ function plotOutcomes(sweepDir, varargin)
     ylabel('tau_{21}');
 
     filename = fullfile(figDir, 'tauSweepOutcomesPlot');
-    disp("Saving outcomes plot to %s...", filename)
     saveas(f, strcat(filename, '.fig'));
     saveas(f, strcat(filename, '.png'));
 
