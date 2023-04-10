@@ -4,7 +4,7 @@
 
 rangeStep = 0.01;
 
-outputDir = '/home/shawa/lutzx119/deltaDispSweep/';
+outputDir = '/home/shawa/lutzx119/basicSweep/';
 
 mkdir(outputDir)
 
@@ -16,6 +16,6 @@ tau12 = rangeStep * str2num(getenv("SLURM_ARRAY_TASK_ID"));
 parfor j = 0:40
 
     tau21 = j * rangeStep;
-    simMutualism('outputDir', outputDir, 'tau12', tau12, 'tau21', tau21, 'useDeltaDispKernels', true);
+    simMutualism('outputDir', outputDir, 'tau12', tau12, 'tau21', tau21);
 end
 % Sweep script:1 ends here
