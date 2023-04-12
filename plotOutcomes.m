@@ -38,9 +38,12 @@ function plotOutcomes(sweepDir, varargin)
     end
 
     f = figure('visible', 'off');
-    heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
-    xlabel('tau_{12}');
-    ylabel('tau_{21}');
+    h = heatmap(tau12Range, fliplr(tau21Range), rot90(outcomes));
+    h.ColorbarVisible = 'off';
+    %    h.GridVisible = 'off';
+    h.CellLabelColor = 'none';
+    xlabel('Negative effect of competition on F_1 (tau_{12})');
+    ylabel('Negative effect of competition on F_2 (tau_{21})');
 
     filename = fullfile(figDir, 'tauSweepOutcomesPlot');
     saveas(f, strcat(filename, '.fig'));
