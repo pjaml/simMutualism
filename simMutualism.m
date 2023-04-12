@@ -222,7 +222,8 @@ while generation <= iterations
 
             % end the simulation if you've hit maxIterations
             if generation == maxIterations
-                error("Warning: The simulation for tau12 = %s and tau21 = %s has reached the maxIterations value of %s.", p.Results.tau12, p.Results.tau21, maxIterations)
+                msg = strcat("Warning: The simulation for tau12 = ", num2str(p.Unmatched.tau12), " and tau21 = ", num2str(p.Unmatched.tau21), " has reached the maxIterations value of ", num2str(maxIterations), ".");
+                error(msg)
             end
 
             % iterations close to the max
