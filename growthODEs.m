@@ -8,7 +8,7 @@ function dydt = growthODEs(t, y, varargin)
     default_nodes = (2^16) + 1;
 
     % intrinsic growth
-    default_rP = 0.3;
+    default_rP = 0.4;
     default_rF1 = 0.3;
     default_rF2 = 0.3;
 
@@ -47,7 +47,7 @@ function dydt = growthODEs(t, y, varargin)
     default_eF2 = 0.3;
 
     % = 0.0;
-    default_deltaP = 0.0;
+    default_deltaP = 0.1;
     default_deltaF1 = 0.9;
     default_deltaF2 = 0.1;
 
