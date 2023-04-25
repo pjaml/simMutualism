@@ -17,7 +17,7 @@ function plotPopSpaceTime(simMatFile, varargin)
     nThreshold = simMatFile.nThreshold;
     x = simMatFile.x;
 
-    timeStep = round(iterations / 15);
+    timeStep = round(iterations / 8);
 
     %% Figure for species P
 
@@ -40,7 +40,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 
     hold on
     for i = 1:timeStep:iterations
-        lineP = plot3(xx(i,:),tt(i,:),nP(i,:),'b', 'LineWidth', 3.0);
+        lineP = plot3(xx(i,:),tt(i,:),nP(i,:), 'Color', [0 0.4470 0.7410], 'LineWidth', 1);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
@@ -61,7 +61,7 @@ function plotPopSpaceTime(simMatFile, varargin)
     nF1(nF1 < nThreshold) = NaN;
     hold on
     for i = 2:timeStep:iterations
-        lineF1 = plot3(xx(i,:),tt(i,:),nF1(i,:),'r','LineWidth', 3.0);
+        lineF1 = plot3(xx(i,:),tt(i,:),nF1(i,:), 'Color', [0.8500 0.3250 0.0980], 'LineWidth', 1);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
@@ -73,7 +73,7 @@ function plotPopSpaceTime(simMatFile, varargin)
     nF2(nF2 < nThreshold) = NaN;
     hold on
     for i = 3:timeStep:iterations
-        lineF2 = plot3(xx(i,:),tt(i,:),nF2(i,:),'g', 'LineWidth', 3.0);
+        lineF2 = plot3(xx(i,:),tt(i,:),nF2(i,:), 'Color', [0.9290 0.6940 0.1250],'LineWidth', 1);
         plot3(xx(i,:),tt(i,:),nlow(i,:),'Color',0.8*[1 1 1]);
         grid on
     end
@@ -84,8 +84,8 @@ function plotPopSpaceTime(simMatFile, varargin)
     if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
         filename = strcat('pop_space_time_', filename);
-        savefig(strcat(p.Results.figDir, filename, '.fig'));
-        saveas(strcat(p.Results.figDir, filename, '.png'));
+        savefig(f, strcat(p.Results.figDir, filename, '.fig'));
+        saveas(f, strcat(p.Results.figDir, filename, '.png'));
         clf;
     end
 end

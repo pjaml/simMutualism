@@ -49,16 +49,17 @@ function generatePlots(sweepDir, figDir, varargin)
             end
         end
 
-        for i = 1:length(taus)
+        for i = 1:height(taus)
 
             formatSpec = '%.2f';
-
+    
             % probably a better way to do this with regexp
             targetFile = dir(fullfile(sweepDir, strcat("*tau12_", num2str(taus(i, 1), formatSpec), "*tau21_", num2str(taus(i, 2), formatSpec), "*.mat")));
 
-            filename = fullfile(sweepDir, targetFile.name);
+            disp(targetFile)
+            fname = fullfile(sweepDir, targetFile.name);
 
-            curFile = load(filename, 'iterations', 'filename', 'nP', 'nF1', 'nF2', 'nThreshold', 'x', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2');
+            curFile = load(fname, 'iterations', 'filename', 'nP', 'nF1', 'nF2', 'nThreshold', 'x', 'instantSpeedP', 'instantSpeedF1', 'instantSpeedF2', 'diameter');
 
             if p.Results.plotPopSpaceTime
                 plotPopSpaceTime(curFile, 'figDir', figDir);

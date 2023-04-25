@@ -8,10 +8,13 @@ function plotFinalPopSpace(simMatFile, varargin)
 
     parse(p, simMatFile, varargin{:});
 
+    diameter = simMatFile.diameter;
     nP = simMatFile.nP;
     nF1 = simMatFile.nF1;
     nF2 = simMatFile.nF2;
-    diameter = simMatFile.diameter;
+    nThreshold = simMatFile.nThreshold
+    x = simMatFile.x;
+
     iterations = simMatFile.iterations;
     filename = simMatFile.filename;
 
@@ -21,15 +24,26 @@ function plotFinalPopSpace(simMatFile, varargin)
         figure(1);
     end
 
+    rangeP = find(nP(iterations,:) >= nThreshold);
+
+    rangeMin = min(rangeP);
+    rangeMax = max(rangeP);
+
+    f.Position = [1 1 996 996];
+    axis square;
+
     hold on
-    plot(nP(iterations,:));
-    plot(nF1(iterations,:));
-    plot(nF2(iterations,:));
-    xlim([0 width(nP)]);
-    xticks([0, width(nP)/2, width(nP)]);
-    xticklabels({num2str(-diameter/2), '0', num2str(diameter/2)});
+    plot(nP(iterations,:), LineWidth=1.5);
+    plot(nF1(iterations,:), LineWidth=1.5);
+    plot(nF2(iterations,:), LineWidth=1.5);
+    xlim([(rangeMin - 1000) (rangeMax + 1000)]);
+    % xticks([(rangeMin - 1000) ((rangeMin - 1000) * 2) (rangeMax + 1000)]);
+    xlabel('Spatial range');
+    ylabel('Population density');
+    xticks([(rangeMin - 1000) (width(nP)/2) (rangeMax + 1000)]);
+    xticklabels({num2str(int32(diameter*2/width(nP)*(rangeMin - 1000) - diameter)), '0', num2str(int32(diameter*2/width(nP)*(rangeMax + 1000) - diameter))});
+
     legend('P', 'F1', 'F2');
-    title(strcat(['N vs. x']));
     hold off
 
     if p.Results.createFile

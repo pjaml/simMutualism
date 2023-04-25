@@ -17,14 +17,20 @@ function plotSpeedTime(simMatFile, varargin)
     if p.Results.createFile
         f = figure('visible', 'off');
     else
-        figure(1);
+        f = figure(1);
     end
 
-    plot(1:iterations, instantSpeedP(1:iterations), 1:iterations, instantSpeedF1(1:iterations), 1:iterations, instantSpeedF2(1:iterations));
+    % plot(1:iterations, instantSpeedP(1:iterations), 1:iterations, instantSpeedF1(1:iterations), 1:iterations, instantSpeedF2(1:iterations));
+    hold on
+    plot(instantSpeedP(1:iterations), LineWidth=1.5);
+    plot(instantSpeedF1(1:iterations), LineWidth=1.5);
+    plot(instantSpeedF2(1:iterations), LineWidth=1.5);
     legend('P', 'F1', 'F2');
-    title(strcat(['Spread speed vs. time']));
+    % title(strcat(['Spread speed vs. time']));
     xlabel('iterations');
     ylabel('speed');
+
+    hold off
 
     if p.Results.createFile
         [~, filename, ~] = fileparts(filename);
