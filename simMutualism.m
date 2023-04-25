@@ -183,7 +183,7 @@ while generation <= iterations
     % spatial range, stop the growth-dispersal loop. We set total iterations to
     % the last iteration + 1 so the data is still usable.
     if (frontP == nodes) | (frontF1 == nodes) | (frontF2 == nodes)
-        error("Warning: the simulation has stopped because the edge of the landscape was reached.");
+        error("Error: the simulation has stopped because the edge of the landscape was reached.");
     end
 
     if frontP
@@ -223,7 +223,8 @@ while generation <= iterations
             % end the simulation if you've hit maxIterations
             if generation == maxIterations
                 msg = strcat("Warning: The simulation for tau12 = ", num2str(p.Unmatched.tau12), " and tau21 = ", num2str(p.Unmatched.tau21), " has reached the maxIterations value of ", num2str(maxIterations), ".");
-                error(msg)
+                disp(msg)
+                break
             end
 
             % iterations close to the max
