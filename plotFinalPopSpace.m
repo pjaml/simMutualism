@@ -1,4 +1,13 @@
 % [[file:mutual_ide.org::*Final population densities across space plot][Final population densities across space plot:1]]
+%
+% PLOTFINALPOPSPACE Plot the species' final spatial ranges from a single simulation.
+%   PLOTFINALPOPSPACE(simMatFile) takes data from a matfile loaded with the matfile() function and creates a fig file and a png file in the current directory.
+%
+%   PLOTFINALPOPSPACE(simMatFile, 'figDir', './someDirectory/') sets the directory where the fig and png files are saved.
+%
+%   PLOTFINALPOPSPACE(simMatFile, 'createFile', false) does not save any files but instead displays the plot in a new window.
+%
+%   See also PLOTPOPSPACETIME, PLOTSPEEDTIME, PLOTRANGETIME.
 function plotFinalPopSpace(simMatFile, varargin)
 
     p = inputParser;
