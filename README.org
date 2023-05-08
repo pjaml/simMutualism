@@ -1,4 +1,4 @@
-# Created 2023-05-08 Mon 11:56
+# Created 2023-05-08 Mon 14:21
 #+options: num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -20,12 +20,11 @@
 * How to run
 
 There are three things you can do with this code:
-- Run a single simulation
-- Run a sweep
-- Generate plots
+- Run a [[#running-single-simulations][Single simulation]]
+- Run a [[#running-competition-parameter-sweeps][competition parameter sweep]]
+- Generate [[#generating-plots][plots]]
 
-** Single simulations
-
+** Running single simulations
 To run a single simulation with specific parameter values, simply =cd= into the project directory and call the function =simMutualism()=. Add any custom parameter values as arguments to the function, with the variable name in quotes, followed by the desired value, e.g.:
 
 #+begin_example
@@ -34,7 +33,15 @@ simMutualism('tau12', 0.2, 'tau21', 0.3, 'sigma_sq', 0.1)
 
 The specified parameters are used in the filename for the resulting mat file that the function generates.
 
-The possible variables to modify for the ODE parameters are =rP=, =rF1=, =rF2=...
+*** ODE parameters
+
+The possible variables to modify for the ODE parameters are =rP=, =rF1=, =rF2=, =alphaPF1=, =alphaPF2=, =alphaF1P=, =alphaF2P=, =qP=, =qF1=, =qF2=, =betaP=, =betaF1=, =betaF2=, =cP=, =cF1=, =cF2=, =dP=, =dF1=, =dF2=, =hPF1=, =hPF2=, =hF1P=, =hF2P=, =eP=, =eF1=, =eF2=, =deltaP=, =deltaF1=, =deltaF2=, =tau12=, =tau21=.
+
+** Running competition parameter sweeps
+To run a competition parameter sweep, use the function =tauSweep()=.
+
+** Generating plots
+The =generatePlots()= function will create a set of plots from a competition parameter sweep. To generate individual plots for a single simulation, use =plotFinalPopSpace()=, =plotPopSpaceTime()=, =plotSpeedTime()=, and =plotRangeTime()=.
 
 * Simulation
 
