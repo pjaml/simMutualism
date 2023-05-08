@@ -1,4 +1,4 @@
-# Created 2023-05-08 Mon 14:21
+# Created 2023-05-08 Mon 14:24
 #+options: num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -43,7 +43,9 @@ To run a competition parameter sweep, use the function =tauSweep()=.
 ** Generating plots
 The =generatePlots()= function will create a set of plots from a competition parameter sweep. To generate individual plots for a single simulation, use =plotFinalPopSpace()=, =plotPopSpaceTime()=, =plotSpeedTime()=, and =plotRangeTime()=.
 
-* Simulation
+* How the code works
+
+** Simulation
 
 Here we simulate the outcome of many generations of growth-dispersal cycles for three mutualist species.
 
@@ -55,9 +57,9 @@ function simMutualism(varargin)
 parameters = varargin;
 #+end_src
 
-** Parameters
+*** Parameters
 
-*** Simulation parameters
+**** Simulation parameters
 
 The number of growth-dispersal cycles (i.e. iterations) will change based on whether a steady state is reached for all three species. A species reaches a steady state when the variance between the last 10 spread speed values is at or below some threshold.
 
@@ -110,7 +112,7 @@ steadyStateThreshold = p.Results.steadyStateThreshold;
 diameter = p.Results.diameter;
 #+end_src
 
-*** Space parameters
+**** Space parameters
 
 Here we create the one-dimensional landscape in which the species will disperse.
 
@@ -126,7 +128,7 @@ x2 = linspace(-diameter, diameter, 2 * nodes - 1);
 dx = diameter / (nodes - 1);
 #+end_src
 
-** Initialization
+*** Initialization
 
 Here we initialize the arrays we'll use throughout the simulation. The speed arrays save the instantaneous or average spread speed of a species for each iteration. The range edge arrays keep track of the furthest spatial location on one side of a species' range. The /n/ population arrays keep track of each species' population density across the entire spatial range.
 
@@ -139,7 +141,7 @@ Here we initialize the arrays we'll use throughout the simulation. The speed arr
 [nP, nF1, nF2] = deal(zeros(maxIterations + 1, length(x)));
 #+end_src
 
-*** Dispersal kernels
+**** Dispersal kernels
 
 We use a Gaussian dispersal kernel for each species. At some point we'll rewrite this to allow for other dispersal kernel functions.
 
@@ -158,7 +160,7 @@ else
 end
 #+end_src
 
-*** Initial population densities
+**** Initial population densities
 
 We set the initial population densities across the spatial range.
 
@@ -176,7 +178,7 @@ nF1(1,temp_F1) = initDensities(2) * normpdf(x(temp_F1),0,1);
 nF2(1,temp_F2) = initDensities(3) * normpdf(x(temp_F2),0,1);
 #+end_src
 
-*** Initial front location
+**** Initial front location
 
 #+begin_src matlab
 % FIND THE INITIAL FRONT LOCATION
@@ -199,7 +201,7 @@ if frontF2
 end
 #+end_src
 
-** Simulating growth and dispersal over many generations
+*** Simulating growth and dispersal over many generations
 
 #+begin_src matlab
 generation = 1;
@@ -207,7 +209,7 @@ generation = 1;
 while generation <= iterations
 #+end_src
 
-*** Growth phase
+**** Growth phase
 
 #+begin_src matlab
     % for ode45
@@ -230,7 +232,7 @@ while generation <= iterations
     fF2 = y(end,(3:3:end));
 #+end_src
 
-*** Dispersal phase
+**** Dispersal phase
 
 #+begin_src matlab
 %   DISPERSAL
@@ -300,7 +302,7 @@ while generation <= iterations
     avgSpeedF2(generation) = (rangeEdgeF2(generation + 1) - rangeEdgeF2(1)) / generation;
 #+end_src
 
-*** Determine whether to continue running the simulation for more iterations
+**** Determine whether to continue running the simulation for more iterations
 
 #+begin_src matlab
     % check for steady state, and determine whether to run for more generations
@@ -329,7 +331,7 @@ while generation <= iterations
 end
 #+end_src
 
-*** Checking if a species is at a steady state
+**** Checking if a species is at a steady state
 
 This function takes the spread speed values for a given species and checks to see if the variance in the last 10 values is at or below a threshold to determine whether a steady state has been reached.
 
@@ -347,7 +349,7 @@ function isSteadyState = isSpeciesSteadyState(speed, tolerance, generation)
 end
 #+end_src
 
-*** Which simulations never reached a steady state?
+**** Which simulations never reached a steady state?
 
 Sometimes a simulation ends because the =maxIterations= number is reached, rather than actually reaching a steady state. Here we write a function to tell us if a simulation ended because it reached the =maxIterations=. It will iterate through all the files in the given directory and print a list of the parameter regimes for which a steady state wasn't reached.
 
@@ -377,7 +379,7 @@ end
 #+end_src
 
 
-*** Generate and save a mat file for the simulation
+**** Generate and save a mat file for the simulation
 
 Using =maxIterations= to create the initial arrays means that these arrays may be storing many more rows than is actually necessary. Since we're saving these to mat files, we can reduce the size before saving by resizing the arrays. By getting rid of extra rows, we can also use the =end= index to get the population densities of the final iteration.
 
@@ -426,13 +428,13 @@ save(strcat(outputDir, filename), 'nP', 'nF1', 'nF2', 'iterations', 'nThreshold'
 end
 #+end_src
 
-* Growth equations function
+** Growth equations function
 
 Here we define the growth of each species using a system of ODEs.
 
-** System of Equations (=growthODEs.m=)
+*** System of Equations (=growthODEs.m=)
 
-*** Function definition
+**** Function definition
 
 With =varargin=, we can optionally use parameter values other than the defaults, e.g. =growthODEs(t, y, 'rP', 0.4)=. We need to use an [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] to manage the function's parameters.
 
@@ -440,7 +442,7 @@ With =varargin=, we can optionally use parameter values other than the defaults,
 function dydt = growthODEs(t, y, varargin)
 #+end_src
 
-*** Default parameter values
+**** Default parameter values
 
 We set our default parameter values here. If the parameter is not explicitly defined in the function call, then these default values are used.
 
@@ -498,7 +500,7 @@ We set our default parameter values here. If the parameter is not explicitly def
     default_tau21 = 0.0;
 #+end_src
 
-*** Adding parameters with =inputParser=
+**** Adding parameters with =inputParser=
 
 See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] and [[https://www.mathworks.com/help/matlab/ref/inputparser.addparameter.html][addParameter]] documentation. By setting =p.KeepUnmatched = true=, we can pass along all the parameters given in the simMutualism function call and just ignore the ones that are not relevant to the ODE parameters.
 
@@ -621,7 +623,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     dydt  = zeros(size(y));
 #+end_src
 
-*** Species /P/
+**** Species /P/
 
 #+begin_src math
 \begin{align*}
@@ -639,7 +641,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     dydt(1,:) = P .* ((1 - deltaP) * rP + deltaP * (cP * (alphaPF1 .* F1 ./ (hPF1 + F1) + alphaPF2 .* F2 ./ (hPF2 + F2))) - deltaF1 * (qP * (betaP .* F1 ./ (eP + P))) - deltaF2 * (qP * (betaP .* F2 ./ (eP + P))) - dP .* P);
 #+end_src
 
-*** Species /F/, Phenotype 1
+**** Species /F/, Phenotype 1
 
 #+begin_src math
 \begin{align*}
@@ -651,7 +653,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + deltaF1 * (cF1 * (alphaF1P .* P) ./ (hF1P + P)) - qF1 * (deltaP * ((betaF1 .* P) ./ (eF1 + F1))) - (tau12 .* F2) - dF1 .* F1);
 #+end_src
 
-*** Species /F/, Phenotype 2
+**** Species /F/, Phenotype 2
 
 #+begin_src math
 \begin{align*}
@@ -663,16 +665,16 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     dydt(3,:) = F2 .* ((1 - deltaF2) * rF2 + deltaF2 * (cF2 * (alphaF2P .* P) ./ (hF2P + P)) - qF2 * (deltaP * ((betaF2 .* P) ./ (eF2 + F2))) - (tau21 .* F1) - dF2 .* F2);
 #+end_src
 
-*** Reshape
+**** Reshape
 
 #+begin_src matlab
     dydt = reshape(dydt,3*nodes,1);
 end
 #+end_src
 
-* Parameter sweep
+** Parameter sweep
 
-** Sweep script
+*** Sweep script
 
 This is the main file to be edited when running parameter sweeps. The =simMutualism()= function requires an output directory as an argument. It can take any ODE parameter as an optional argument. to override a default value, use the parameter variable name then a value, i.e. =simMutualism(outputDir, 'tau12', 0.3, 'tau21', 0.14)=. These variables will get added to the filename of the exported mat file at the end of the simulation.
 
@@ -701,7 +703,7 @@ end
 #+end_src
 
 
-** Slurm job script
+*** Slurm job script
 
 The SBATCH lines *must* be at the top of the script. Anything before that will cause an error with Slurm.
 
@@ -724,13 +726,13 @@ module load matlab
 matlab -nodisplay <tauSweep.m
 #+end_src
 
-*** Using the Slurm ~--array command~
+**** Using the Slurm ~--array command~
 
 Note the ~#SBATCH --array=0-40~ command. For a parameter sweep, we might normally use two for-loops to iterate through a range of values for two parameters (in this case $\tau_ { 12 }$ and $\tau_ { 21 }$). Instead, we can replace the outer for loop with Slurm's ~--array~ command. It takes a range of numbers (or a comma separated list in brackets, like =[5, 10, 15, 25]=), and creates a separate, parallelized task for each one. We access the task ID with the environment variable =SLURM_ARRAY_TASK_ID=.
 
 In our case, we want to run simulations for all values of $\tau_ { 12 }$ and $\tau_ { 21 }$ in the range 0 - 0.4 with a step size of 0.01. Since the Slurm array command only recognizes integers, we use ~--array=0-40~. Then in our Matlab sweep script, we remove our outer for-loop and replace wherever we were using the for-loop index variable with =str2num(getenv("SLURM_ARRAY_TASK_ID")) * 0.01=. Now Slurm will set up one job with 41 sub-tasks that run in parallel, one for each value of $\tau_ { 12 }$.
 
-*** Making the right job request
+**** Making the right job request
 
 This [[https://researchcomputing.princeton.edu/support/knowledge-base/slurm][introductory guide]] from Princeton Research Computing was very helpful. They also have [[https://researchcomputing.princeton.edu/support/knowledge-base/matlab][specific instructions]] for Matlab.
 
@@ -738,7 +740,7 @@ The key takeaway is that requesting more resources as a way to speed up a job is
 
 It /is/ possible to parallelize your code as well, but it's not totally clear whether this is always beneficial. You can replace a for-loop with =parfor=, and then add ~--cpus-per-task~ to your Slurm script. This is another case where more is not always better, ~--cpus-per-task=4~ has given me the best results in my very informal testing. More CPUs and your job ends up in the queue for much longer. Now for each array sub-task, 4 CPUs will divide up the inner for-loop in the sweep script. The problem is that these extra CPUs can mean that your other array sub-tasks get stuck in the queue since you're using more resources per task.
 
-** Function to classify outcome (=classifyOutcome.m=)
+*** Function to classify outcome (=classifyOutcome.m=)
 
 This function takes the final population densities of species $F_1$ and $F_2$ and classifies the outcome of the simulation. The possible outcomes are:
 
@@ -826,9 +828,9 @@ We then make the same comparisons when $F_2$ has the larger range. Finally, we c
 end
 #+end_src
 
-* Figures
+** Figures
 
-** Generate figures from paper
+*** Generate figures from paper
 
 The parameter space plot always includes all the parameter values in the sweep. For the other plots, the variables  =tau12Range= and =tau21Range= define for what range of parameter values the plots are generated.
 
@@ -912,7 +914,7 @@ function generatePlots(sweepDir, figDir, varargin)
 end
 #+end_src
 
-** 3D population density vs. space vs. time plot
+*** 3D population density vs. space vs. time plot
 
 These plots are helpful to see how the population densities change over time, but the 2D final spatial outcome plots are a little easier to read if all we care about is what happens at the steady state.
 
@@ -1011,7 +1013,7 @@ function plotPopSpaceTime(simMatFile, varargin)
 end
 #+end_src
 
-** Speed vs. time plot
+*** Speed vs. time plot
 
 #+begin_src matlab
 function plotSpeedTime(simMatFile, varargin)
@@ -1050,7 +1052,7 @@ function plotSpeedTime(simMatFile, varargin)
 end
 #+end_src
 
-** Final population densities across space plot
+*** Final population densities across space plot
 
 #+begin_src matlab
 %
@@ -1119,7 +1121,7 @@ function plotFinalPopSpace(simMatFile, varargin)
 end
 #+end_src
 
-** Sweep outcomes plot
+*** Sweep outcomes plot
 
 This function generates a heatmap of the outcomes of a $\tau$ parameter sweep (it might be possible to make this more generic for other types of parameter sweeps in the future). It requires a directory where it can find mat files (the results of each simulation).
 
