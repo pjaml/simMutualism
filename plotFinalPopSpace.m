@@ -12,7 +12,7 @@ function plotFinalPopSpace(simMatFile, varargin)
     nP = simMatFile.nP;
     nF1 = simMatFile.nF1;
     nF2 = simMatFile.nF2;
-    nThreshold = simMatFile.nThreshold
+    nThreshold = simMatFile.nThreshold;
     x = simMatFile.x;
 
     iterations = simMatFile.iterations;
