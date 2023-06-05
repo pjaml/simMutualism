@@ -13,8 +13,8 @@ function dydt = growthODEs(t, y, varargin)
     default_rF2 = 0.3;
 
     % mutualism benefits
-    default_alphaPF1 = 0.5;
-    default_alphaPF2 = 0.5;
+    default_alphaPF1 = 0.01;
+    default_alphaPF2 = 0.01;
     default_alphaF1P = 0.5;
     default_alphaF2P = 0.5;
 
