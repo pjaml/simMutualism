@@ -1,4 +1,4 @@
-# Created 2023-06-12 Mon 16:48
+# Created 2023-06-12 Mon 17:09
 #+options: num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -45,7 +45,7 @@ The =generatePlots()= function will create a set of plots from a competition par
 
 ** Using git to keep track of parameter sweep settings
 
-One issue with running several sweeps with slightly different parameter values is that it's easy to lose track of the parameter values you used for a given sweep. It's possible to use git branches to keep track of all the different sweeps we run.
+One issue with running several sweeps with slightly different parameter values is that it's easy to lose track of the parameter values you used for a given sweep. This can cause problems if you need to reproduce a certain set of results, or re-run a sweep with slightly different parameter values. It's possible to use git branches to keep track of all the different sweeps we run.
 
 We have our main git branch, which can be considered the default settings and parameter values. If we need to change some parameter values for a specific sweep, we likely don't want to save these changes to our main branch since it would no longer represent the default settings. When we want to run a new sweep, we can use git to create and checkout a new branch:
 
