@@ -1,4 +1,4 @@
-# Created 2023-05-08 Mon 14:24
+# Created 2023-06-12 Mon 13:34
 #+options: num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -457,8 +457,8 @@ We set our default parameter values here. If the parameter is not explicitly def
     default_rF2 = 0.3;
 
     % mutualism benefits
-    default_alphaPF1 = 0.5;
-    default_alphaPF2 = 0.5;
+    default_alphaPF1 = 0.01;
+    default_alphaPF2 = 0.01;
     default_alphaF1P = 0.5;
     default_alphaF2P = 0.5;
 
@@ -491,7 +491,7 @@ We set our default parameter values here. If the parameter is not explicitly def
     default_eF2 = 0.3;
 
     % = 0.0;
-    default_deltaP = 0.0;
+    default_deltaP = 0.1;
     default_deltaF1 = 0.9;
     default_deltaF2 = 0.1;
 
@@ -582,15 +582,6 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     alphaF1P = p.Results.alphaF1P;
     alphaF2P = p.Results.alphaF2P;
 
-    qP = p.Results.qP;
-    qF1 = p.Results.qF1;
-    qF2 = p.Results.qF2;
-
-    % mutualism costs
-    betaP = p.Results.betaP;
-    betaF1 = p.Results.betaF1;
-    betaF2 = p.Results.betaF2;
-
     cP = p.Results.cP;
     cF1 = p.Results.cF1;
     cF2 = p.Results.cF2;
@@ -606,12 +597,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     hF1P = p.Results.hF1P;
     hF2P = p.Results.hF2P;
 
-    eP = p.Results.eP;
-    eF1 = p.Results.eF1;
-    eF2 = p.Results.eF2;
-
     % mutualism dependence
-    deltaP = p.Results.deltaP;
     deltaF1 = p.Results.deltaF1;
     deltaF2 = p.Results.deltaF2;
 
@@ -627,8 +613,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 
 #+begin_src math
 \begin{align*}
-\frac{dP}{dt} = P [ (1 - \delta_P) r_P + &\delta_P \left( c_1 \left[\frac{\alpha_{PF_1} F_1}{h_{PF_1} + F_1}  + \frac{\alpha_{PF_2} F_2}{h_{PF_2} + F_2} \right] \right) - \\
-&\delta_{F_1} \left( q_1 \left[ \frac{\beta_{P} F_1}{e_P + P} \right] \right) - \delta_{F_2} \left( q_1 \left[ \frac{\beta_{P} F_2}{e_P + P} \right] \right) - d_P P ]
+\frac{dP}{dt} = P [ r_P + \left( c_1 \left[\frac{\alpha_{PF_1} F_1}{h_{PF_1} + F_1}  + \frac{\alpha_{PF_2} F_2}{h_{PF_2} + F_2} \right] \right) - d_P P ]
 \end{align*}
 #+end_src
 
@@ -638,7 +623,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     F1 = y(2,:);
     F2 = y(3,:);
 
-    dydt(1,:) = P .* ((1 - deltaP) * rP + deltaP * (cP * (alphaPF1 .* F1 ./ (hPF1 + F1) + alphaPF2 .* F2 ./ (hPF2 + F2))) - deltaF1 * (qP * (betaP .* F1 ./ (eP + P))) - deltaF2 * (qP * (betaP .* F2 ./ (eP + P))) - dP .* P);
+    dydt(1,:) = P .* (rP + (cP * (alphaPF1 .* F1 ./ (hPF1 + F1) + alphaPF2 .* F2 ./ (hPF2 + F2))) - dP .* P);
 #+end_src
 
 **** Species /F/, Phenotype 1
@@ -650,7 +635,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 #+end_src
 
 #+begin_src matlab
-    dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + deltaF1 * (cF1 * (alphaF1P .* P) ./ (hF1P + P)) - qF1 * (deltaP * ((betaF1 .* P) ./ (eF1 + F1))) - (tau12 .* F2) - dF1 .* F1);
+    dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + deltaF1 * (cF1 * (alphaF1P .* P) ./ (hF1P + P)) - (tau12 .* F2) - dF1 .* F1);
 #+end_src
 
 **** Species /F/, Phenotype 2
@@ -662,7 +647,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
 #+end_src
 
 #+begin_src matlab
-    dydt(3,:) = F2 .* ((1 - deltaF2) * rF2 + deltaF2 * (cF2 * (alphaF2P .* P) ./ (hF2P + P)) - qF2 * (deltaP * ((betaF2 .* P) ./ (eF2 + F2))) - (tau21 .* F1) - dF2 .* F2);
+    dydt(3,:) = F2 .* ((1 - deltaF2) * rF2 + deltaF2 * (cF2 * (alphaF2P .* P) ./ (hF2P + P)) - (tau21 .* F1) - dF2 .* F2);
 #+end_src
 
 **** Reshape
