@@ -1,4 +1,4 @@
-# Created 2023-06-12 Mon 13:40
+# Created 2023-06-12 Mon 14:53
 #+options: num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -626,7 +626,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     dydt(1,:) = P .* (rP + (cP * (alphaPF1 .* F1 ./ (hPF1 + F1) + alphaPF2 .* F2 ./ (hPF2 + F2))) - dP .* P);
 #+end_src
 
-**** Species /F/, Phenotype 1
+**** Species /F₁/
 
 #+begin_src math
 \begin{align*}
@@ -638,7 +638,7 @@ See [[https://www.mathworks.com/help/matlab/ref/inputparser.html][inputParser]] 
     dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + deltaF1 * (cF1 * (alphaF1P .* P) ./ (hF1P + P)) - (tau12 .* F2) - dF1 .* F1);
 #+end_src
 
-**** Species /F/, Phenotype 2
+**** Species /F₂/
 
 #+begin_src math
 \begin{align*}
