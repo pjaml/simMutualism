@@ -1,4 +1,4 @@
-# Created 2023-06-12 Mon 14:53
+# Created 2023-06-12 Mon 16:48
 #+options: num:nil
 #+title: Mutualism simulation
 #+author: Peter Lutz
@@ -42,6 +42,30 @@ To run a competition parameter sweep, use the function =tauSweep()=.
 
 ** Generating plots
 The =generatePlots()= function will create a set of plots from a competition parameter sweep. To generate individual plots for a single simulation, use =plotFinalPopSpace()=, =plotPopSpaceTime()=, =plotSpeedTime()=, and =plotRangeTime()=.
+
+** Using git to keep track of parameter sweep settings
+
+One issue with running several sweeps with slightly different parameter values is that it's easy to lose track of the parameter values you used for a given sweep. It's possible to use git branches to keep track of all the different sweeps we run.
+
+We have our main git branch, which can be considered the default settings and parameter values. If we need to change some parameter values for a specific sweep, we likely don't want to save these changes to our main branch since it would no longer represent the default settings. When we want to run a new sweep, we can use git to create and checkout a new branch:
+
+#+begin_src shell
+git checkout -b SWEEP-BRANCH-NAME
+#+end_src
+
+The command =git checkout= allows you to switch between your branches, and in this case with the =-b= option, create a new one and switch to it.
+
+The idea here is that we name our branch something meaningful that tells us what parameter values we used for our sweep. For example, if I'm running a sweep with the =useDeltaDispKernels= parameter set to =true=, I could name the branch =delta-disp-kernels=.
+
+Then, I'd go into the =tauSweep.m= file and change the =outputDir= variable to =~/delta-disp-kernels= so my results are saved into a new directory. I'd also add the necessary arguments to the =simMutualism= function call (in this example, ='useDeltaDispKernels', true=). I would commit these changes, which only saves them to the new =delta-disp-kernels= branch.
+
+After running the simulation, I could switch back to the =main= branch with the command
+
+#+begin_src shell
+git checkout main
+#+end_src
+
+The =delta-disp-kernels= branch is saved if I ever need to check what parameter values I used for the sweep or if I need to re-run it. But since I haven't modified the =main= branch at all, the default settings are preserved. I can now create another branch if I need to run a different sweep with different parameter values.
 
 * How the code works
 
