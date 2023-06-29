@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 % [[file:mutual_ide.org::*Function definition][Function definition:1]]
 function dydt = growthODEs(t, y, varargin)
 % Function definition:1 ends here
@@ -8,13 +9,13 @@ function dydt = growthODEs(t, y, varargin)
     default_nodes = (2^16) + 1;
 
     % intrinsic growth
-    default_rP = 0.4;
+    default_rP = 0.3;
     default_rF1 = 0.3;
     default_rF2 = 0.3;
 
     % mutualism benefits
-    default_alphaPF1 = 0.5;
-    default_alphaPF2 = 0.5;
+    default_alphaPF1 = 0.01;
+    default_alphaPF2 = 0.01;
     default_alphaF1P = 0.5;
     default_alphaF2P = 0.5;
 
@@ -134,15 +135,6 @@ function dydt = growthODEs(t, y, varargin)
     alphaF1P = p.Results.alphaF1P;
     alphaF2P = p.Results.alphaF2P;
 
-    qP = p.Results.qP;
-    qF1 = p.Results.qF1;
-    qF2 = p.Results.qF2;
-
-    % mutualism costs
-    betaP = p.Results.betaP;
-    betaF1 = p.Results.betaF1;
-    betaF2 = p.Results.betaF2;
-
     cP = p.Results.cP;
     cF1 = p.Results.cF1;
     cF2 = p.Results.cF2;
@@ -158,12 +150,7 @@ function dydt = growthODEs(t, y, varargin)
     hF1P = p.Results.hF1P;
     hF2P = p.Results.hF2P;
 
-    eP = p.Results.eP;
-    eF1 = p.Results.eF1;
-    eF2 = p.Results.eF2;
-
     % mutualism dependence
-    deltaP = p.Results.deltaP;
     deltaF1 = p.Results.deltaF1;
     deltaF2 = p.Results.deltaF2;
 
@@ -181,15 +168,15 @@ function dydt = growthODEs(t, y, varargin)
     F1 = y(2,:);
     F2 = y(3,:);
 
-    dydt(1,:) = P .* ((1 - deltaP) * rP + deltaP * (cP * (alphaPF1 .* F1 ./ (hPF1 + F1) + alphaPF2 .* F2 ./ (hPF2 + F2))) - deltaF1 * (qP * (betaP .* F1 ./ (eP + P))) - deltaF2 * (qP * (betaP .* F2 ./ (eP + P))) - dP .* P);
+    dydt(1,:) = P .* (rP + (cP * (alphaPF1 .* F1 ./ (hPF1 + F1) + alphaPF2 .* F2 ./ (hPF2 + F2))) - dP .* P);
 % Species /P/:2 ends here
 
 % [[file:mutual_ide.org::*Species /F/, Phenotype 1][Species /F/, Phenotype 1:2]]
-    dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + deltaF1 * (cF1 * (alphaF1P .* P) ./ (hF1P + P)) - qF1 * (deltaP * ((betaF1 .* P) ./ (eF1 + F1))) - (tau12 .* F2) - dF1 .* F1);
+    dydt(2,:) = F1 .* ((1 - deltaF1) * rF1 + deltaF1 * (cF1 * (alphaF1P .* P) ./ (hF1P + P)) - (tau12 .* F2) - dF1 .* F1);
 % Species /F/, Phenotype 1:2 ends here
 
 % [[file:mutual_ide.org::*Species /F/, Phenotype 2][Species /F/, Phenotype 2:2]]
-    dydt(3,:) = F2 .* ((1 - deltaF2) * rF2 + deltaF2 * (cF2 * (alphaF2P .* P) ./ (hF2P + P)) - qF2 * (deltaP * ((betaF2 .* P) ./ (eF2 + F2))) - (tau21 .* F1) - dF2 .* F2);
+    dydt(3,:) = F2 .* ((1 - deltaF2) * rF2 + deltaF2 * (cF2 * (alphaF2P .* P) ./ (hF2P + P)) - (tau21 .* F1) - dF2 .* F2);
 % Species /F/, Phenotype 2:2 ends here
 
 % [[file:mutual_ide.org::*Reshape][Reshape:1]]
