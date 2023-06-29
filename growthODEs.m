@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+HEAD
 % [[file:mutual_ide.org::*Function definition][Function definition:1]]
 function dydt = growthODEs(t, y, varargin)
 % Function definition:1 ends here
