@@ -1,4 +1,3 @@
-HEAD
 # Created 2023-05-08 Mon 14:24
 #+options: num:nil
 #+title: Mutualism simulation
