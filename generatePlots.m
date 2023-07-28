@@ -1,7 +1,7 @@
 % [[file:mutual_ide.org::*Generate figures from paper][Generate figures from paper:1]]
 function generatePlots(sweepDir, figDir, varargin)
 
-    defaultTau12Range = 0.13:0.01:0.31;
+    defaultTau12Range = 0.0:0.01:0.4;
     defaultTau21Range = 0.0:0.01:0.4;
 
     p = inputParser;

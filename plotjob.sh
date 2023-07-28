@@ -5,11 +5,11 @@
 #SBATCH --mem=32G
 #SBATCH --time=6:00:00
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=lutzx119@umn.edu
-#SBATCH --output=/home/shawa/lutzx119/reports/plotjob-%j.out
+#SBATCH --mail-user=venka210@umn.edu
+#SBATCH --output=/home/shawa/venka210/simMutualism/reports/plotjob-%j.out
 
-cd /home/shawa/lutzx119/mutualism || return
+cd /home/shawa/venka210/simMutualism || return
 module purge
 
 module load matlab
-matlab -nodisplay -r "generatePlots('~/basicSweep/', '~/figsBasicSweep/', 'plotOutcomes', true)"
+matlab -nodisplay -r "generatePlots('basicSweep', 'figsBasicSweep', 'plotOutcomes', true)"

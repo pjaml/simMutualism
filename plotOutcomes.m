@@ -4,8 +4,8 @@ function plotOutcomes(sweepDir, varargin)
     p = inputParser;
 
     addRequired(p, 'sweepDir', @isfolder);
-    addParameter(p, 'tau12Range', 0:0.01:0.40);
-    addParameter(p, 'tau21Range', 0:0.01:0.40);
+    addParameter(p, 'tau12Range', 0.0:0.01:0.40);
+    addParameter(p, 'tau21Range', 0.0:0.01:0.40);
     addParameter(p, 'figDir', './', @isfolder);
     parse(p, sweepDir, varargin{:});
 
@@ -36,28 +36,28 @@ function plotOutcomes(sweepDir, varargin)
         clear curFile;
 
     end
+    % F1 dominance, F2 dominance, local coex., local co + F1, local co + F2, regional coexist.
+    cmap = [1, 1, 1; 0.1, 0.12, 0.14; 0.2 0.2 0.7; 0.6 0.8 0.3; 0.8 0.0 0.0; 0.1,0.6,0.8];
 
     f = figure('visible', 'off');
     f.Position = [1 1 996 996];
-    h = pcolor(tau12Range, fliplr(tau21Range), rot90(outcomes));
-    axis square;
-    h.EdgeColor = [0.94 0.94 0.94];
+    h = image(tau12Range, fliplr(tau21Range), rot90(outcomes));%,'ColorScaling', 'scaled','CellLabelColor','none', 'GridVisible','off','ColorbarVisible','on');
+    colormap(cmap)
+    axis tight
+    set(gca,'YDir','normal')
+    %set(h, 'EdgeColor', 'none');	
+    %h.EdgeColor = [0.94 0.94 0.94];
 
-    % F1 dominance, F2 dominance, local coex., local co + F1, regional coexist.
-    cmap = [1, 1, 1; 0.1, 0.12, 0.14; 0.2 0.2 0.7; 0.6 0.8 0.3; 0.1,0.6,0.8];
-    colormap(cmap);
-
-    % hack to create a legend
+    %hack to create a legend
     for ii = 1:size(cmap,1)
         ppatch(ii) = patch(NaN, NaN, cmap(ii,:));
     end
 
-    labels = {'F_1 dominance', 'F_2 dominance', 'Local coexistence', 'Local coexistence with F_1 dominance', 'Regional coexistence'};
+    labels = {'F_1 dominance', 'F_2 dominance', 'Local coexistence', 'Local coexistence with F_1 dominance', 'Local coexistence with F_2 dominance', 'Regional coexistence'};
 
-    legend(ppatch, labels, 'Location', 'northwest', 'FontSize', 11);
+    legend(ppatch, labels, 'Location', 'northeast', 'FontSize', 11);
     xlabel('F_2 competitive ability (\tau_{12})');
     ylabel('F_1 competitive ability (\tau_{21})');
-
     filename = fullfile(figDir, 'tauSweepOutcomesPlot');
     saveas(f, strcat(filename, '.fig'));
     saveas(f, strcat(filename, '.png'));

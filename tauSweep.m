@@ -4,7 +4,7 @@
 
 rangeStep = 0.01;
 
-outputDir = '/home/shawa/lutzx119/basicSweep/';
+outputDir = '/home/shawa/venka210/simMutualism/basicSweep/';
 
 if ~isfolder(outputDir)
     mkdir(outputDir)
@@ -18,6 +18,6 @@ tau12 = rangeStep * str2num(getenv("SLURM_ARRAY_TASK_ID"));
 parfor j = 0:40
 
     tau21 = j * rangeStep;
-    simMutualism('outputDir', outputDir, 'tau12', tau12, 'tau21', tau21);
+simMutualism('outputDir', outputDir, 'tau12', tau12, 'tau21', tau21,'sigma_sq_P', 0.005,'useDeltaDispKernels', true);
 end
 % Sweep script:1 ends here

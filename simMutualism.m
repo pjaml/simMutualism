@@ -13,16 +13,17 @@ p = inputParser;
 p.KeepUnmatched = true;
 
 % minimum number of cycles of growth and dispersal
-addParameter(p, 'iterations', 50, @isnumeric);
+addParameter(p, 'iterations', 200, @isnumeric); %this value was originally 50
 addParameter(p, 'maxIterations', 1000, @isnumeric);
 addParameter(p, 'iterationStep', 50, @isnumeric);
 addParameter(p, 'outputDir', './', @isfolder);
 addParameter(p, 'steadyStateThreshold', 5e-04, @isnumeric);
 addParameter(p, 'diameter', 1200, @isnumeric);
 addParameter(p, 'sigma_sq', 0.05, @isnumeric); % Dispersal variance
-addParameter(p, 'deltaP', 0.0, @isnumeric);
-addParameter(p, 'deltaF1', 0.9, @isnumeric);
-addParameter(p, 'deltaF2', 0.1, @isnumeric);
+addParameter(p, 'sigma_sq_P', 0.05, @isnumeric); % Dispersal variance
+addParameter(p, 'deltaP', 1.0, @isnumeric);
+addParameter(p, 'deltaF1', 0.6, @isnumeric);
+addParameter(p, 'deltaF2', 0.4, @isnumeric);
 addParameter(p, 'useDeltaDispKernels', false, @islogical);
 
 
@@ -33,6 +34,7 @@ parse(p, varargin{:});
 iterations = p.Results.iterations;
 maxIterations = p.Results.maxIterations;
 sigma_sq = p.Results.sigma_sq;
+sigma_sq_P = p.Results.sigma_sq_P;
 deltaP = p.Results.deltaP;
 deltaF1 = p.Results.deltaF1;
 deltaF2 = p.Results.deltaF2;
@@ -73,11 +75,11 @@ dx = diameter / (nodes - 1);
 % [[file:mutual_ide.org::*Dispersal kernels][Dispersal kernels:1]]
 if p.Results.useDeltaDispKernels
     % gaussian dispersal kernels
-    kP = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
+    kP = exp(-(x2 .^ 2) / (2 * sigma_sq_P)) ./ sqrt(2 * pi * sigma_sq_P);
     kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF1)) ./ sqrt(2 * pi * sigma_sq * deltaF1);
     kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq * deltaF2)) ./ sqrt(2 * pi * sigma_sq * deltaF2);
 else
-    kP = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
+    kP = exp(-(x2 .^ 2) / (2 * sigma_sq_P)) ./ sqrt(2 * pi * sigma_sq_P);
     kF1 = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
     kF2 = exp(-(x2 .^ 2) / (2 * sigma_sq)) ./ sqrt(2 * pi * sigma_sq);
 end

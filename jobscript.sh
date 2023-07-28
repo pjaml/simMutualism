@@ -6,10 +6,10 @@
 #SBATCH --time=4:00:00
 #SBATCH --array=0-40
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=lutzx119@umn.edu
-#SBATCH --output=/home/shawa/lutzx119/reports/tausweep-%j.out
+#SBATCH --mail-user=venka210@umn.edu
+#SBATCH --output=/home/shawa/venka210/simMutualism/reports/tausweep-%j.out
 
-cd /home/shawa/lutzx119/mutualism || return
+cd /home/shawa/venka210/simMutualism/ || return
 module purge
 
 module load matlab

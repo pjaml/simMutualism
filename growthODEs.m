@@ -47,7 +47,7 @@ function dydt = growthODEs(t, y, varargin)
     default_eF2 = 0.3;
 
     % = 0.0;
-    default_deltaP = 0.1;
+    default_deltaP = 1.0;
     default_deltaF1 = 0.9;
     default_deltaF2 = 0.1;
 
