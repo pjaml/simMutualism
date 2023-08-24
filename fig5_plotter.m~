@@ -1,0 +1,29 @@
+clear all
+cd 'basicSweep_fig5'
+matfiles = dir('*.mat');
+var_p = 0.001:0.001:0.099;
+tau12_local = [0.020,0.200,0.370];
+tau21_local = [0.020,0.150,0.290];
+rho_array = zeros(length(tau12_local), length(var_p));
+%rel_fit_arr_s_non = zeros(1,length(costs_s_non)); 
+%%
+for ii = 1:length(tau12_local)
+    for jj = 1:length(var_p)
+        load(strcat(['results_tau12_' num2str(tau12_local(ii), '%.3f') '_tau21_' num2str(tau21_local(ii),'%.3f') '_sigma_sq_P_' num2str(var_p(jj), '%.3f') '.mat']))
+        rho_array(ii,jj) = rho;
+    end
+end
+
+%%
+figure()
+plot(var_p, rho_array(1,:))
+hold on
+plot(var_p, rho_array(2,:))
+plot(var_p, rho_array(3,:))
+%legend('Rel. fit of E_{non} with S_{mot}','Fit E_{non} = E_{mot}','Rel. fit of E_{non} with S_{non}','location', 'best')
+xlabel('\sigma_P^2')
+ylabel('\rho')
+title ('Range overlap vs mutualist dispersal ability')
+legend('Weak competition','Medium Competition','Strong Competition','Location','northwest')
+figname1 = 'Fig5.jpeg';
+print (figname1,'-djpeg','-r600');  
